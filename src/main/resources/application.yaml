@@ -1,0 +1,10 @@
+server:
+  servlet:
+    context-path: /item-handler
+
+uk:
+  gov:
+    companieshouse:
+      orders:
+        api:
+          health: /healthcheck
