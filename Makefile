@@ -1,4 +1,3 @@
-# FIXME update artifact_name
 artifact_name       := item-handler
 
 .PHONY: all
