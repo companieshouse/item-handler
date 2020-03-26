@@ -1,0 +1,9 @@
+server:
+  servlet:
+    context-path: /item-handler
+
+uk:
+  gov:
+    companieshouse:
+      item-handler:
+        health: /healthcheck
