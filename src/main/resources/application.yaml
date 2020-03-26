@@ -5,6 +5,5 @@ server:
 uk:
   gov:
     companieshouse:
-      orders:
-        api:
-          health: /healthcheck
+      item-handler:
+        health: /healthcheck
