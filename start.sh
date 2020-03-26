@@ -7,10 +7,8 @@ APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ -z "${MESOS_SLAVE_PID}" ]]; then
     source ~/.chs_env/private_env
     source ~/.chs_env/global_env
-# FIXME create this
     source ~/.chs_env/item-handler/env
 
-# FIXME set port and update where necessary
     PORT="${ITEM_HANDLER_PORT:=10022}"
 else
     PORT="$1"
