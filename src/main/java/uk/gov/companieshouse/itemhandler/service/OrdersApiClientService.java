@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.itemhandler.service;
 
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.api.InternalApiClient;
+import uk.gov.companieshouse.api.handler.order.PrivateOrderResourceHandler;
 import uk.gov.companieshouse.api.handler.order.request.PrivateOrderURIPattern;
 import uk.gov.companieshouse.api.handler.regex.URIValidator;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
@@ -22,8 +24,10 @@ public class OrdersApiClientService {
 
     public OrderData getOrderData(String orderUri) throws Exception {
         if (URIValidator.validate(PrivateOrderURIPattern.getOrdersPattern(), orderUri)) {
-            OrdersApi ordersApi = apiClient.getInternalApiClient().privateOrderResourceHandler()
-                    .getOrder(orderUri).execute().getData();
+            InternalApiClient internalApiClient = apiClient.getInternalApiClient();
+            PrivateOrderResourceHandler privateOrderResourceHandler = internalApiClient.privateOrderResourceHandler();
+            OrdersApi ordersApi = privateOrderResourceHandler.getOrder(orderUri).execute().getData();
+
             return ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi);
         } else {
             throw new ServiceException("Unrecognised uri pattern for "+orderUri);

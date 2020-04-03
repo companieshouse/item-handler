@@ -12,7 +12,6 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 public class ItemHandlerApplication {
 
 	public static final String APPLICATION_NAMESPACE = "item-handler";
-	public static final String LOG_MESSAGE_DATA_KEY = "message";
 
 	public static void main(String[] args) {
 		SpringApplication.run(ItemHandlerApplication.class, args);
