@@ -51,8 +51,8 @@ public class OrdersApiClientServiceTest {
 
     @Test
     void getOrderData() throws Exception {
-        final OrderData order = new OrderData();
-        order.setEtag(ORDER_ETAG);
+        final OrderData expectedOrderData = new OrderData();
+        expectedOrderData.setEtag(ORDER_ETAG);
 
         // Given OrdersApi returns valid details
         when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
@@ -60,11 +60,11 @@ public class OrdersApiClientServiceTest {
         when(privateOrderResourceHandler.getOrder(ORDER_URL)).thenReturn(ordersGet);
         when(ordersGet.execute()).thenReturn(ordersResponse);
         when(ordersResponse.getData()).thenReturn(ordersApi);
-        when(ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi)).thenReturn(order);
+        when(ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi)).thenReturn(expectedOrderData);
 
         // When & Then
         OrderData actualOrderData = serviceUnderTest.getOrderData(ORDER_URL);
-        assertThat(actualOrderData.getEtag(), is(order.getEtag()));
+        assertThat(actualOrderData.getEtag(), is(expectedOrderData.getEtag()));
         verify(ordersApiToOrderDataMapper, times(1)).ordersApiToOrderData(ordersApi);
     }
 }
