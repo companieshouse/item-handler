@@ -56,7 +56,7 @@ public class OrdersKafkaConsumerIntegrationTest {
     private BlockingQueue<ConsumerRecord<String, String>> records;
 
     @Autowired
-    OrdersKafkaConsumerWrapper consumerWrapper;
+    private OrdersKafkaConsumerWrapper consumerWrapper;
 
     @Before
     public void setUp() {
