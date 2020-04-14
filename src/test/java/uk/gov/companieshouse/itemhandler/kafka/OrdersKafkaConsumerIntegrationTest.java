@@ -112,10 +112,21 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked();
+        verifyProcessOrderReceivedInvoked("DEFAULT");
     }
 
-    private void verifyProcessOrderReceivedInvoked() throws InterruptedException {
+    @Test
+    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, ExecutionException {
+        // When
+        final ListenableFuture<SendResult<String, String>> future =
+                template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+
+        // Then
+        verifyProcessOrderReceivedInvoked("RETRY");
+    }
+
+    private void verifyProcessOrderReceivedInvoked(String type) throws InterruptedException {
+        consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
