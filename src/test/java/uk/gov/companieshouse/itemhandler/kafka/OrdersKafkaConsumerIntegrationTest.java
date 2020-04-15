@@ -26,6 +26,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
+import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked("DEFAULT");
+        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
     }
 
     @Test
@@ -124,7 +125,7 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked("RETRY");
+        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
     }
 
     @Test
@@ -134,10 +135,10 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked("ERROR");
+        verifyProcessOrderReceivedInvoked(CHConsumerType.ERROR_CONSUMER);
     }
 
-    private void verifyProcessOrderReceivedInvoked(String type) throws InterruptedException {
+    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));

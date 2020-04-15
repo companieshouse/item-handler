@@ -39,7 +39,6 @@ public class OrdersKafkaConsumer implements InitializingBean {
     private static final String ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
     private static final String ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static final int MAX_RETRY_ATTEMPTS = 3;
-    private static final String GROUP_NAME = "order-received-consumers";
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
     @Value("${kafka.broker.addresses}")
@@ -78,7 +77,6 @@ public class OrdersKafkaConsumer implements InitializingBean {
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC);
-            // process orderReceivedUri
         } catch (Exception x){
             LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
                     + " failed with exception: " + x.getMessage());
@@ -96,7 +94,6 @@ public class OrdersKafkaConsumer implements InitializingBean {
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY);
-            // process orderReceivedUri
         } catch (Exception x){
             LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
                     + " failed with exception: " + x.getMessage());
@@ -113,7 +110,6 @@ public class OrdersKafkaConsumer implements InitializingBean {
     public void processOrderReceivedError(String orderReceivedUri) {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR);
-            // process orderReceivedUri
         } catch (Exception x){
             LOGGER.error("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR + " could not be processed.");
         }
