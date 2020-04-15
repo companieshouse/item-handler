@@ -24,6 +24,7 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
@@ -42,11 +43,13 @@ import static org.hamcrest.Matchers.*;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-public class OrdersKafkaConsumerIntegrationTest {
+@TestPropertySource(properties="uk.gov.companieshouse.item-handler.error-consumer=true")
+public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
-    private static final String GROUP_NAME = "order-received-consumers";
+    private static final String CONSUMER_GROUP_MAIN_RETRY = "order-received-main-retry";
+    private static final String CONSUMER_GROUP_MAIN_ERROR = "order-received-error";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
     @Value("${kafka.broker.addresses}")
     private String brokerAddresses;
@@ -68,6 +71,7 @@ public class OrdersKafkaConsumerIntegrationTest {
 
     @After
     public void tearDown() {
+        consumerWrapper.reset();
         container.stop();
     }
 
@@ -86,7 +90,7 @@ public class OrdersKafkaConsumerIntegrationTest {
         final Map<String, Object> consumerProperties = new HashMap<>();
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_NAME);
+        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, CONSUMER_GROUP_MAIN_RETRY);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses);
 
         final DefaultKafkaConsumerFactory<String, String> consumerFactory =
@@ -114,25 +118,23 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+        verifyProcessOrderReceivedNotInvoked(CHConsumerType.MAIN_CONSUMER);
     }
 
     @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException {
         // When
         final ListenableFuture<SendResult<String, String>> future =
                 template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
+        verifyProcessOrderReceivedNotInvoked(CHConsumerType.RETRY_CONSUMER);
     }
 
-    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
+    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
-        final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
     }
 
     @Test
@@ -142,14 +144,14 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
+        verifyProcessOrderReceivedInvoked(CHConsumerType.ERROR_CONSUMER);
     }
 
-    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
+    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, isEmptyOrNullString());
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
     }
 }

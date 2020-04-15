@@ -77,6 +77,8 @@ public class OrdersKafkaConsumerWrapper {
     CountDownLatch getLatch() { return latch; }
     String getOrderUri() { return orderUri; }
     void setTestType(CHConsumerType type) { this.testType = type;}
+    CHConsumerType getTestType() { return this.testType; }
+    void reset() { this.latch = new CountDownLatch(1); }
 
     private void setUpTestKafkaOrdersProducerAndSendMessageToTopic() {
         final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
@@ -86,7 +88,10 @@ public class OrdersKafkaConsumerWrapper {
         final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
 
         template = new KafkaTemplate<>(producerFactory);
-        if (this.testType == CHConsumerType.RETRY_CONSUMER) {
+        if (this.testType == CHConsumerType.MAIN_CONSUMER) {
+            template.setDefaultTopic(ORDER_RECEIVED_TOPIC);
+            template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+        } else if (this.testType == CHConsumerType.RETRY_CONSUMER) {
             template.setDefaultTopic(ORDER_RECEIVED_TOPIC_RETRY);
             template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
         } else if (this.testType == CHConsumerType.ERROR_CONSUMER) {
