@@ -36,8 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -128,6 +127,14 @@ public class OrdersKafkaConsumerIntegrationTest {
         verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
     }
 
+    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
+        consumerWrapper.setTestType(type);
+        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
+        final String processedOrderUri = consumerWrapper.getOrderUri();
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
+    }
+
     @Test
     public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException {
         // When
@@ -135,14 +142,14 @@ public class OrdersKafkaConsumerIntegrationTest {
                 template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
 
         // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.ERROR_CONSUMER);
+        verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
     }
 
-    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
+    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
+        assertThat(processedOrderUri, isEmptyOrNullString());
     }
 }

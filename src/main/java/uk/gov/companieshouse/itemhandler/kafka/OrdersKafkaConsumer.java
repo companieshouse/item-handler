@@ -72,7 +72,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
                         new KafkaConsumerFactory(), chKafkaProducer);
     }
 
-    @KafkaListener(topics = ORDER_RECEIVED_TOPIC, groupId = ORDER_RECEIVED_GROUP)
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC, groupId = ORDER_RECEIVED_GROUP,
+            autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
     public void processOrderReceived(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
@@ -89,7 +90,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
         }
     }
 
-    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_RETRY, groupId = ORDER_RECEIVED_GROUP_RETRY)
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_RETRY, groupId = ORDER_RECEIVED_GROUP_RETRY,
+            autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
     public void processOrderReceivedRetry(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
@@ -106,7 +108,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
         }
     }
 
-    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_ERROR, groupId = ORDER_RECEIVED_GROUP_ERROR)
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_ERROR, groupId = ORDER_RECEIVED_GROUP_ERROR,
+            autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}")
     public void processOrderReceivedError(String orderReceivedUri) {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR);
