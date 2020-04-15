@@ -21,10 +21,8 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
@@ -43,7 +41,6 @@ public class OrdersKafkaConsumer implements InitializingBean {
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
     @Value("${kafka.broker.addresses}")
     private String brokerAddresses;
-    private CHKafkaProducer chKafkaProducer;
     private final SerializerFactory serializerFactory;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory) {
@@ -55,7 +52,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         LOGGER.debug("Initializing kafka consumer service " + this.toString());
 
         ProducerConfig config = getProducerConfig();
-        chKafkaProducer = new CHKafkaProducer(config);
+        CHKafkaProducer chKafkaProducer = new CHKafkaProducer(config);
 
         ConsumerConfig consumerConfig = getConsumerConfig();
 
@@ -77,7 +74,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     public void processOrderReceived(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
-            LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC);
+            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC);
         } catch (Exception x){
             LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
                     + " failed with exception: " + x.getMessage());
@@ -95,7 +92,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     public void processOrderReceivedRetry(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
-            LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY);
+            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x){
             LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
                     + " failed with exception: " + x.getMessage());
@@ -112,7 +109,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
             autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}")
     public void processOrderReceivedError(String orderReceivedUri) {
         try {
-            LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR);
+            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR);
         } catch (Exception x){
             LOGGER.error("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR + " could not be processed.");
         }
@@ -156,5 +153,9 @@ public class OrdersKafkaConsumer implements InitializingBean {
         message.setTimestamp(new Date().getTime());
 
         return message;
+    }
+
+    private void logMessageReceived(String message, String topic){
+        LOGGER.info(String.format("Message: %1$s received on topic: %2$s", message, topic));
     }
 }
