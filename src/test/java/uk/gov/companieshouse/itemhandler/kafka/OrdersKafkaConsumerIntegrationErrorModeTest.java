@@ -7,8 +7,10 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +46,7 @@ import static org.hamcrest.Matchers.*;
 @DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties="uk.gov.companieshouse.item-handler.error-consumer=true")
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
@@ -112,7 +115,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessage() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceived1Message() throws InterruptedException, ExecutionException {
         // When
         final ListenableFuture<SendResult<String, String>> future =
                 template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
@@ -122,7 +125,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException {
+    public void testOrdersConsumerReceivesOrderReceived2MessageRetry() throws InterruptedException {
         // When
         final ListenableFuture<SendResult<String, String>> future =
                 template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
@@ -135,10 +138,12 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
+        final String processedOrderUri = consumerWrapper.getOrderUri();
+        assertThat(processedOrderUri, isEmptyOrNullString());
     }
 
     @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceived3MessageError() throws InterruptedException, ExecutionException {
         // When
         final ListenableFuture<SendResult<String, String>> future =
                 template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
