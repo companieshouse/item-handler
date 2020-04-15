@@ -152,7 +152,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         orderReceived.setOrderUri(orderUri);
 
         message.setValue(serializer.toBinary(orderReceived));
-        message.setTopic(ORDER_RECEIVED_TOPIC);
+        message.setTopic(ORDER_RECEIVED_TOPIC_RETRY);
         message.setTimestamp(new Date().getTime());
 
         return message;
