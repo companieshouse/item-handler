@@ -22,6 +22,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -34,11 +35,13 @@ public class OrdersKafkaConsumer implements InitializingBean {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
+    private static final String ORDER_RECEIVED_GROUP = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC;
+    private static final String ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
+    private static final String ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static final int MAX_RETRY_ATTEMPTS = 3;
     private static final String GROUP_NAME = "order-received-consumers";
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
-    private CHKafkaResilientConsumerGroup chKafkaConsumerGroupError;
     @Value("${kafka.broker.addresses}")
     private String brokerAddresses;
     private CHKafkaProducer chKafkaProducer;
@@ -57,49 +60,70 @@ public class OrdersKafkaConsumer implements InitializingBean {
 
         ConsumerConfig consumerConfig = getConsumerConfig();
 
-        chKafkaConsumerGroupMain = new CHKafkaResilientConsumerGroup(consumerConfig, CHConsumerType.MAIN_CONSUMER,
-                new KafkaConsumerFactory(), chKafkaProducer);
-        chKafkaConsumerGroupRetry = new CHKafkaResilientConsumerGroup(consumerConfig, CHConsumerType.RETRY_CONSUMER,
-                new KafkaConsumerFactory(), chKafkaProducer);
+        consumerConfig.setGroupName(ORDER_RECEIVED_GROUP);
+        consumerConfig.setTopics(Collections.singletonList(ORDER_RECEIVED_TOPIC));
+        chKafkaConsumerGroupMain
+                = new CHKafkaResilientConsumerGroup(consumerConfig, CHConsumerType.MAIN_CONSUMER,
+                        new KafkaConsumerFactory(), chKafkaProducer);
+
+        consumerConfig.setTopics(Collections.singletonList(ORDER_RECEIVED_TOPIC_RETRY));
+        consumerConfig.setGroupName(ORDER_RECEIVED_GROUP_RETRY);
+        chKafkaConsumerGroupRetry
+                = new CHKafkaResilientConsumerGroup(consumerConfig, CHConsumerType.RETRY_CONSUMER,
+                        new KafkaConsumerFactory(), chKafkaProducer);
     }
 
-    @KafkaListener(topics = ORDER_RECEIVED_TOPIC, groupId = GROUP_NAME)
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC, groupId = ORDER_RECEIVED_GROUP)
     public void processOrderReceived(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC);
+            // process orderReceivedUri
         } catch (Exception x){
+            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+                    + " failed with exception: " + x.getMessage());
             Message message = createRetryMessage(orderReceivedUri);
+            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+                    + " to topic: " + ORDER_RECEIVED_TOPIC_RETRY);
             for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
                 chKafkaConsumerGroupMain.retry(attempt, message);
             }
         }
     }
 
-    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_RETRY, groupId = GROUP_NAME)
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_RETRY, groupId = ORDER_RECEIVED_GROUP_RETRY)
     public void processOrderReceivedRetry(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY);
+            // process orderReceivedUri
         } catch (Exception x){
+            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+                    + " failed with exception: " + x.getMessage());
             Message message = createRetryMessage(orderReceivedUri);
+            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+                    + " to topic: " + ORDER_RECEIVED_TOPIC_ERROR);
             for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
                 chKafkaConsumerGroupRetry.retry(attempt, message);
             }
         }
     }
 
+    @KafkaListener(topics = ORDER_RECEIVED_TOPIC_ERROR, groupId = ORDER_RECEIVED_GROUP_ERROR)
+    public void processOrderReceivedError(String orderReceivedUri) {
+        try {
+            LOGGER.info("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR);
+            // process orderReceivedUri
+        } catch (Exception x){
+            LOGGER.error("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR + " could not be processed.");
+        }
+    }
+
     private ConsumerConfig getConsumerConfig() {
         ConsumerConfig consumerConfig = new ConsumerConfig();
-        List<String> topics = new ArrayList<>();
-        topics.add(ORDER_RECEIVED_TOPIC);
-        topics.add(ORDER_RECEIVED_TOPIC_RETRY);
-        topics.add(ORDER_RECEIVED_TOPIC_ERROR);
-        consumerConfig.setTopics(topics);
         consumerConfig.setMaxRetries(MAX_RETRY_ATTEMPTS);
         consumerConfig.setKeyDeserializer(StringDeserializer.class.getName());
         consumerConfig.setValueDeserializer(StringDeserializer.class.getName());
-        consumerConfig.setGroupName(GROUP_NAME);
         consumerConfig.setResetOffset(false);
         consumerConfig.setBrokerAddresses(brokerAddresses.split(","));
         consumerConfig.setAutoCommit(true);

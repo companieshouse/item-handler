@@ -18,22 +18,27 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
+
 @Aspect
 @Service
 public class OrdersKafkaConsumerWrapper {
-    private static final Logger LOGGER = LoggerFactory.getLogger(OrdersKafkaConsumerWrapper.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private CountDownLatch latch = new CountDownLatch(1);
     private String orderUri;
     private String testType = "DEFAULT";
     @Value("${kafka.broker.addresses}")
     private String brokerAddresses;
     private KafkaTemplate<String, String> template;
-    public static final String ORDER_RECEIVED_RETRY_TOPIC = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC = "order-received";
+    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
 
     @Before(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.processOrderReceived(..)) && args(message)")
     public void beforeOrderProcessed(final String message) throws Exception {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @Before triggered");
+        // mock message processing exception for main listener
         if (this.testType.equals("RETRY")) {
             throw new Exception("Mock main listener exception");
         }
@@ -42,7 +47,8 @@ public class OrdersKafkaConsumerWrapper {
     @AfterThrowing(pointcut = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..))", throwing = "x")
     public void orderProcessedException(final Exception x) throws Throwable {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @AfterThrowing triggered");
-        setUpTestKafkaOrdersProducerAndSendMessageToRetryTopic();
+
+        setUpTestKafkaOrdersProducerAndSendMessageToTopic();
     }
 
     @After(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..)) && args(message)")
@@ -56,7 +62,7 @@ public class OrdersKafkaConsumerWrapper {
     String getOrderUri() { return orderUri; }
     void setTestType(String type) { this.testType = type;}
 
-    private void setUpTestKafkaOrdersProducerAndSendMessageToRetryTopic() {
+    private void setUpTestKafkaOrdersProducerAndSendMessageToTopic() {
         final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
 
         senderProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -64,8 +70,12 @@ public class OrdersKafkaConsumerWrapper {
         final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
 
         template = new KafkaTemplate<>(producerFactory);
-        template.setDefaultTopic(ORDER_RECEIVED_RETRY_TOPIC);
-
-        template.send(ORDER_RECEIVED_RETRY_TOPIC, ORDER_RECEIVED_URI);
+        if (this.testType.equals("RETRY")) {
+            template.setDefaultTopic(ORDER_RECEIVED_TOPIC_RETRY);
+            template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
+        } else if (this.testType.equals("ERROR")) {
+            template.setDefaultTopic(ORDER_RECEIVED_TOPIC_ERROR);
+            template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+        }
     }
 }

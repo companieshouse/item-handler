@@ -43,7 +43,9 @@ import static org.hamcrest.Matchers.is;
 @DirtiesContext
 @EmbeddedKafka
 public class OrdersKafkaConsumerIntegrationTest {
-    public static final String ORDER_RECEIVED_TOPIC = "order-received";
+    private static final String ORDER_RECEIVED_TOPIC = "order-received";
+    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String GROUP_NAME = "order-received-consumers";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
     @Value("${kafka.broker.addresses}")
@@ -119,10 +121,20 @@ public class OrdersKafkaConsumerIntegrationTest {
     public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, ExecutionException {
         // When
         final ListenableFuture<SendResult<String, String>> future =
-                template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+                template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
 
         // Then
         verifyProcessOrderReceivedInvoked("RETRY");
+    }
+
+    @Test
+    public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException {
+        // When
+        final ListenableFuture<SendResult<String, String>> future =
+                template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+
+        // Then
+        verifyProcessOrderReceivedInvoked("ERROR");
     }
 
     private void verifyProcessOrderReceivedInvoked(String type) throws InterruptedException {
