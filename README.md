@@ -11,9 +11,10 @@ Handler service dealing with placed orders and producing individual items to be 
 2. Run `./start.sh` to run
 
 ### Environment Variables
-Name | Description | Mandatory | Location
---- | --- | --- | ---
-ITEM_HANDLER_PORT | Port this application runs on when deployed. | ✓ | start.sh
+Name | Description | Mandatory | Default | Location
+--- | --- | --- | --- | ---
+ITEM_HANDLER_PORT | Port this application runs on when deployed. | ✓ |  | start.sh
+IS_ERROR_QUEUE_CONSUMER | Configures app to listen only to `order-received-error`. | ✓ | false | env var
 
 ### Endpoints
 Path | Method | Description
