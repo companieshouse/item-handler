@@ -38,7 +38,8 @@ public class OrdersKafkaConsumerWrapper {
     @Before(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.processOrderReceived(..)) && args(message)")
     public void beforeOrderProcessed(final String message) throws Exception {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @Before triggered");
-        // mock message processing exception for main listener
+        // mock message processing failure scenario for main listener
+        // so that the message can be published to alternate topics '-retry' and '-error'
         if (this.testType.equals("RETRY")) {
             throw new Exception("Mock main listener exception");
         }
@@ -48,6 +49,8 @@ public class OrdersKafkaConsumerWrapper {
     public void orderProcessedException(final Exception x) throws Throwable {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @AfterThrowing triggered");
 
+        // mock exception handler to demonstrate publishing of unprocessed
+        // message to alternate topics '-retry' and '-error'
         setUpTestKafkaOrdersProducerAndSendMessageToTopic();
     }
 
