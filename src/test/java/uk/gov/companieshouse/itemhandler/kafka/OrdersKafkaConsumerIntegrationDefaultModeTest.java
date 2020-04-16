@@ -5,10 +5,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,14 +19,11 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.concurrent.ListenableFuture;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 
 import java.util.HashMap;
@@ -39,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
@@ -62,14 +58,15 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     @Autowired
     private OrdersKafkaConsumerWrapper consumerWrapper;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setUpTestKafkaOrdersProducer();
         setUpTestKafkaOrdersConsumer();
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
+        consumerWrapper.reset();
         container.stop();
     }
 
@@ -110,38 +107,9 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     }
 
     @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessage() throws InterruptedException, ExecutionException {
-        // When
-        final ListenableFuture<SendResult<String, String>> future =
-                template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
-
-        // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
-    }
-
-    @Test
-    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, ExecutionException {
-        // When
-        final ListenableFuture<SendResult<String, String>> future =
-                template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
-
-        // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
-    }
-
-    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
-        consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
-        final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
-    }
-
-    @Test
     public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException {
         // When
-        final ListenableFuture<SendResult<String, String>> future =
-                template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+        template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
 
         // Then
         verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
@@ -153,5 +121,34 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, isEmptyOrNullString());
+    }
+
+    @Test
+    @DisplayName("order-received topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+    public void testOrdersConsumerReceivesOrderReceivedMessage() throws InterruptedException, ExecutionException {
+        // When
+        template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+    }
+
+    @Test
+    @DisplayName("order-received-retry topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, ExecutionException {
+        // When
+        template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
+    }
+
+    @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
+        consumerWrapper.setTestType(type);
+        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
+        final String processedOrderUri = consumerWrapper.getOrderUri();
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
     }
 }

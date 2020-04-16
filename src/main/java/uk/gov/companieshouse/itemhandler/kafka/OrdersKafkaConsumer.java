@@ -94,10 +94,10 @@ public class OrdersKafkaConsumer implements InitializingBean {
         try {
             logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x){
-            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY
                     + " failed with exception: " + x.getMessage());
             Message message = createRetryMessage(orderReceivedUri);
-            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
+            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY
                     + " to topic: " + ORDER_RECEIVED_TOPIC_ERROR);
             for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
                 chKafkaConsumerGroupRetry.retry(attempt, message);
