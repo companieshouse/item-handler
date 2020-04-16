@@ -107,6 +107,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     }
 
     @Test
+    @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
     public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException {
         // When
         template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
@@ -143,7 +144,6 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
     }
 
-    @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
