@@ -58,7 +58,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void errorListenerExceptionIsCorrectlyHandled() throws InterruptedException, ExecutionException, SerializationException {
+    public void errorListenerExceptionIsCorrectlyHandled() {
         // Given & When
         doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).processOrderReceivedError(ORDER_RECEIVED_URI);
         OrderProcessingException exception = Assertions.assertThrows(OrderProcessingException.class, () -> {
