@@ -78,7 +78,7 @@ public class OrdersKafkaConsumerWrapper {
     String getOrderUri() { return orderUri; }
     void setTestType(CHConsumerType type) { this.testType = type;}
     CHConsumerType getTestType() { return this.testType; }
-    void reset() { this.latch = new CountDownLatch(1); this.orderUri = null; }
+    void reset() { this.latch = new CountDownLatch(1); }
 
     private void setUpTestKafkaOrdersProducerAndSendMessageToTopic() {
         final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
