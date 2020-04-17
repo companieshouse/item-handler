@@ -11,6 +11,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHKafkaResilientConsumerGroup;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 
 import java.util.concurrent.ExecutionException;
 
@@ -28,6 +30,16 @@ public class OrdersKafkaConsumerTest {
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     @Mock
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
+    private static final String expectedMessageValue = "$/order/ORDER-12345";
+
+    @Test
+    public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
+        // Given & When
+        OrdersKafkaConsumer consumer = new OrdersKafkaConsumer(new SerializerFactory());
+        Message actualMessage = consumer.createRetryMessage(ORDER_RECEIVED_URI);
+        // Then
+        Assert.assertThat(actualMessage.getValue(), Matchers.is(expectedMessageValue.getBytes()));
+    }
 
     @Test
     public void mainListenerExceptionIsCorrectlyHandled() throws InterruptedException, ExecutionException, SerializationException {

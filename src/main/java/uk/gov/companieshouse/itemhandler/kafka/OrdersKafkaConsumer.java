@@ -142,7 +142,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         return config;
     }
 
-    private Message createRetryMessage(String orderUri) throws SerializationException {
+    protected Message createRetryMessage(String orderUri) throws SerializationException {
         final Message message = new Message();
         AvroSerializer serializer = serializerFactory.getGenericRecordSerializer(OrderReceived.class);
         OrderReceived orderReceived = new OrderReceived();
