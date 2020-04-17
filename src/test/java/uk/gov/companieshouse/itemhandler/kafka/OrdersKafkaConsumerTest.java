@@ -39,15 +39,17 @@ public class OrdersKafkaConsumerTest {
     private SerializerFactory serializerFactory;
     @Mock
     private AvroSerializer serializer;
-    private static final String expectedMessageValue = "$/order/ORDER-12345";
+    private static final String EXPECTED_MESSAGE_VALUE = "$/order/ORDER-12345";
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
         // Given & When
         OrdersKafkaConsumer consumerUnderTest = new OrdersKafkaConsumer(new SerializerFactory());
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI);
+        byte[] actualMessageRawValue    = actualMessage.getValue();
+        byte[] expectedMessageRawValue  = EXPECTED_MESSAGE_VALUE.getBytes();
         // Then
-        Assert.assertThat(actualMessage.getValue(), Matchers.is(expectedMessageValue.getBytes()));
+        Assert.assertThat(actualMessageRawValue, Matchers.is(expectedMessageRawValue));
     }
 
     @Test
