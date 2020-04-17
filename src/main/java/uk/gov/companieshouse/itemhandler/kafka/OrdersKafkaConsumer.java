@@ -37,6 +37,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     private static final String ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
     private static final String ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static final int MAX_RETRY_ATTEMPTS = 3;
+
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
     @Value("${kafka.broker.addresses}")
@@ -76,14 +77,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         try {
             logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC);
         } catch (Exception x){
-            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
-                    + " failed with exception: " + x.getMessage());
-            Message message = createRetryMessage(orderReceivedUri);
-            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC
-                    + " to topic: " + ORDER_RECEIVED_TOPIC_RETRY);
-            for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
-                chKafkaConsumerGroupMain.retry(attempt, message);
-            }
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, x.getMessage());
         }
     }
 
@@ -94,14 +88,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         try {
             logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x){
-            LOGGER.error("Processing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY
-                    + " failed with exception: " + x.getMessage());
-            Message message = createRetryMessage(orderReceivedUri);
-            LOGGER.info("Republishing message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_RETRY
-                    + " to topic: " + ORDER_RECEIVED_TOPIC_ERROR);
-            for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
-                chKafkaConsumerGroupRetry.retry(attempt, message);
-            }
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, x.getMessage());
         }
     }
 
@@ -142,6 +129,23 @@ public class OrdersKafkaConsumer implements InitializingBean {
         return config;
     }
 
+    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic, String errorMessage)
+            throws SerializationException, ExecutionException, InterruptedException {
+        LOGGER.error("Processing message: " + orderUri + " received on topic: " + currentTopic
+                + " failed with exception: " + errorMessage);
+        Message message = createRetryMessage(orderUri);
+        LOGGER.info("Republishing message: " + orderUri + " received on topic: " + currentTopic
+                + " to topic: " + nextTopic);
+        for (int attempt = 0; attempt < MAX_RETRY_ATTEMPTS; attempt++) {
+            if (currentTopic.equals(ORDER_RECEIVED_TOPIC)) {
+                chKafkaConsumerGroupMain.retry(attempt, message);
+            }
+            else if (currentTopic.equals(ORDER_RECEIVED_TOPIC_RETRY)) {
+                chKafkaConsumerGroupRetry.retry(attempt, message);
+            }
+        }
+    }
+
     protected Message createRetryMessage(String orderUri) throws SerializationException {
         final Message message = new Message();
         AvroSerializer serializer = serializerFactory.getGenericRecordSerializer(OrderReceived.class);
@@ -157,5 +161,13 @@ public class OrdersKafkaConsumer implements InitializingBean {
 
     private void logMessageReceived(String message, String topic){
         LOGGER.info(String.format("Message: %1$s received on topic: %2$s", message, topic));
+    }
+
+    public void setChKafkaConsumerGroupMain(CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain) {
+        this.chKafkaConsumerGroupMain = chKafkaConsumerGroupMain;
+    }
+
+    public void setChKafkaConsumerGroupRetry(CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry) {
+        this.chKafkaConsumerGroupRetry = chKafkaConsumerGroupRetry;
     }
 }

@@ -12,7 +12,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHKafkaResilientConsumerGroup;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+import uk.gov.companieshouse.orders.OrderReceived;
 
 import java.util.concurrent.ExecutionException;
 
@@ -22,6 +24,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class OrdersKafkaConsumerTest {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    private static final String ORDER_RECEIVED_TOPIC = "order-received";
+    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
 
     @Spy
     @InjectMocks
@@ -30,15 +35,43 @@ public class OrdersKafkaConsumerTest {
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     @Mock
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
+    @Mock
+    private SerializerFactory serializerFactory;
+    @Mock
+    private AvroSerializer serializer;
     private static final String expectedMessageValue = "$/order/ORDER-12345";
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
         // Given & When
-        OrdersKafkaConsumer consumer = new OrdersKafkaConsumer(new SerializerFactory());
-        Message actualMessage = consumer.createRetryMessage(ORDER_RECEIVED_URI);
+        OrdersKafkaConsumer consumerUnderTest = new OrdersKafkaConsumer(new SerializerFactory());
+        Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI);
         // Then
         Assert.assertThat(actualMessage.getValue(), Matchers.is(expectedMessageValue.getBytes()));
+    }
+
+    @Test
+    public void republishMessageToRetryTopicRunsSuccessfully() throws ExecutionException, InterruptedException, SerializationException {
+        // Given & When
+        ordersKafkaConsumer.setChKafkaConsumerGroupMain(chKafkaConsumerGroupMain);
+        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
+        when(serializer.toBinary(any())).thenReturn(new byte[4]);
+        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), anyString());
+        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, "error");
+        // Then
+        verify(chKafkaConsumerGroupMain, times(3)).retry(anyInt(), any());
+    }
+
+    @Test
+    public void republishMessageToErrorTopicRunsSuccessfully() throws ExecutionException, InterruptedException, SerializationException {
+        // Given & When
+        ordersKafkaConsumer.setChKafkaConsumerGroupRetry(chKafkaConsumerGroupRetry);
+        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
+        when(serializer.toBinary(any())).thenReturn(new byte[4]);
+        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), anyString());
+        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, "error");
+        // Then
+        verify(chKafkaConsumerGroupRetry, times(3)).retry(anyInt(), any());
     }
 
     @Test
