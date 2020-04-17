@@ -76,8 +76,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC);
-        } catch (Exception x){
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, x.getMessage());
+        } catch (Exception ex){
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ex);
         }
     }
 
@@ -87,8 +87,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
             throws SerializationException, ExecutionException, InterruptedException {
         try {
             logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
-        } catch (Exception x){
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, x.getMessage());
+        } catch (Exception ex){
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, ex);
         }
     }
 
@@ -129,10 +129,10 @@ public class OrdersKafkaConsumer implements InitializingBean {
         return config;
     }
 
-    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic, String errorMessage)
+    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic, Exception ex)
             throws SerializationException, ExecutionException, InterruptedException {
         LOGGER.error("Processing message: " + orderUri + " received on topic: " + currentTopic
-                + " failed with exception: " + errorMessage);
+                + " failed with exception: " + ex.getStackTrace());
         Message message = createRetryMessage(orderUri);
         LOGGER.info("Republishing message: " + orderUri + " received on topic: " + currentTopic
                 + " to topic: " + nextTopic);
@@ -163,11 +163,11 @@ public class OrdersKafkaConsumer implements InitializingBean {
         LOGGER.info(String.format("Message: %1$s received on topic: %2$s", message, topic));
     }
 
-    public void setChKafkaConsumerGroupMain(CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain) {
+    protected void setChKafkaConsumerGroupMain(CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain) {
         this.chKafkaConsumerGroupMain = chKafkaConsumerGroupMain;
     }
 
-    public void setChKafkaConsumerGroupRetry(CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry) {
+    protected void setChKafkaConsumerGroupRetry(CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry) {
         this.chKafkaConsumerGroupRetry = chKafkaConsumerGroupRetry;
     }
 }

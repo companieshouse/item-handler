@@ -56,8 +56,8 @@ public class OrdersKafkaConsumerTest {
         ordersKafkaConsumer.setChKafkaConsumerGroupMain(chKafkaConsumerGroupMain);
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), anyString());
-        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, "error");
+        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), any());
+        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, new OrderProcessingException());
         // Then
         verify(chKafkaConsumerGroupMain, times(3)).retry(anyInt(), any());
     }
@@ -68,8 +68,8 @@ public class OrdersKafkaConsumerTest {
         ordersKafkaConsumer.setChKafkaConsumerGroupRetry(chKafkaConsumerGroupRetry);
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), anyString());
-        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, "error");
+        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString(), any());
+        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, new OrderProcessingException());
         // Then
         verify(chKafkaConsumerGroupRetry, times(3)).retry(anyInt(), any());
     }
