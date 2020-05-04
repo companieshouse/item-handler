@@ -40,7 +40,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
 
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupMain;
     private CHKafkaResilientConsumerGroup chKafkaConsumerGroupRetry;
-    @Value("${kafka.broker.addresses}")
+    @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
     private final SerializerFactory serializerFactory;
 
@@ -119,7 +119,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
             config.setBrokerAddresses(brokerAddresses.split(","));
         } else {
             throw new ProducerConfigException("Broker addresses for kafka broker missing, check if environment variable KAFKA_BROKER_ADDR is configured. " +
-                    "[Hint: The property 'kafka.broker.addresses' uses the value of this environment variable in live environments " +
+                    "[Hint: The property 'spring.kafka.consumer.bootstrap-servers' uses the value of this environment variable in live environments " +
                     "and that of 'spring.embedded.kafka.brokers' property in test.]");
         }
 

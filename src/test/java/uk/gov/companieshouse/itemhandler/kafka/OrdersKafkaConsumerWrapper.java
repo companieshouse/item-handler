@@ -28,7 +28,7 @@ public class OrdersKafkaConsumerWrapper {
     private CountDownLatch latch = new CountDownLatch(1);
     private String orderUri;
     private CHConsumerType testType = CHConsumerType.MAIN_CONSUMER;
-    @Value("${kafka.broker.addresses}")
+    @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
     private KafkaTemplate<String, String> template;
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
