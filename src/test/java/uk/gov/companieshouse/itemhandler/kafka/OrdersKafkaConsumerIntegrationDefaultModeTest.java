@@ -44,7 +44,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String GROUP_NAME = "order-received-consumers";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    @Value("${kafka.broker.addresses}")
+    @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
 
     private KafkaTemplate<String, String> template;
