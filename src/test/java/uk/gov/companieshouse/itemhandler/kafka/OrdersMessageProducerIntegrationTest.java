@@ -28,7 +28,7 @@ public class OrdersMessageProducerIntegrationTest {
     OrderReceivedMessageProducer ordersMessageProducerUnderTest;
 
     @Autowired
-    OrdersMessageConsumer testOrdersMessageConsumer;
+    TestOrdersMessageConsumer testOrdersMessageConsumer;
 
     @Autowired
     SerializerFactory serializerFactory;

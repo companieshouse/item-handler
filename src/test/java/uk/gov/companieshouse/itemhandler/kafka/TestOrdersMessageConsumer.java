@@ -16,10 +16,10 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
 
 
 @Service
-public class OrdersMessageConsumer implements InitializingBean {
+public class TestOrdersMessageConsumer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private static final String EMAIL_SEND_TOPIC = "email-send";
-    private static final String GROUP_NAME = "order-received-consumers";
+    private static final String GROUP_NAME = "email-send-consumers";
     private CHKafkaConsumerGroup consumerGroup;
     // TODO GCI-931 Was @Value("${kafka.broker.addresses}")
     @Value("${spring.kafka.consumer.bootstrap-servers}")
