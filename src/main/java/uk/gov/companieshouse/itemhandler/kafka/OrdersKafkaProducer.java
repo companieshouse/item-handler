@@ -27,8 +27,8 @@ public class OrdersKafkaProducer implements InitializingBean {
     /**
      * Sends message to Kafka topic
      * @param message message
-     * @throws ExecutionException
-     * @throws InterruptedException
+     * @throws ExecutionException should something unexpected happen
+     * @throws InterruptedException should something unexpected happen
      */
     public void sendMessage(final Message message) throws ExecutionException, InterruptedException {
         LOGGER.trace("Sending message to kafka");

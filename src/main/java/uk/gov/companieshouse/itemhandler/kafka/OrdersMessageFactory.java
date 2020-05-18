@@ -27,7 +27,7 @@ public class OrdersMessageFactory {
 	 * Creates order-received avro message
 	 * @param orderReceived order-received object
 	 * @return order-received avro message
-	 * @throws SerializationException
+	 * @throws SerializationException should there be a failure to serialize the order received
 	 */
 	public Message createMessage(final OrderReceived orderReceived) throws SerializationException {
 		LOGGER.trace("Configuring CH Kafka producer");

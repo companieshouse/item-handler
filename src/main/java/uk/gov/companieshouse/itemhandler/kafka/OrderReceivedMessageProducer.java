@@ -25,9 +25,9 @@ public class OrderReceivedMessageProducer {
     /**
      * Sends order-received message to CHKafkaProducer
      * @param orderReceived order-received object
-     * @throws SerializationException
-     * @throws ExecutionException
-     * @throws InterruptedException
+     * @throws SerializationException should there be a failure to serialize the order received
+     * @throws ExecutionException should something unexpected happen
+     * @throws InterruptedException should something unexpected happen
      */
     public void sendMessage(final OrderReceived orderReceived)
             throws SerializationException, ExecutionException, InterruptedException {
