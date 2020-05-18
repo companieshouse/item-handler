@@ -35,7 +35,7 @@ public class OrdersMessageConsumer implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         LOGGER.debug("Initializing kafka consumer service " + this.toString());
 
         ConsumerConfig consumerConfig = new ConsumerConfig();

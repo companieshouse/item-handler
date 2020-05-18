@@ -36,7 +36,7 @@ public class OrdersKafkaProducer implements InitializingBean {
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         LOGGER.trace("Configuring CH Kafka producer");
         ProducerConfig config = new ProducerConfig();
         if (brokerAddresses != null && !brokerAddresses.isEmpty()) {
