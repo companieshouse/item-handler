@@ -17,7 +17,7 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
 public class OrdersMessageFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 	private final SerializerFactory serializerFactory;
-	private static final String ORDER_RECEIVED_TOPIC = "order-received";
+	private static final String EMAIL_SEND_TOPIC = "email-send";
 
 	public OrdersMessageFactory(SerializerFactory serializer) {
 		serializerFactory = serializer;
@@ -35,7 +35,7 @@ public class OrdersMessageFactory {
 				serializerFactory.getGenericRecordSerializer(OrderReceived.class);
 		final Message message = new Message();
 		message.setValue(serializer.toBinary(orderReceived));
-		message.setTopic(ORDER_RECEIVED_TOPIC);
+		message.setTopic(EMAIL_SEND_TOPIC);
 		message.setTimestamp(new Date().getTime());
 		return message;
 	}

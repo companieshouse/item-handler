@@ -18,7 +18,7 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
 @Service
 public class OrdersMessageConsumer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
-    private static final String ORDER_RECEIVED_TOPIC = "order-received";
+    private static final String EMAIL_SEND_TOPIC = "email-send";
     private static final String GROUP_NAME = "order-received-consumers";
     private CHKafkaConsumerGroup consumerGroup;
     // TODO GCI-931 Was @Value("${kafka.broker.addresses}")
@@ -39,7 +39,7 @@ public class OrdersMessageConsumer implements InitializingBean {
         LOGGER.debug("Initializing kafka consumer service " + this.toString());
 
         ConsumerConfig consumerConfig = new ConsumerConfig();
-        consumerConfig.setTopics(singletonList(ORDER_RECEIVED_TOPIC));
+        consumerConfig.setTopics(singletonList(EMAIL_SEND_TOPIC));
         consumerConfig.setGroupName(GROUP_NAME);
         consumerConfig.setResetOffset(false);
         consumerConfig.setBrokerAddresses(kafkaBrokerAddresses.split(","));
