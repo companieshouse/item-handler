@@ -55,8 +55,7 @@ public class TestController {
         confirmation.setHouseNumberStreetName("152-160 City Road");
         confirmation.setCity("London");
         confirmation.setPostCode("EC1V 2NX");
-        // TODO GCI-931 What is the format of this order reference number?
-        confirmation.setOrderReferenceNumber("123");
+        confirmation.setOrderReferenceNumber("ORD-432118-793830");
         confirmation.setEmailAddress("mail@globaloffshore.com");
         confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setFeeAmount("15");
