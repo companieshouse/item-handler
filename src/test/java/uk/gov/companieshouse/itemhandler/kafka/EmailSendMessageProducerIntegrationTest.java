@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -14,6 +13,7 @@ import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +25,9 @@ import static org.junit.Assert.assertEquals;
 @DirtiesContext
 @EmbeddedKafka
 public class EmailSendMessageProducerIntegrationTest {
+
+    private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =
+            DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm");
 
     @Autowired
     EmailSendMessageProducer emailSendMessageProducerUnderTest;
@@ -60,8 +63,7 @@ public class EmailSendMessageProducerIntegrationTest {
         confirmation.setEmailAddress("mail@globaloffshore.com");
         confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setFeeAmount("15");
-        // TODO GCI-931 check date time format
-        confirmation.setTimeOfPayment(LocalDateTime.now().toString());
+        confirmation.setTimeOfPayment(TIME_OF_PAYMENT_FORMATTER.format(LocalDateTime.now()));
         confirmation.setPaymentReference("RS5VSNDRE");
         confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
         confirmation.setCompanyNumber("11260147");

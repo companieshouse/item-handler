@@ -15,6 +15,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -27,6 +28,9 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
 public class TestController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
+
+    private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =
+            DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm");
 
     @Autowired
     EmailSendMessageProducer emailSendMessageProducer;
@@ -56,8 +60,7 @@ public class TestController {
         confirmation.setEmailAddress("mail@globaloffshore.com");
         confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setFeeAmount("15");
-        // TODO GCI-931 check date time format
-        confirmation.setTimeOfPayment(LocalDateTime.now().toString());
+        confirmation.setTimeOfPayment(TIME_OF_PAYMENT_FORMATTER.format(LocalDateTime.now()));
         confirmation.setPaymentReference("RS5VSNDRE");
         confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
         confirmation.setCompanyNumber("11260147");
