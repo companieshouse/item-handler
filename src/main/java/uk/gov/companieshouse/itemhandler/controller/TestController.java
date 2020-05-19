@@ -35,10 +35,12 @@ public class TestController {
     ObjectMapper objectMapper;
 
     @GetMapping("/test")
-    public ResponseEntity<Void> getHealthCheck () throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
+    public ResponseEntity<Void> test() throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
         LOGGER.info("Test invoked.");
 
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
+        confirmation.setTo("lmccarthy@companieshouse.gov.uk");
+
         confirmation.setTitle("Miss");
         confirmation.setForename("Jenny");
         confirmation.setSurname("Wilson");
@@ -69,10 +71,10 @@ public class TestController {
         });
 
         final EmailSend email = new EmailSend();
-        email.setAppId("chs.orders.item-handler");
+        email.setAppId("item-handler.certificate-order-confirmation");
         email.setEmailAddress("test@test.com"); // TODO GCI-931 Make some of these configurable
         email.setMessageId(UUID.randomUUID().toString());
-        email.setMessageType("certificate-order-confirmation");
+        email.setMessageType("certificate_order_confirmation_email");
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 

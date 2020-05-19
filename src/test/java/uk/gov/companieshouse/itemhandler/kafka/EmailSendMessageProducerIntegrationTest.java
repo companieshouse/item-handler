@@ -24,7 +24,6 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties="uk.gov.companieshouse.orders.api.order=/order")
 public class EmailSendMessageProducerIntegrationTest {
 
     @Autowired
@@ -44,6 +43,8 @@ public class EmailSendMessageProducerIntegrationTest {
 
         // Given an EmailSend object is created
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
+        confirmation.setTo("lmccarthy@companieshouse.gov.uk");
+
         confirmation.setTitle("Miss");
         confirmation.setForename("Jenny");
         confirmation.setSurname("Wilson");
@@ -75,10 +76,10 @@ public class EmailSendMessageProducerIntegrationTest {
 
         final EmailSend email = new EmailSend();
         // TODO GCI-931 Is this app id as registered?
-        email.setAppId("chs.orders.item-handler");
+        email.setAppId("item-handler.certificate-order-confirmation");
         email.setEmailAddress("test@test.com");
         email.setMessageId(UUID.randomUUID().toString());
-        email.setMessageType("certificate-order-confirmation");
+        email.setMessageType("certificate_order_confirmation_email");
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 

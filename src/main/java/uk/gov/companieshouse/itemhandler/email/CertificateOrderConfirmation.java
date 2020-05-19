@@ -5,6 +5,7 @@ package uk.gov.companieshouse.itemhandler.email;
  */
 public class CertificateOrderConfirmation {
 
+    private String to;
     private String title;
     private String forename;
     private String surname;
@@ -23,6 +24,14 @@ public class CertificateOrderConfirmation {
     private String companyNumber;
     private String certificateType;
     private String[] certificateIncludes;
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
 
     public String getTitle() {
         return title;
