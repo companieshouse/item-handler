@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.email;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * An instance of this holds the information required to generate a certificate order confirmation email.
  */
@@ -9,7 +11,9 @@ public class CertificateOrderConfirmation {
     private String title;
     private String forename;
     private String surname;
+    @JsonProperty("address_line_1")
     private String addressLine1;
+    @JsonProperty("address_line_2")
     private String addressLine2;
     private String houseName;
     private String city;
