@@ -52,7 +52,7 @@ public class EmailSendMessageProducerIntegrationTest {
         confirmation.setAddressLine1("Kemp House Capital Office");
         confirmation.setAddressLine2("LTD");
         confirmation.setHouseName("Kemp House");
-        // TODO GCI-931 Do we need an extra line in the address? Where do we put 152-160 City Road?
+        confirmation.setHouseNumberStreetName("152-160 City Road");
         confirmation.setCity("London");
         confirmation.setPostCode("EC1V 2NX");
         // TODO GCI-931 What is the format of this order reference number?

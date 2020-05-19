@@ -16,6 +16,7 @@ public class CertificateOrderConfirmation {
     @JsonProperty("address_line_2")
     private String addressLine2;
     private String houseName;
+    private String houseNumberStreetName;
     private String city;
     private String postCode;
     private String orderReferenceNumber;
@@ -83,6 +84,14 @@ public class CertificateOrderConfirmation {
 
     public void setHouseName(String houseName) {
         this.houseName = houseName;
+    }
+
+    public String getHouseNumberStreetName() {
+        return houseNumberStreetName;
+    }
+
+    public void setHouseNumberStreetName(String houseNumberStreetName) {
+        this.houseNumberStreetName = houseNumberStreetName;
     }
 
     public String getCity() {
