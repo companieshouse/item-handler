@@ -24,7 +24,8 @@
 		<hamcrest-all-version>1.3</hamcrest-all-version>
 		<start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 		<private-api-sdk-java.version>2.0.28</private-api-sdk-java.version>
-		<api-sdk-manager-java-library.version>1.0.3</api-sdk-manager-java-library.version>
+		<!-- TODO GCI-931 Make this 1.0.3+ -->
+		<api-sdk-manager-java-library.version>unversioned</api-sdk-manager-java-library.version>
 		<api-sdk-java.version>4.1.48</api-sdk-java.version>
 		<!-- TODO GCI-931 Make this 1.0.14 -->
 		<kafka-models.version>unversioned</kafka-models.version>
