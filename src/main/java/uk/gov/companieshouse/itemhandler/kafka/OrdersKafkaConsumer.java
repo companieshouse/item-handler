@@ -5,6 +5,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
 import uk.gov.companieshouse.kafka.consumer.ConsumerConfig;
 import uk.gov.companieshouse.kafka.consumer.factory.KafkaConsumerFactory;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
@@ -43,9 +45,12 @@ public class OrdersKafkaConsumer implements InitializingBean {
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
     private final SerializerFactory serializerFactory;
+    private final OrdersApiClientService ordersApi;
 
-    public OrdersKafkaConsumer(SerializerFactory serializerFactory) {
+    public OrdersKafkaConsumer(final SerializerFactory serializerFactory,
+                               final OrdersApiClientService ordersApi) {
         this.serializerFactory = serializerFactory;
+        this.ordersApi = ordersApi;
     }
 
     @Override
@@ -75,7 +80,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     public void processOrderReceived(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
-            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC);
+            processOrderReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC);
         } catch (Exception ex){
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ex);
         }
@@ -86,7 +91,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     public void processOrderReceivedRetry(String orderReceivedUri)
             throws SerializationException, ExecutionException, InterruptedException {
         try {
-            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
+            processOrderReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception ex){
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, ex);
         }
@@ -96,10 +101,24 @@ public class OrdersKafkaConsumer implements InitializingBean {
             autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}")
     public void processOrderReceivedError(String orderReceivedUri) {
         try {
-            logMessageReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR);
+            processOrderReceived(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR);
         } catch (Exception x){
             LOGGER.error("Message: " + orderReceivedUri + " received on topic: " + ORDER_RECEIVED_TOPIC_ERROR + " could not be processed.");
         }
+    }
+
+    // TODO GCI-931 Exceptions?
+    private void processOrderReceived(final String orderUri, final String topicName) {
+        logMessageReceived(orderUri, topicName);
+        // TODO GCI-931 Refactor
+        final OrderData order;
+        try {
+            order = ordersApi.getOrderData(orderUri);
+            LOGGER.info("Order data got = " + order);
+        } catch (Exception ex) {
+            LOGGER.error("Exception caught getting order data.", ex);
+        }
+
     }
 
     private ConsumerConfig getConsumerConfig() {
