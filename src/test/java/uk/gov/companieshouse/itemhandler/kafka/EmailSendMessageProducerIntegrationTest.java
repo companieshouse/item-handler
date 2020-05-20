@@ -76,7 +76,6 @@ public class EmailSendMessageProducerIntegrationTest {
         });
 
         final EmailSend email = new EmailSend();
-        // TODO GCI-931 Is this app id as registered?
         email.setAppId("item-handler.certificate-order-confirmation");
         email.setEmailAddress("test@test.com");
         email.setMessageId(UUID.randomUUID().toString());
