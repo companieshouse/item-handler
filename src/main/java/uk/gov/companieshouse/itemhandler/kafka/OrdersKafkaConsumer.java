@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
 import uk.gov.companieshouse.kafka.consumer.ConsumerConfig;
 import uk.gov.companieshouse.kafka.consumer.factory.KafkaConsumerFactory;
@@ -46,11 +47,14 @@ public class OrdersKafkaConsumer implements InitializingBean {
     private String brokerAddresses;
     private final SerializerFactory serializerFactory;
     private final OrdersApiClientService ordersApi;
+    private final EmailService emailer;
 
     public OrdersKafkaConsumer(final SerializerFactory serializerFactory,
-                               final OrdersApiClientService ordersApi) {
+                               final OrdersApiClientService ordersApi,
+                               final EmailService emailer) {
         this.serializerFactory = serializerFactory;
         this.ordersApi = ordersApi;
+        this.emailer = emailer;
     }
 
     @Override
@@ -114,7 +118,8 @@ public class OrdersKafkaConsumer implements InitializingBean {
         final OrderData order;
         try {
             order = ordersApi.getOrderData(orderUri);
-            LOGGER.info("Order data got = " + order);
+            LOGGER.info("Order data got = " + order); // TODO GCI-931 Avoid logging whole object.
+            emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
             LOGGER.error("Exception caught getting order data.", ex);
         }

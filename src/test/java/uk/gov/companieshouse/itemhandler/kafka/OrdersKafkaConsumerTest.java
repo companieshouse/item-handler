@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHKafkaResilientConsumerGroup;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -43,11 +44,13 @@ public class OrdersKafkaConsumerTest {
     private static final String EXPECTED_MESSAGE_VALUE = "$/order/ORDER-12345";
     @Mock
     OrdersApiClientService ordersApi;
+    @Mock
+    EmailService emailer;
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
         // Given & When
-        OrdersKafkaConsumer consumerUnderTest = new OrdersKafkaConsumer(new SerializerFactory(), ordersApi);
+        OrdersKafkaConsumer consumerUnderTest = new OrdersKafkaConsumer(new SerializerFactory(), ordersApi, emailer);
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         byte[] expectedMessageRawValue  = EXPECTED_MESSAGE_VALUE.getBytes();
