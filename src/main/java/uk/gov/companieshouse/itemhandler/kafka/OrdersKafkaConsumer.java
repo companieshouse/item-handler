@@ -55,9 +55,9 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     /**
-     * `order-received` topic listener/consumer. Calls a `retryable` method to process received message.
+     * Main listener/consumer. Calls a `retryable` method to process received message.
      * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to `order-received-retry` topic for failover processing.
+     * the message is published to `order-received-error` topic for failover processing.
      * @param message
      * @throws SerializationException
      * @throws ExecutionException
@@ -75,15 +75,15 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
             logMessageProcessed(message, ORDER_RECEIVED_TOPIC);
         } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ex);
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY);
+            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_ERROR, ex);
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, x);
+            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC, x);
         }
     }
 
     /**
-     * `order-received-retry` topic listener/consumer. Calls a `retryable` method to process received message.
+     * Retry (`-retry`) listener/consumer. Calls a `retryable` method to process received message.
      * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
      * the message is published to `-error` topic for failover processing.
      * @param message
@@ -106,12 +106,12 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, ex);
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, x);
+            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, x);
         }
     }
 
     /**
-     * `order-received-error` topic listener/consumer is enabled when the application is launched in error
+     * Error (`-error`) topic listener/consumer is enabled when the application is launched in error
      * mode (IS_ERROR_QUEUE_CONSUMER=true). Receives messages up to `ERROR_RECOVERY_OFFSET` offset. Calls a `retryable`
      * method to process received message. If the `retryable` processor is unsuccessful with a `retryable` error, after
      * maximum numbers of attempts allowed, the message is republished to `-retry` topic for failover processing.
@@ -136,7 +136,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY, ex);
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY, x);
+            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, x);
         } finally {
             long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
             if (offset >= ERROR_RECOVERY_OFFSET) {
@@ -162,11 +162,11 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     private void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
-                                                           String currentTopic, String nextTopic, Exception exception) {
+                                                           String currentTopic, Exception exception) {
         OrderReceived msg = message.getPayload();
         LOGGER.error(String.format("order-received message: [orderUri: \"%1$s\", %2$s] from topic: \"%3$s\" " +
                         "has failed processing with a non-recoverable exception is - \n%4$s",
-                msg.getOrderUri(), getMessageHeadersAsString(message), currentTopic, nextTopic, exception.getStackTrace()));
+                msg.getOrderUri(), getMessageHeadersAsString(message), currentTopic, exception.getStackTrace()));
     }
 
     private String getMessageHeadersAsString(org.springframework.messaging.Message<OrderReceived> message){
