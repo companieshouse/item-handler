@@ -207,6 +207,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         return message;
     }
 
+    private static void updateErrorRecoveryOffset(long offset){
+        ERROR_RECOVERY_OFFSET = offset;
+    }
+
     /**
      * Sets ERROR_RECOVERY_OFFSET to latest topic offset (error topic) minus 1, before error consumer starts. This
      * helps the error consumer to stop consuming messages when all messages up to ERROR_RECOVERY_OFFSET are processed.
@@ -221,7 +225,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                 map.forEach(
                         (topic, action) ->
                         {
-                            ERROR_RECOVERY_OFFSET = topicPartitionsMap.get(topic) - 1;
+                            updateErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
                             consumerSeekCallback.seek(topic.topic(), topic.partition(), ERROR_RECOVERY_OFFSET);
                             LOGGER.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", ERROR_RECOVERY_OFFSET));
                         }
@@ -231,10 +235,14 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     @Override
-    public void registerSeekCallback(ConsumerSeekCallback consumerSeekCallback) {}
+    public void registerSeekCallback(ConsumerSeekCallback consumerSeekCallback) {
+        // Do nothing as not required for this implementation
+    }
 
     @Override
-    public void onIdleContainer(Map<TopicPartition, Long> map, ConsumerSeekCallback consumerSeekCallback) {}
+    public void onIdleContainer(Map<TopicPartition, Long> map, ConsumerSeekCallback consumerSeekCallback) {
+        // Do nothing as not required for this implementation
+    }
 
     private Map errorConsumerConfigs() {
         Map props = new HashMap();
