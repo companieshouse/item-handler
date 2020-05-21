@@ -208,7 +208,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     /**
-     * Sets ERROR_RECOVERY_OFFSET to last read message offset (error topic) minus 1, before error consumer starts. This
+     * Sets ERROR_RECOVERY_OFFSET to latest topic offset (error topic) minus 1, before error consumer starts. This
      * helps the error consumer to stop consuming messages when all messages up to ERROR_RECOVERY_OFFSET are processed.
      * @param map map of topics and partitions
      * @param consumerSeekCallback callback that allows a consumers offset position to be moved.
