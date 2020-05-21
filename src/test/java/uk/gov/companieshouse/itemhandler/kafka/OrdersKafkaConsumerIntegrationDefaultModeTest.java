@@ -44,6 +44,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String GROUP_NAME = "order-received-consumers";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\"}";
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
 
@@ -118,7 +119,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
-        final String processedOrderUri = consumerWrapper.getOrderUri();
+        String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, isEmptyOrNullString());
     }
 
@@ -146,7 +147,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
-        final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
+        String processedOrderUri = consumerWrapper.getOrderUri();
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
     }
 }

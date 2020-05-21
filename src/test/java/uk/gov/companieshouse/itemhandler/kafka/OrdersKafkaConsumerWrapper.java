@@ -6,18 +6,22 @@ import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
+import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
@@ -30,11 +34,16 @@ public class OrdersKafkaConsumerWrapper {
     private CHConsumerType testType = CHConsumerType.MAIN_CONSUMER;
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
-    private KafkaTemplate<String, String> template;
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    @Autowired
+    private OrdersKafkaProducer ordersKafkaProducer;
+    @Autowired
+    private OrdersKafkaConsumer ordersKafkaConsumer;
+    @Autowired
+    private SerializerFactory serializerFactory;
 
     /**
      * mock message processing failure scenario for main listener
@@ -43,7 +52,7 @@ public class OrdersKafkaConsumerWrapper {
      * @throws Exception
      */
     @Before(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.processOrderReceived(..)) && args(message)")
-    public void beforeOrderProcessed(final String message) throws Exception {
+    public void beforeOrderProcessed(final Message message) throws Exception {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @Before triggered");
         if (this.testType != CHConsumerType.MAIN_CONSUMER) {
             throw new Exception("Mock main listener exception");
@@ -68,10 +77,10 @@ public class OrdersKafkaConsumerWrapper {
      * @param message
      */
     @After(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..)) && args(message)")
-    public void afterOrderProcessed(final String message){
+    public void afterOrderProcessed(final Message message){
         LOGGER.info("OrdersKafkaConsumer.processOrderReceivedRetry() @After triggered");
+        this.orderUri = "" + message.getPayload();
         latch.countDown();
-        this.orderUri = message;
     }
 
     CountDownLatch getLatch() { return latch; }
@@ -80,23 +89,20 @@ public class OrdersKafkaConsumerWrapper {
     CHConsumerType getTestType() { return this.testType; }
     void reset() { this.latch = new CountDownLatch(1); }
 
-    private void setUpTestKafkaOrdersProducerAndSendMessageToTopic() {
+    private void setUpTestKafkaOrdersProducerAndSendMessageToTopic()
+            throws SerializationException, ExecutionException, InterruptedException {
         final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
 
         senderProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
 
         final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
 
-        template = new KafkaTemplate<>(producerFactory);
         if (this.testType == CHConsumerType.MAIN_CONSUMER) {
-            template.setDefaultTopic(ORDER_RECEIVED_TOPIC);
-            template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
         } else if (this.testType == CHConsumerType.RETRY_CONSUMER) {
-            template.setDefaultTopic(ORDER_RECEIVED_TOPIC_RETRY);
-            template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
+            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
         } else if (this.testType == CHConsumerType.ERROR_CONSUMER) {
-            template.setDefaultTopic(ORDER_RECEIVED_TOPIC_ERROR);
-            template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
         }
     }
 }
