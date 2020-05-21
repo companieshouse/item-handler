@@ -57,7 +57,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     /**
      * Main listener/consumer. Calls a `retryable` method to process received message.
      * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to `order-received-error` topic for failover processing.
+     * the message is published to `-error` topic for failover processing.
      * @param message
      * @throws SerializationException
      * @throws ExecutionException
@@ -147,13 +147,13 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         }
     }
 
-    private void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message, String topic){
+    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message, String topic){
         OrderReceived msg = message.getPayload();
         LOGGER.info(String.format("'order-received' message: [orderUri: \"%1$s\", %2$s] received from topic: \"%3$s\".",
                 msg.getOrderUri(), getMessageHeadersAsString(message), topic));
     }
 
-    private void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
+    protected void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
                                                         String currentTopic, String nextTopic, Exception exception) {
         OrderReceived msg = message.getPayload();
         LOGGER.error(String.format("'order-received' message: [orderUri: \"%1$s\", %2$s] from topic: \"%3$s\" " +
@@ -161,7 +161,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                 msg.getOrderUri(), getMessageHeadersAsString(message), currentTopic, nextTopic, exception.getStackTrace()));
     }
 
-    private void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
+    protected void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
                                                            String currentTopic, Exception exception) {
         OrderReceived msg = message.getPayload();
         LOGGER.error(String.format("order-received message: [orderUri: \"%1$s\", %2$s] from topic: \"%3$s\" " +
