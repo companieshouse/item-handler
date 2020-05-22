@@ -53,7 +53,7 @@ public class OrdersKafkaConsumerTest {
     public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
         // Given & When
         OrdersKafkaConsumer consumerUnderTest =
-                new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer(), new KafkaListenerEndpointRegistry());
+                new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer());
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         byte[] expectedMessageRawValue  = EXPECTED_MESSAGE_VALUE.getBytes();

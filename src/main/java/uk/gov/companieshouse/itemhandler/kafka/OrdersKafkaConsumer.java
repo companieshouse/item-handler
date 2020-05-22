@@ -6,7 +6,6 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
@@ -43,14 +42,11 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private boolean errorConsumerEnabled;
     private final SerializerFactory serializerFactory;
     private final OrdersKafkaProducer kafkaProducer;
-    private final KafkaListenerEndpointRegistry registry;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
-                               OrdersKafkaProducer kafkaProducer,
-                               KafkaListenerEndpointRegistry registry) {
+                               OrdersKafkaProducer kafkaProducer) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
-        this.registry = registry;
     }
 
     /**
@@ -103,29 +99,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message){
         LOGGER.info(String.format("'order-received' message received \"%1$s\".",
                 getMessageHeadersAsMap(message).toString()));
-    }
-
-    protected void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
-                                                        String nextTopic, Exception exception) {
-        OrderReceived msg = message.getPayload();
-        Map<String, String> dataMap = getMessageHeadersAsMap(message);
-        dataMap.put("next_topic", nextTopic);
-        dataMap.put("stack_trace", exception.getStackTrace().toString());
-        LOGGER.error(
-                String.format("'order-received' message processing failed with a recoverable exception. \n%1$s",
-                        dataMap.toString())
-        );
-    }
-
-    protected void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
-                                                           Exception exception) {
-        OrderReceived msg = message.getPayload();
-        Map<String, String> dataMap = getMessageHeadersAsMap(message);
-        dataMap.put("stack_trace", exception.getStackTrace().toString());
-        LOGGER.error(
-                String.format("order-received message processing failed with a non-recoverable exception. \n%1$s",
-                        dataMap.toString())
-        );
     }
 
     private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message){
