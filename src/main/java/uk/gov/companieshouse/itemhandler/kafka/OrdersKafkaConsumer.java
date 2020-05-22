@@ -71,14 +71,14 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         OrderReceived orderReceived = message.getPayload();
         String orderReceivedUri = orderReceived.getOrderUri();
         try {
-            logMessageReceived(message, ORDER_RECEIVED_TOPIC);
+            logMessageReceived(message);
 
-            logMessageProcessed(message, ORDER_RECEIVED_TOPIC);
+            logMessageProcessed(message);
         } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_ERROR, ex);
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
+            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ex);
+            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC, x);
+            logMessageProcessingFailureNonRecoverable(message, x);
         }
     }
 
@@ -99,14 +99,14 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         OrderReceived orderReceived = message.getPayload();
         String orderReceivedUri = orderReceived.getOrderUri();
         try {
-            logMessageReceived(message, ORDER_RECEIVED_TOPIC_RETRY);
+            logMessageReceived(message);
 
-            logMessageProcessed(message, ORDER_RECEIVED_TOPIC_RETRY);
+            logMessageProcessed(message);
         } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR, ex);
+            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, ex);
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, x);
+            logMessageProcessingFailureNonRecoverable(message, x);
         }
     }
 
@@ -129,14 +129,14 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         OrderReceived orderReceived = message.getPayload();
         String orderReceivedUri = orderReceived.getOrderUri();
         try {
-            logMessageReceived(message, ORDER_RECEIVED_TOPIC_ERROR);
+            logMessageReceived(message);
 
-            logMessageProcessed(message, ORDER_RECEIVED_TOPIC_ERROR);
+            logMessageProcessed(message);
         } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY, ex);
+            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ex);
             republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY);
         } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, x);
+            logMessageProcessingFailureNonRecoverable(message, x);
         } finally {
             long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
             if (offset >= ERROR_RECOVERY_OFFSET) {
@@ -147,42 +147,47 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         }
     }
 
-    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message, String topic){
-        OrderReceived msg = message.getPayload();
-        LOGGER.info(String.format("'order-received' message: [orderUri: \"%1$s\", %2$s] received from topic: \"%3$s\".",
-                msg.getOrderUri(), getMessageHeadersAsString(message), topic));
+    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message){
+        LOGGER.info(String.format("'order-received' message received \"%1$s\".",
+                getMessageHeadersAsMap(message).toString()));
     }
 
     protected void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
-                                                        String currentTopic, String nextTopic, Exception exception) {
+                                                        String nextTopic, Exception exception) {
         OrderReceived msg = message.getPayload();
-        LOGGER.error(String.format("'order-received' message: [orderUri: \"%1$s\", %2$s] from topic: \"%3$s\" " +
-                        "has failed processing. Publishing to topic \"%4$s\" for recovery. Recoverable exception is - \n%4$s",
-                msg.getOrderUri(), getMessageHeadersAsString(message), currentTopic, nextTopic, exception.getStackTrace()));
+        Map<String, String> dataMap = getMessageHeadersAsMap(message);
+        dataMap.put("next_topic", nextTopic);
+        dataMap.put("stack_trace", exception.getStackTrace().toString());
+        LOGGER.error(
+                String.format("'order-received' message processing failed with a recoverable exception. \n%1$s",
+                        dataMap.toString())
+        );
     }
 
     protected void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
-                                                           String currentTopic, Exception exception) {
+                                                           Exception exception) {
         OrderReceived msg = message.getPayload();
-        LOGGER.error(String.format("order-received message: [orderUri: \"%1$s\", %2$s] from topic: \"%3$s\" " +
-                        "has failed processing with a non-recoverable exception is - \n%4$s",
-                msg.getOrderUri(), getMessageHeadersAsString(message), currentTopic, exception.getStackTrace()));
+        Map<String, String> dataMap = getMessageHeadersAsMap(message);
+        dataMap.put("stack_trace", exception.getStackTrace().toString());
+        LOGGER.error(
+                String.format("order-received message processing failed with a non-recoverable exception. \n%1$s",
+                        dataMap.toString())
+        );
     }
 
-    private String getMessageHeadersAsString(org.springframework.messaging.Message<OrderReceived> message){
+    private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message){
+        LOGGER.info(String.format("Order received message successfully processed. %1$s",
+                getMessageHeadersAsMap(message).toString()));
+    }
+
+    private Map<String, String> getMessageHeadersAsMap(org.springframework.messaging.Message<OrderReceived> message){
+        Map<String, String> dataMap = new HashMap<>();
         MessageHeaders messageHeaders = message.getHeaders();
-        String offset = "" + messageHeaders.get("kafka_offset");
-        String key = "" + messageHeaders.get("kafka_receivedMessageKey");
-        String partition = "" + messageHeaders.get("kafka_receivedPartitionId");
+        dataMap.put("data.key", "" + messageHeaders.get("kafka_receivedMessageKey"));
+        dataMap.put("data.offset", "" + messageHeaders.get("kafka_offset"));
+        dataMap.put("data.partition", "" + messageHeaders.get("kafka_receivedPartitionId"));
 
-        return String.format("key: \"%1$s\", offset: %2$s, partition: %3$s", key, offset, partition);
-    }
-
-    private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message, String topic){
-        OrderReceived msg = message.getPayload();
-        LOGGER.info(String.format("Order received message: [orderReceivedUri: \"%1$s\", %2$s] received from topic: \"%3$s\" " +
-                        "successfully processed.",
-                msg.getOrderUri(), getMessageHeadersAsString(message), topic));
+        return dataMap;
     }
 
     protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic)

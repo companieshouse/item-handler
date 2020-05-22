@@ -91,7 +91,7 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceived(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -101,7 +101,7 @@ public class OrdersKafkaConsumerTest {
     public void republishMessageNotCalledOnServiceExceptionMain()
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
-        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceived(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -113,7 +113,7 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceived(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -123,7 +123,7 @@ public class OrdersKafkaConsumerTest {
     public void republishMessageNotCalledOnServiceExceptionRetry()
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
-        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceivedRetry(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -135,7 +135,7 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new ServiceException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceived(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -146,7 +146,7 @@ public class OrdersKafkaConsumerTest {
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
         when(registry.getListenerContainer(anyString())).thenReturn(container);
-        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), anyString());
+        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.processOrderReceivedError(createTestMessage());
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
