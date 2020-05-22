@@ -8,9 +8,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.ConsumerSeekAware;
+import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
@@ -57,7 +58,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     /**
      * Main listener/consumer. Calls a `retryable` method to process received message.
      * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to `-error` topic for failover processing.
+     * the message is published to `-retry` topic for failover processing.
      * @param message
      * @throws SerializationException
      * @throws ExecutionException
@@ -68,18 +69,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
     public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message)
             throws SerializationException, ExecutionException, InterruptedException {
-        OrderReceived orderReceived = message.getPayload();
-        String orderReceivedUri = orderReceived.getOrderUri();
-        try {
-            logMessageReceived(message);
-
-            logMessageProcessed(message);
-        } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ex);
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY);
-        } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, x);
-        }
+        handleMessage(message);
     }
 
     /**
@@ -96,18 +86,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
     public void processOrderReceivedRetry(org.springframework.messaging.Message<OrderReceived> message)
             throws InterruptedException, ExecutionException, SerializationException {
-        OrderReceived orderReceived = message.getPayload();
-        String orderReceivedUri = orderReceived.getOrderUri();
-        try {
-            logMessageReceived(message);
-
-            logMessageProcessed(message);
-        } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_ERROR, ex);
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR);
-        } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, x);
-        }
+        handleMessage(message);
     }
 
     /**
@@ -125,25 +104,45 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     topics = ORDER_RECEIVED_TOPIC_ERROR,
                     autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}")
     public void processOrderReceivedError(org.springframework.messaging.Message<OrderReceived> message)
-            throws SerializationException, ExecutionException, InterruptedException {
-        OrderReceived orderReceived = message.getPayload();
-        String orderReceivedUri = orderReceived.getOrderUri();
+            throws InterruptedException, ExecutionException, SerializationException {
+        long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
+        if (offset <= ERROR_RECOVERY_OFFSET) {
+            handleMessage(message);
+        }
+        else {
+            LOGGER.info(String.format("Pausing error consumer \"%1$s\" as error recovery offset '%2$d' reached.",
+                    ORDER_RECEIVED_GROUP_ERROR, ERROR_RECOVERY_OFFSET));
+            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
+        }
+    }
+
+    /**
+     * Handles processing of received message.
+     * @param message
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws SerializationException
+     */
+    protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message)
+            throws InterruptedException, ExecutionException, SerializationException {
+        OrderReceived msg = message.getPayload();
+        String orderReceivedUri = msg.getOrderUri();
+        MessageHeaders headers = message.getHeaders();
+        String receivedTopic = headers.get(KafkaHeaders.RECEIVED_TOPIC).toString();
         try {
             logMessageReceived(message);
 
+            // process message
+
             logMessageProcessed(message);
-        } catch (ServiceException ex){
-            logMessageProcessingFailureRecoverable(message, ORDER_RECEIVED_TOPIC_RETRY, ex);
-            republishMessageToTopic(orderReceivedUri, ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_TOPIC_RETRY);
+        } catch (RetryableErrorException ex){
+            String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
+                                    || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR))
+                                            ? ORDER_RECEIVED_TOPIC_RETRY : ORDER_RECEIVED_TOPIC_ERROR;
+            logMessageProcessingFailureRecoverable(message, nextTopic, ex);
+            republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
         } catch (Exception x) {
             logMessageProcessingFailureNonRecoverable(message, x);
-        } finally {
-            long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
-            if (offset >= ERROR_RECOVERY_OFFSET) {
-                LOGGER.info(String.format("Pausing error consumer \"%1$s\" as error recovery offset '%2$d' reached.",
-                        ORDER_RECEIVED_GROUP_ERROR, ERROR_RECOVERY_OFFSET));
-                registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
-            }
         }
     }
 
@@ -183,9 +182,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private Map<String, String> getMessageHeadersAsMap(org.springframework.messaging.Message<OrderReceived> message){
         Map<String, String> dataMap = new HashMap<>();
         MessageHeaders messageHeaders = message.getHeaders();
-        dataMap.put("data.key", "" + messageHeaders.get("kafka_receivedMessageKey"));
-        dataMap.put("data.offset", "" + messageHeaders.get("kafka_offset"));
-        dataMap.put("data.partition", "" + messageHeaders.get("kafka_receivedPartitionId"));
+        dataMap.put("data.key", "" + messageHeaders.get(KafkaHeaders.RECEIVED_MESSAGE_KEY));
+        dataMap.put("data.topic", "" + messageHeaders.get(KafkaHeaders.RECEIVED_TOPIC));
+        dataMap.put("data.offset", "" + messageHeaders.get(KafkaHeaders.OFFSET));
+        dataMap.put("data.partition", "" + messageHeaders.get(KafkaHeaders.RECEIVED_PARTITION_ID));
 
         return dataMap;
     }
@@ -255,6 +255,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         return props;
     }
