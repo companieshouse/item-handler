@@ -20,6 +20,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -156,7 +157,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         OrderReceived msg = message.getPayload();
         Map<String, String> dataMap = getMessageHeadersAsMap(message);
         dataMap.put("next_topic", nextTopic);
-        dataMap.put("stack_trace", exception.getStackTrace().toString());
+        dataMap.put("stack_trace", Arrays.toString(exception.getStackTrace()));
         LOGGER.error(
                 String.format("'order-received' message processing failed with a recoverable exception. \n%1$s",
                         dataMap.toString())
@@ -167,7 +168,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                                                            Exception exception) {
         OrderReceived msg = message.getPayload();
         Map<String, String> dataMap = getMessageHeadersAsMap(message);
-        dataMap.put("stack_trace", exception.getStackTrace().toString());
+        dataMap.put("stack_trace", Arrays.toString(exception.getStackTrace()));
         LOGGER.error(
                 String.format("order-received message processing failed with a non-recoverable exception. \n%1$s",
                         dataMap.toString())
