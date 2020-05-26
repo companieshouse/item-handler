@@ -28,7 +28,7 @@
 		<!-- TODO GCI-931 Make this 1.0.3+ -->
 		<api-sdk-manager-java-library.version>unversioned</api-sdk-manager-java-library.version>
 		<api-sdk-java.version>4.1.48</api-sdk-java.version>
-		<!-- TODO GCI-931 Make this 1.0.14 -->
+		<!-- TODO GCI-931 Make this 1.0.14+ -->
 		<kafka-models.version>unversioned</kafka-models.version>
 		<ch-kafka.version>1.4.2</ch-kafka.version>
 	</properties>
