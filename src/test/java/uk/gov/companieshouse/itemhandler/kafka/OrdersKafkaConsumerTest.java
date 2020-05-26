@@ -88,7 +88,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageSuccessfullyCalledOnServiceException()
+    public void republishMessageSuccessfullyCalledOnRetryableErrorException()
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
@@ -100,7 +100,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageNotCalledOnServiceException()
+    public void republishMessageNotCalledOnNonRetryableErrorException()
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
         doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());

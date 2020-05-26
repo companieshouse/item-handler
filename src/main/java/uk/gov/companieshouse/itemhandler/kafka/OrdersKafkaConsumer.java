@@ -38,7 +38,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private static final String ORDER_RECEIVED_GROUP = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC;
     private static final String ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
     private static final String ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
-    private static long ERROR_RECOVERY_OFFSET = 0l;
+    private static long errorRecoveryOffset = 0l;
 
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String bootstrapServers;
@@ -92,10 +92,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     /**
      * Error (`-error`) topic listener/consumer is enabled when the application is launched in error
-     * mode (IS_ERROR_QUEUE_CONSUMER=true). Receives messages up to `ERROR_RECOVERY_OFFSET` offset. Calls a `retryable`
+     * mode (IS_ERROR_QUEUE_CONSUMER=true). Receives messages up to `errorRecoveryOffset` offset. Calls a `retryable`
      * method to process received message. If the `retryable` processor is unsuccessful with a `retryable` error, after
      * maximum numbers of attempts allowed, the message is republished to `-retry` topic for failover processing.
-     * This listener stops accepting messages when the topic's offset reaches `ERROR_RECOVERY_OFFSET`.
+     * This listener stops accepting messages when the topic's offset reaches `errorRecoveryOffset`.
      * @param message
      * @throws SerializationException
      * @throws ExecutionException
@@ -107,12 +107,12 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     public void processOrderReceivedError(org.springframework.messaging.Message<OrderReceived> message)
             throws InterruptedException, ExecutionException, SerializationException {
         long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
-        if (offset <= ERROR_RECOVERY_OFFSET) {
+        if (offset <= errorRecoveryOffset) {
             handleMessage(message);
         }
         else {
             LOGGER.info(String.format("Pausing error consumer \"%1$s\" as error recovery offset '%2$d' reached.",
-                    ORDER_RECEIVED_GROUP_ERROR, ERROR_RECOVERY_OFFSET));
+                    ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset));
             registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
         }
     }
@@ -214,12 +214,12 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     private static void updateErrorRecoveryOffset(long offset){
-        ERROR_RECOVERY_OFFSET = offset;
+        errorRecoveryOffset = offset;
     }
 
     /**
-     * Sets ERROR_RECOVERY_OFFSET to latest topic offset (error topic) minus 1, before error consumer starts. This
-     * helps the error consumer to stop consuming messages when all messages up to ERROR_RECOVERY_OFFSET are processed.
+     * Sets `errorRecoveryOffset` to latest topic offset (error topic) minus 1, before error consumer starts. This
+     * helps the error consumer to stop consuming messages when all messages up to `errorRecoveryOffset` are processed.
      * @param map map of topics and partitions
      * @param consumerSeekCallback callback that allows a consumers offset position to be moved.
      */
@@ -232,8 +232,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                         (topic, action) ->
                         {
                             updateErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
-                            consumerSeekCallback.seek(topic.topic(), topic.partition(), ERROR_RECOVERY_OFFSET);
-                            LOGGER.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", ERROR_RECOVERY_OFFSET));
+                            consumerSeekCallback.seek(topic.topic(), topic.partition(), errorRecoveryOffset);
+                            LOGGER.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset));
                         }
                 );
             }
