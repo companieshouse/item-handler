@@ -154,23 +154,21 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     protected void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
                                                         String nextTopic, Exception exception) {
-        OrderReceived msg = message.getPayload();
         Map<String, String> dataMap = getMessageHeadersAsMap(message);
         dataMap.put("next_topic", nextTopic);
         dataMap.put("stack_trace", Arrays.toString(exception.getStackTrace()));
         LOGGER.error(
-                String.format("'order-received' message processing failed with a recoverable exception. \n%1$s",
+                String.format("'order-received' message processing failed with a recoverable exception. %n%1$s",
                         dataMap.toString())
         );
     }
 
     protected void logMessageProcessingFailureNonRecoverable(org.springframework.messaging.Message<OrderReceived> message,
                                                            Exception exception) {
-        OrderReceived msg = message.getPayload();
         Map<String, String> dataMap = getMessageHeadersAsMap(message);
         dataMap.put("stack_trace", Arrays.toString(exception.getStackTrace()));
         LOGGER.error(
-                String.format("order-received message processing failed with a non-recoverable exception. \n%1$s",
+                String.format("order-received message processing failed with a non-recoverable exception. %n%1$s",
                         dataMap.toString())
         );
     }
