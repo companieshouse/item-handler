@@ -14,6 +14,7 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
@@ -55,7 +56,8 @@ public class OrdersKafkaConsumerTest {
     public void createRetryMessageBuildsMessageSuccessfully() throws SerializationException {
         // Given & When
         OrdersKafkaConsumer consumerUnderTest =
-                new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer(), new KafkaListenerEndpointRegistry());
+                new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer(),
+                        new KafkaListenerEndpointRegistry(), new EmailService());
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         byte[] expectedMessageRawValue  = EXPECTED_MESSAGE_VALUE.getBytes();

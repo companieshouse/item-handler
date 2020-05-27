@@ -12,6 +12,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
@@ -47,13 +48,16 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private final SerializerFactory serializerFactory;
     private final OrdersKafkaProducer kafkaProducer;
     private final KafkaListenerEndpointRegistry registry;
+    private final EmailService emailService;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
                                OrdersKafkaProducer kafkaProducer,
-                               KafkaListenerEndpointRegistry registry) {
+                               KafkaListenerEndpointRegistry registry,
+                               EmailService emailer) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
+        this.emailService = emailer;
     }
 
     /**
@@ -134,6 +138,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageReceived(message);
 
             // process message
+            emailService.processMessage(message);
 
             logMessageProcessed(message);
         } catch (RetryableErrorException ex){
