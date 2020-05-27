@@ -1,9 +1,6 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -30,7 +27,6 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
     @Mapping(source = "orderedBy.email", target="emailAddress")
     @Mapping(source = "totalOrderCost", target="feeAmount")
 
-
     CertificateOrderConfirmation orderToConfirmation(OrderData order);
 
     @AfterMapping
@@ -55,6 +51,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
      * @param enumValueName Java enum value name like string
      * @return the sentence case title equivalent
      */
+    @Named("toSentenceCase") // TODO GCI-931 Can this be made clearer?
     default String toSentenceCase(final String enumValueName) {
         final String spaced = enumValueName.replace('_', ' ');
         return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1).toLowerCase();
