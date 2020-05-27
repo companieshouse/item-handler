@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +22,14 @@ import static org.hamcrest.Matchers.is;
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrderDataToCertificateOrderConfirmationMapperTest.Config.class)
 public class OrderDataToCertificateOrderConfirmationMapperTest {
+
+    private static final String[] EXPECTED_CERTIFICATE_INCLUDES = new String[]{
+            "Statement of good standing",
+            "Registered office address",
+            "Directors",
+            "Secretaries",
+            "Company objects"
+    };
 
     @Configuration
     @ComponentScan(basePackageClasses = {OrderDataToCertificateOrderConfirmationMapperTest.class})
@@ -55,6 +62,13 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         final CertificateItemOptions options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
+
+        options.setIncludeGoodStandingInformation(true);
+        options.setRegisteredOfficeAddressDetails(new RegisteredOfficeAddressDetails());
+        options.setDirectorDetails(new DirectorOrSecretaryDetails());
+        options.setSecretaryDetails(new DirectorOrSecretaryDetails());
+        options.setIncludeCompanyObjectsInformation(true);
+
         item.setItemOptions(options);
         order.setItems(singletonList(item));
         order.setOrderedAt(LocalDateTime.now());
@@ -64,6 +78,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getSurname(), is("Wilson"));
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all name changes"));
+        assertThat(confirmation.getCertificateIncludes(), is(EXPECTED_CERTIFICATE_INCLUDES));
     }
 
     @Test

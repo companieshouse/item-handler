@@ -2,10 +2,13 @@ package uk.gov.companieshouse.itemhandler.mapper;
 
 import org.mapstruct.*;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertificateOrderConfirmationMapper {
@@ -29,6 +32,11 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
 
     CertificateOrderConfirmation orderToConfirmation(OrderData order);
 
+    /**
+     * Implements the more complex mapping behaviour required for some fields.
+     * @param order the order to be mapped
+     * @param confirmation the confirmation mapped to
+     */
     @AfterMapping
     default void specialMappings(final OrderData order, final @MappingTarget CertificateOrderConfirmation confirmation)
     {
@@ -43,7 +51,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
         confirmation.setCompanyName(item.getCompanyName());
         confirmation.setCompanyNumber(item.getCompanyNumber());
         confirmation.setCertificateType(toSentenceCase(item.getItemOptions().getCertificateType().toString()));
-
+        confirmation.setCertificateIncludes(getCertificateIncludes(item));
     }
 
     /**
@@ -55,5 +63,31 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
     default String toSentenceCase(final String enumValueName) {
         final String spaced = enumValueName.replace('_', ' ');
         return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1).toLowerCase();
+    }
+
+    /**
+     * Examines the certificate item provided to build up the certificate includes list of descriptions.
+     * @param certificate the certificate item
+     * @return the certificate includes
+     */
+    default String[] getCertificateIncludes(final Item certificate) {
+        final List<String> includes = new ArrayList<>();
+        final CertificateItemOptions options = certificate.getItemOptions();
+        if (options.getIncludeGoodStandingInformation() != null && options.getIncludeGoodStandingInformation()) {
+            includes.add("Statement of good standing");
+        }
+        if (options.getRegisteredOfficeAddressDetails() != null) {
+            includes.add("Registered office address");
+        }
+        if (options.getDirectorDetails() != null) {
+            includes.add("Directors");
+        }
+        if (options.getSecretaryDetails() != null) {
+            includes.add("Secretaries");
+        }
+        if (options.getIncludeCompanyObjectsInformation() != null && options.getIncludeCompanyObjectsInformation()) {
+            includes.add("Company objects");
+        }
+        return includes.toArray(new String[0]);
     }
 }
