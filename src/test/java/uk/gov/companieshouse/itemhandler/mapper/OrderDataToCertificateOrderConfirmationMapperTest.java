@@ -65,8 +65,12 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         options.setIncludeGoodStandingInformation(true);
         options.setRegisteredOfficeAddressDetails(new RegisteredOfficeAddressDetails());
-        options.setDirectorDetails(new DirectorOrSecretaryDetails());
-        options.setSecretaryDetails(new DirectorOrSecretaryDetails());
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(true);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
 
         item.setItemOptions(options);

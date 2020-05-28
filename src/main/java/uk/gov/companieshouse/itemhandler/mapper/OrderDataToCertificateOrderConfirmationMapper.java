@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.mapper;
 import org.mapstruct.*;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -79,10 +80,16 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
         if (options.getRegisteredOfficeAddressDetails() != null) {
             includes.add("Registered office address");
         }
-        if (options.getDirectorDetails() != null) {
+        final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
+        if (directors != null &&
+            directors.getIncludeBasicInformation() != null &&
+            directors.getIncludeBasicInformation()) {
             includes.add("Directors");
         }
-        if (options.getSecretaryDetails() != null) {
+        final DirectorOrSecretaryDetails secretaries = options.getSecretaryDetails();
+        if (secretaries != null &&
+            secretaries.getIncludeBasicInformation() != null &&
+            secretaries.getIncludeBasicInformation()) {
             includes.add("Secretaries");
         }
         if (options.getIncludeCompanyObjectsInformation() != null && options.getIncludeCompanyObjectsInformation()) {
