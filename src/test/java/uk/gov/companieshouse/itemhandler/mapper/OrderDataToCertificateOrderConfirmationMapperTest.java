@@ -23,11 +23,17 @@ import static org.hamcrest.Matchers.is;
 @SpringJUnitConfig(OrderDataToCertificateOrderConfirmationMapperTest.Config.class)
 public class OrderDataToCertificateOrderConfirmationMapperTest {
 
-    private static final String[] EXPECTED_CERTIFICATE_INCLUDES = new String[]{
+    private static final String[] FULL_CERTIFICATE_INCLUDES = new String[]{
             "Statement of good standing",
             "Registered office address",
             "Directors",
             "Secretaries",
+            "Company objects"
+    };
+
+    private static final String[] CERTIFICATE_INCLUDES_WITHOUT_DIRECTOR_AND_SECRETARY_DETAILS = new String[]{
+            "Statement of good standing",
+            "Registered office address",
             "Company objects"
     };
 
@@ -82,7 +88,29 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getSurname(), is("Wilson"));
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all name changes"));
-        assertThat(confirmation.getCertificateIncludes(), is(EXPECTED_CERTIFICATE_INCLUDES));
+        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
+    }
+
+    @Test
+    void orderToConfirmationCopesWithMissingDirectorAndSecretaryDetails() {
+        final OrderData order = new OrderData();
+        final Item item = new Item();
+        final CertificateItemOptions options = new CertificateItemOptions();
+        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
+        options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
+
+        options.setIncludeGoodStandingInformation(true);
+        options.setRegisteredOfficeAddressDetails(new RegisteredOfficeAddressDetails());
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        options.setDirectorDetails(directors);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertThat(confirmation.getCertificateIncludes(), is(CERTIFICATE_INCLUDES_WITHOUT_DIRECTOR_AND_SECRETARY_DETAILS));
     }
 
     @Test

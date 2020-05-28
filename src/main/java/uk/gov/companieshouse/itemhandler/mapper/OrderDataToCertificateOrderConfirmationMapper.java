@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Boolean.TRUE;
+
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertificateOrderConfirmationMapper {
 
@@ -74,25 +76,21 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
     default String[] getCertificateIncludes(final Item certificate) {
         final List<String> includes = new ArrayList<>();
         final CertificateItemOptions options = certificate.getItemOptions();
-        if (options.getIncludeGoodStandingInformation() != null && options.getIncludeGoodStandingInformation()) {
+        if (TRUE.equals(options.getIncludeGoodStandingInformation())) {
             includes.add("Statement of good standing");
         }
         if (options.getRegisteredOfficeAddressDetails() != null) {
             includes.add("Registered office address");
         }
         final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
-        if (directors != null &&
-            directors.getIncludeBasicInformation() != null &&
-            directors.getIncludeBasicInformation()) {
+        if (directors != null && TRUE.equals(directors.getIncludeBasicInformation())) {
             includes.add("Directors");
         }
         final DirectorOrSecretaryDetails secretaries = options.getSecretaryDetails();
-        if (secretaries != null &&
-            secretaries.getIncludeBasicInformation() != null &&
-            secretaries.getIncludeBasicInformation()) {
+        if (secretaries != null && TRUE.equals(secretaries.getIncludeBasicInformation())) {
             includes.add("Secretaries");
         }
-        if (options.getIncludeCompanyObjectsInformation() != null && options.getIncludeCompanyObjectsInformation()) {
+        if (TRUE.equals(options.getIncludeCompanyObjectsInformation())) {
             includes.add("Company objects");
         }
         return includes.toArray(new String[0]);
