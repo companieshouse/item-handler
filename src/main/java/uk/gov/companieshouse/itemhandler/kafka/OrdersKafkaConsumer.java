@@ -25,8 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
@@ -198,6 +196,9 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         } catch (ExecutionException | InterruptedException e) {
             LOGGER.error(String.format("Error sending message: \"%1$s\" to topic: \"%2$s\". \"%n%3$s\"",
                     orderUri, nextTopic, Arrays.toString(e.getStackTrace())));
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
