@@ -30,6 +30,8 @@ public class EmailService {
 
     private static final String NOTIFICATION_API_APP_ID = "item-handler.certificate-order-confirmation";
     private static final String NOTIFICATION_API_MESSAGE_TYPE = "certificate_order_confirmation_email";
+    /** This email address is supplied only to satisfy Avro contract. */
+    private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
     private final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper;
     private final ObjectMapper objectMapper;
@@ -62,7 +64,7 @@ public class EmailService {
 
         final EmailSend email = new EmailSend();
         email.setAppId(NOTIFICATION_API_APP_ID);
-        email.setEmailAddress("test@test.com"); // TODO GCI-931 What is this used for?
+        email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
         email.setMessageId(UUID.randomUUID().toString());
         email.setMessageType(NOTIFICATION_API_MESSAGE_TYPE);
         email.setData(objectMapper.writeValueAsString(confirmation));
