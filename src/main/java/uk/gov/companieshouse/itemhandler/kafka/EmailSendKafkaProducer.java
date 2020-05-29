@@ -20,7 +20,6 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
 public class EmailSendKafkaProducer implements InitializingBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private CHKafkaProducer chKafkaProducer;
-    // TODO GCI-931 Was @Value("${kafka.broker.addresses}")
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
 
