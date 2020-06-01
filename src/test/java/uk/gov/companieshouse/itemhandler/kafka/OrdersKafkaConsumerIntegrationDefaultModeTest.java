@@ -2,27 +2,27 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
+import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
+import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+import uk.gov.companieshouse.orders.OrderReceived;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -47,10 +47,12 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\"}";
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
+    @Autowired
+    private SerializerFactory serializerFactory;
+    @Autowired
+    private OrdersKafkaProducer kafkaProducer;
 
-    private KafkaTemplate<String, String> template;
-
-    private KafkaMessageListenerContainer<String, String> container;
+    private KafkaMessageListenerContainer<String, OrderReceived> container;
 
     private BlockingQueue<ConsumerRecord<String, String>> records;
 
@@ -59,7 +61,6 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     @BeforeEach
     public void setUp() {
-        setUpTestKafkaOrdersProducer();
         setUpTestKafkaOrdersConsumer();
     }
 
@@ -69,25 +70,14 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         container.stop();
     }
 
-    private void setUpTestKafkaOrdersProducer() {
-        final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
-
-        senderProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-        final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
-
-        template = new KafkaTemplate<>(producerFactory);
-        template.setDefaultTopic(ORDER_RECEIVED_TOPIC);
-    }
-
     private void setUpTestKafkaOrdersConsumer() {
         final Map<String, Object> consumerProperties = new HashMap<>();
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserializer.class);
         consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_NAME);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses);
 
-        final DefaultKafkaConsumerFactory<String, String> consumerFactory =
+        final DefaultKafkaConsumerFactory<String, OrderReceived> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties);
 
         final ContainerProperties containerProperties = new ContainerProperties(ORDER_RECEIVED_TOPIC);
@@ -107,9 +97,9 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     @Test
     @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
-    public void testOrdersConsumerReceivesOrderReceivedMessage1Error() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage1Error() throws InterruptedException, ExecutionException, SerializationException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
 
         // Then
         verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
@@ -125,9 +115,9 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     @Test
     @DisplayName("order-received topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
-    public void testOrdersConsumerReceivesOrderReceivedMessage2() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage2() throws InterruptedException, ExecutionException, SerializationException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
@@ -135,9 +125,9 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     @Test
     @DisplayName("order-received-retry topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
-    public void testOrdersConsumerReceivesOrderReceivedMessage3Retry() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage3Retry() throws InterruptedException, ExecutionException, SerializationException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);

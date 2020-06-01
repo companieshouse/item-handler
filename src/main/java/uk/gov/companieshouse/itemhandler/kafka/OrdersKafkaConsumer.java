@@ -39,7 +39,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private static final String ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
     private static final String ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static long errorRecoveryOffset = 0l;
-    private static final int MAX_RETRY_ATTEPTS = 3;
+    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String bootstrapServers;
@@ -56,31 +56,29 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
-        retryCount = new HashMap<>();
+        this.retryCount = new HashMap<>();
     }
 
     /**
      * Main listener/consumer. Calls `handleMessage` method to process received message.
-     * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to `-retry` topic for failover processing.
      * @param message
      */
     @KafkaListener(id = ORDER_RECEIVED_GROUP, groupId = ORDER_RECEIVED_GROUP,
                     topics = ORDER_RECEIVED_TOPIC,
-                    autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
+                    autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
+                    containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
         handleMessage(message);
     }
 
     /**
      * Retry (`-retry`) listener/consumer. Calls `handleMessage` method to process received message.
-     * If the `retryable` processor is unsuccessful with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to `-error` topic for failover processing.
      * @param message
      */
     @KafkaListener(id = ORDER_RECEIVED_GROUP_RETRY, groupId = ORDER_RECEIVED_GROUP_RETRY,
                     topics = ORDER_RECEIVED_TOPIC_RETRY,
-                    autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}")
+                    autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
+                    containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedRetry(org.springframework.messaging.Message<OrderReceived> message) {
         handleMessage(message);
     }
@@ -95,7 +93,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      */
     @KafkaListener(id = ORDER_RECEIVED_GROUP_ERROR, groupId = ORDER_RECEIVED_GROUP_ERROR,
                     topics = ORDER_RECEIVED_TOPIC_ERROR,
-                    autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}")
+                    autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}",
+                    containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedError(org.springframework.messaging.Message<OrderReceived> message) {
         long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
         if (offset <= errorRecoveryOffset) {
@@ -110,6 +109,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     /**
      * Handles processing of received message.
+     * If processing of message fails with a `retryable` error, after maximum numbers of attempts allowed,
+     * the message is published to the next topic for failover processing.
      * @param message
      */
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
@@ -130,11 +131,11 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             String counterKey = receivedTopic + "-" + orderReceivedUri;
 
             if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                    || retryCount.getOrDefault(counterKey, 0) >= MAX_RETRY_ATTEPTS) {
-                if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
-                    retryCount.remove(counterKey);
-                }
+                    || retryCount.getOrDefault(counterKey, 0) >= MAX_RETRY_ATTEMPTS) {
                 republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
+                if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
+                    resetRetryCount(counterKey);
+                }
             }
             else {
                 retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 0) + 1);
@@ -221,8 +222,27 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         return message;
     }
 
+    /**
+     * Resets retryCount for message identified by key `counterKey`
+     * @param counterKey
+     */
+    private void resetRetryCount(String counterKey) {
+        retryCount.remove(counterKey);
+    }
+
     private static void updateErrorRecoveryOffset(long offset){
         errorRecoveryOffset = offset;
+    }
+
+    private Map<String, Object> errorConsumerConfigs() {
+        Map<String, Object> props = new HashMap();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserializer.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+
+        return props;
     }
 
     /**
@@ -256,16 +276,5 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     @Override
     public void onIdleContainer(Map<TopicPartition, Long> map, ConsumerSeekCallback consumerSeekCallback) {
         // Do nothing as not required for this implementation
-    }
-
-    private Map errorConsumerConfigs() {
-        Map props = new HashMap();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        return props;
     }
 }

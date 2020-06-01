@@ -3,10 +3,12 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -51,7 +53,6 @@ public class OrdersKafkaConsumerTest {
     private MessageListenerContainer container;
     @Mock
     private AvroSerializer serializer;
-    private static final String EXPECTED_MESSAGE_VALUE = "$/order/ORDER-12345";
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() {
@@ -60,9 +61,10 @@ public class OrdersKafkaConsumerTest {
                 new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer(), new KafkaListenerEndpointRegistry());
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
-        byte[] expectedMessageRawValue  = EXPECTED_MESSAGE_VALUE.getBytes();
         // Then
-        Assert.assertThat(actualMessageRawValue, Matchers.is(expectedMessageRawValue));
+        OrderReceivedDeserializer deserializer = new OrderReceivedDeserializer();
+        String actualOrderReceived = (String) deserializer.deserialize(ORDER_RECEIVED_TOPIC, actualMessageRawValue).get(0);
+        Assert.assertThat(actualOrderReceived, Matchers.is(ORDER_RECEIVED_URI));
     }
 
     @Test
@@ -71,7 +73,6 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString());
         ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY);
         // Then
         verify(ordersKafkaProducer, times(1)).sendMessage(any());
@@ -83,7 +84,6 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doCallRealMethod().when(ordersKafkaConsumer).republishMessageToTopic(anyString(), anyString(), anyString());
         ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR);
         // Then
         verify(ordersKafkaProducer, times(1)).sendMessage(any());

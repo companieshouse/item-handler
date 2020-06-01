@@ -1,25 +1,22 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.orders.OrderReceived;
 
-import java.util.Map;
+import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
@@ -38,6 +35,7 @@ public class OrdersKafkaConsumerWrapper {
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    private static final String ORDER_RECEIVED_KEY_RETRY = ORDER_RECEIVED_TOPIC_RETRY;
     @Autowired
     private OrdersKafkaProducer ordersKafkaProducer;
     @Autowired
@@ -90,19 +88,28 @@ public class OrdersKafkaConsumerWrapper {
     void reset() { this.latch = new CountDownLatch(1); }
 
     private void setUpTestKafkaOrdersProducerAndSendMessageToTopic()
-            throws SerializationException, ExecutionException, InterruptedException {
-        final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
-
-        senderProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-        final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
+            throws ExecutionException, InterruptedException, SerializationException {
 
         if (this.testType == CHConsumerType.MAIN_CONSUMER) {
-            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
         } else if (this.testType == CHConsumerType.RETRY_CONSUMER) {
-            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
+            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
         } else if (this.testType == CHConsumerType.ERROR_CONSUMER) {
-            ordersKafkaProducer.sendMessage(ordersKafkaConsumer.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
+            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
         }
+    }
+
+    public uk.gov.companieshouse.kafka.message.Message createMessage(String orderUri, String topic) throws SerializationException {
+        final uk.gov.companieshouse.kafka.message.Message message = new uk.gov.companieshouse.kafka.message.Message();
+        AvroSerializer serializer = serializerFactory.getGenericRecordSerializer(OrderReceived.class);
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setOrderUri(orderUri.trim());
+
+        message.setKey(ORDER_RECEIVED_KEY_RETRY);
+        message.setValue(serializer.toBinary(orderReceived));
+        message.setTopic(topic);
+        message.setTimestamp(new Date().getTime());
+
+        return message;
     }
 }
