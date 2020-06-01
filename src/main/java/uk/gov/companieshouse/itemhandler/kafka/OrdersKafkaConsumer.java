@@ -109,8 +109,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     /**
      * Handles processing of received message.
-     * If processing of message fails with a `retryable` error, after maximum numbers of attempts allowed,
-     * the message is published to the next topic for failover processing.
      * @param message
      */
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
@@ -123,28 +121,54 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
             // process message
 
+            // on successful processing remove counterKey from retryCount
+            if (retryCount.containsKey(orderReceivedUri)) {
+                resetRetryCount(receivedTopic + "-" + orderReceivedUri);
+            }
             logMessageProcessed(message);
         } catch (RetryableErrorException ex){
-            String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                    || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR))
-                    ? ORDER_RECEIVED_TOPIC_RETRY : ORDER_RECEIVED_TOPIC_ERROR;
-            String counterKey = receivedTopic + "-" + orderReceivedUri;
-
-            if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                    || retryCount.getOrDefault(counterKey, 0) >= MAX_RETRY_ATTEMPTS) {
-                republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
-                if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
-                    resetRetryCount(counterKey);
-                }
-            }
-            else {
-                retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 0) + 1);
-                logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
-                // retry
-            }
+            retryMessage(message, orderReceivedUri, receivedTopic, ex);
         } catch (Exception x) {
             logMessageProcessingFailureNonRecoverable(message, x);
         }
+    }
+
+    /**
+     * Retries a message that failed processing with a `RetryableErrorException`.
+     * Checks which topic the message was received from and whether any retry attempts remain.
+     * The message is published to the next topic for failover processing, if retries match or exceed `MAX_RETRY_ATTEMPTS`.
+     * @param message
+     * @param orderReceivedUri
+     * @param receivedTopic
+     * @param ex
+     */
+    private void retryMessage(org.springframework.messaging.Message<OrderReceived> message,
+                              String orderReceivedUri, String receivedTopic, RetryableErrorException ex) {
+        String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
+                || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR))
+                ? ORDER_RECEIVED_TOPIC_RETRY : ORDER_RECEIVED_TOPIC_ERROR;
+        String counterKey = receivedTopic + "-" + orderReceivedUri;
+
+        if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
+                || retryCount.getOrDefault(counterKey, 0) >= MAX_RETRY_ATTEMPTS) {
+            republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
+            if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
+                resetRetryCount(counterKey);
+            }
+        }
+        else {
+            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 0) + 1);
+            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
+            // retry
+        }
+    }
+
+    /**
+     * Resets retryCount for message identified by key `counterKey`
+     * @param counterKey
+     */
+    private void resetRetryCount(String counterKey) {
+        retryCount.remove(counterKey);
     }
 
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message){
@@ -220,14 +244,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         message.setTimestamp(new Date().getTime());
 
         return message;
-    }
-
-    /**
-     * Resets retryCount for message identified by key `counterKey`
-     * @param counterKey
-     */
-    private void resetRetryCount(String counterKey) {
-        retryCount.remove(counterKey);
     }
 
     private static void updateErrorRecoveryOffset(long offset){
