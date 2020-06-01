@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper.TIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -56,15 +58,32 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         }
     }
 
-    // TODO GCI-931 Complete test implementation
     @Test
     void orderToConfirmationBehavesAsExpected() {
+
+        // Given
         final OrderData order = new OrderData();
+        order.setReference("ORD-108815-904831");
+        order.setPaymentReference("orderable_item_ORD-108815-904831");
+
+        final ActionedBy orderedBy = new ActionedBy();
+        orderedBy.setEmail("demo@ch.gov.uk");
+        order.setOrderedBy(orderedBy);
+
         final DeliveryDetails delivery = new DeliveryDetails();
         delivery.setForename("Jenny");
         delivery.setSurname("Wilson");
+        delivery.setAddressLine1("Kemp House Capital Office");
+        delivery.setAddressLine2("LTD");
+        delivery.setLocality("Kemp House");
+        delivery.setPremises("152-160 City Road");
+        delivery.setRegion("London");
+        delivery.setPostalCode("EC1V 2NX");
+
         order.setDeliveryDetails(delivery);
         final Item item = new Item();
+        item.setCompanyName("THE GIRLS' DAY SCHOOL TRUST");
+        item.setCompanyNumber("00006400");
         final CertificateItemOptions options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
@@ -82,13 +101,35 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         item.setItemOptions(options);
         order.setItems(singletonList(item));
         order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
 
+        // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertThat(confirmation.getTo(), is(nullValue()));
+
+        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
+        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+
+        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+
         assertThat(confirmation.getForename(), is("Jenny"));
         assertThat(confirmation.getSurname(), is("Wilson"));
+        assertThat(confirmation.getAddressLine1(), is("Kemp House Capital Office"));
+        assertThat(confirmation.getAddressLine2(), is("LTD"));
+        assertThat(confirmation.getHouseName(), is("Kemp House"));
+        assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
+        assertThat(confirmation.getCity(), is("London"));
+        assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
+
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
+        assertThat(confirmation.getCompanyName(), is("THE GIRLS' DAY SCHOOL TRUST"));
+        assertThat(confirmation.getCompanyNumber(), is("00006400"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all name changes"));
         assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
+        assertThat(confirmation.getTimeOfPayment(), is(TIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
     }
 
     @Test

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CertificateOrderConfirmation {
 
     private String to;
-    private String title;
     private String forename;
     private String surname;
     @JsonProperty("address_line_1")
@@ -36,14 +35,6 @@ public class CertificateOrderConfirmation {
 
     public void setTo(String to) {
         this.to = to;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public String getForename() {

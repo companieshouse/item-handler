@@ -48,7 +48,6 @@ public class EmailSendMessageProducerIntegrationTest {
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
         confirmation.setTo("lmccarthy@companieshouse.gov.uk");
 
-        confirmation.setTitle("Miss");
         confirmation.setForename("Jenny");
         confirmation.setSurname("Wilson");
 
