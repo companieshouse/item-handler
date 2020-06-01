@@ -5,9 +5,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.service.EmailService;
-import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
+import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.consumer.ConsumerConfig;
 import uk.gov.companieshouse.kafka.consumer.factory.KafkaConsumerFactory;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
@@ -46,15 +44,12 @@ public class OrdersKafkaConsumer implements InitializingBean {
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
     private final SerializerFactory serializerFactory;
-    private final OrdersApiClientService ordersApi;
-    private final EmailService emailer;
+    private final OrderProcessorService processor;
 
     public OrdersKafkaConsumer(final SerializerFactory serializerFactory,
-                               final OrdersApiClientService ordersApi,
-                               final EmailService emailer) {
+                               final OrderProcessorService processor) {
         this.serializerFactory = serializerFactory;
-        this.ordersApi = ordersApi;
-        this.emailer = emailer;
+        this.processor = processor;
     }
 
     @Override
@@ -114,16 +109,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
     // TODO GCI-931 Exceptions?
     private void processOrderReceived(final String orderUri, final String topicName) {
         logMessageReceived(orderUri, topicName);
-        // TODO GCI-931 Refactor
-        final OrderData order;
-        try {
-            order = ordersApi.getOrderData(orderUri);
-            LOGGER.info("Got order data for " + orderUri + ", order reference number = " + order.getReference());
-            emailer.sendCertificateOrderConfirmation(order);
-        } catch (Exception ex) {
-            LOGGER.error("Exception caught getting order data.", ex);
-        }
-
+        processor.processOrderReceived(orderUri);
     }
 
     private ConsumerConfig getConsumerConfig() {
