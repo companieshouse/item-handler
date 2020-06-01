@@ -58,11 +58,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
     }
 
     /**
-     * Renders an enum value name type string as a sentence case title string.
+     * Renders an enum value name type string as a sentence case title string. Annotated
+     * <code>@Named("toSentenceCase")</code> to prevent MapStruct from applying the mapping to all
+     * <code>String</code>-><code>String</code> mappings. Instead, this method is applied manually in
+     * {@link #specialMappings(OrderData, CertificateOrderConfirmation)}.
      * @param enumValueName Java enum value name like string
      * @return the sentence case title equivalent
      */
-    @Named("toSentenceCase") // TODO GCI-931 Can this be made clearer?
+    @Named("toSentenceCase")
     default String toSentenceCase(final String enumValueName) {
         final String spaced = enumValueName.replace('_', ' ');
         return Character.toUpperCase(spaced.charAt(0)) + spaced.substring(1).toLowerCase();
