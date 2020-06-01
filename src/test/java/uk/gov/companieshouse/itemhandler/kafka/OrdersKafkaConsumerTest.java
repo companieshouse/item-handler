@@ -3,13 +3,9 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.listener.MessageListenerContainer;
@@ -53,6 +49,12 @@ public class OrdersKafkaConsumerTest {
     private MessageListenerContainer container;
     @Mock
     private AvroSerializer serializer;
+    @Captor
+    ArgumentCaptor<String> orderUriArgument;
+    @Captor
+    ArgumentCaptor<String> currentTopicArgument;
+    @Captor
+    ArgumentCaptor<String> nextTopicArgument;
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() {
@@ -98,7 +100,11 @@ public class OrdersKafkaConsumerTest {
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
         // Then
-        verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(), anyString());
+        verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(orderUriArgument.capture(),
+                currentTopicArgument.capture(), nextTopicArgument.capture());
+        Assert.assertEquals(ORDER_RECEIVED_URI, orderUriArgument.getValue());
+        Assert.assertEquals(ORDER_RECEIVED_TOPIC, currentTopicArgument.getValue());
+        Assert.assertEquals(ORDER_RECEIVED_TOPIC_RETRY, nextTopicArgument.getValue());
     }
 
     @Test
