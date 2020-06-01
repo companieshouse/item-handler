@@ -60,7 +60,7 @@ public class EmailService {
             InterruptedException, ExecutionException, SerializationException {
         final CertificateOrderConfirmation confirmation = orderToConfirmationMapper.orderToConfirmation(order);
         confirmation.setTo(recipients);
-        LOGGER.info("Confirmation = " + confirmation); // TODO GCI-931 Avoid logging whole object.
+        LOGGER.info("Sending confirmation for order reference number " + confirmation.getOrderReferenceNumber());
 
         final EmailSend email = new EmailSend();
         email.setAppId(NOTIFICATION_API_APP_ID);

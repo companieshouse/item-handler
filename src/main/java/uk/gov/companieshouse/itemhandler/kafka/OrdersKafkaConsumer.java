@@ -118,7 +118,7 @@ public class OrdersKafkaConsumer implements InitializingBean {
         final OrderData order;
         try {
             order = ordersApi.getOrderData(orderUri);
-            LOGGER.info("Order data got = " + order); // TODO GCI-931 Avoid logging whole object.
+            LOGGER.info("Got order data for " + orderUri + ", order reference number = " + order.getReference());
             emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
             LOGGER.error("Exception caught getting order data.", ex);
