@@ -14,7 +14,6 @@ import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 
 @Configuration
 public class ApplicationConfig implements WebMvcConfigurer {
-
     @Bean
     DeserializerFactory deserializerFactory() {
         return new DeserializerFactory();
