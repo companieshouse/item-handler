@@ -41,13 +41,7 @@ public class OrdersKafkaConsumerTest {
     @Mock
     private OrdersKafkaProducer ordersKafkaProducer;
     @Mock
-    private CHKafkaProducer chKafkaProducer;
-    @Mock
     private SerializerFactory serializerFactory;
-    @Mock
-    private KafkaListenerEndpointRegistry registry;
-    @Mock
-    private MessageListenerContainer container;
     @Mock
     private AvroSerializer serializer;
     @Captor
