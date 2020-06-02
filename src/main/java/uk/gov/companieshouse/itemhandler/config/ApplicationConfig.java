@@ -8,7 +8,6 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 
 @Configuration
 public class ApplicationConfig implements WebMvcConfigurer {
-
     @Bean
     DeserializerFactory deserializerFactory() {
         return new DeserializerFactory();

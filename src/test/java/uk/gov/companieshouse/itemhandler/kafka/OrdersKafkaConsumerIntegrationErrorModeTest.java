@@ -2,26 +2,22 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.ContainerTestUtils;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
+import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,10 +40,13 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String CONSUMER_GROUP_MAIN_RETRY = "order-received-main-retry";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\"}";
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
-
-    private KafkaTemplate<String, String> template;
+    @Autowired
+    private SerializerFactory serializerFactory;
+    @Autowired
+    private OrdersKafkaProducer kafkaProducer;
 
     private KafkaMessageListenerContainer<String, String> container;
 
@@ -58,7 +57,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     @BeforeEach
     public void setUp() {
-        setUpTestKafkaOrdersProducer();
         setUpTestKafkaOrdersConsumer();
     }
 
@@ -66,17 +64,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     public void tearDown() {
         consumerWrapper.reset();
         container.stop();
-    }
-
-    private void setUpTestKafkaOrdersProducer() {
-        final Map<String, Object> senderProperties = KafkaTestUtils.senderProps(brokerAddresses);
-
-        senderProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-
-        final ProducerFactory<String, String> producerFactory = new DefaultKafkaProducerFactory<>(senderProperties);
-
-        template = new KafkaTemplate<>(producerFactory);
-        template.setDefaultTopic(ORDER_RECEIVED_TOPIC);
     }
 
     private void setUpTestKafkaOrdersConsumer() {
@@ -106,9 +93,9 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     @Test
     @DisplayName("order-received topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException, SerializationException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
         // Then
         verifyProcessOrderReceivedNotInvoked(CHConsumerType.MAIN_CONSUMER);
@@ -116,9 +103,9 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     @Test
     @DisplayName("order-received-retry topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException, SerializationException, ExecutionException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
         verifyProcessOrderReceivedNotInvoked(CHConsumerType.RETRY_CONSUMER);
@@ -134,9 +121,9 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     @Test
     @DisplayName("order-received-error topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException, SerializationException {
         // When
-        template.send(ORDER_RECEIVED_TOPIC_ERROR, ORDER_RECEIVED_URI);
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.ERROR_CONSUMER);
@@ -147,6 +134,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_URI)));
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
     }
 }
