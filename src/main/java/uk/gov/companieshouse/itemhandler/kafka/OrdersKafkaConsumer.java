@@ -150,16 +150,17 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         String counterKey = receivedTopic + "-" + orderReceivedUri;
 
         if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                || retryCount.getOrDefault(counterKey, 0) >= MAX_RETRY_ATTEMPTS) {
+                || retryCount.getOrDefault(counterKey, 1) >= MAX_RETRY_ATTEMPTS) {
             republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
             if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
                 resetRetryCount(counterKey);
             }
         }
         else {
-            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 0) + 1);
+            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 1) + 1);
             logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
             // retry
+            handleMessage(message);
         }
     }
 
@@ -276,7 +277,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                         (topic, action) ->
                         {
                             updateErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
-                            consumerSeekCallback.seek(topic.topic(), topic.partition(), errorRecoveryOffset);
                             LOGGER.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset));
                         }
                 );
