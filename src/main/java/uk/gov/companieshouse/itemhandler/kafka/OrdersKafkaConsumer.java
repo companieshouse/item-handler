@@ -158,9 +158,9 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         }
         else {
             retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 1) + 1);
+            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
             // retry
             handleMessage(message);
-            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
         }
     }
 
