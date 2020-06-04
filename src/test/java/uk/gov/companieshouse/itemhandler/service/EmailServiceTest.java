@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.common.errors.SerializationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -16,18 +18,21 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ExecutionException;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 /** Unit tests the {@link EmailService} class. */
 @ExtendWith(MockitoExtension.class)
 class EmailServiceTest {
 
     private static final String EMAIL_CONTENT = "Hi there!";
+    private static final String TEST_EXCEPTION_MESSAGE = "Test message!";
 
     @InjectMocks
     private EmailService emailServiceUnderTest;
@@ -49,6 +54,22 @@ class EmailServiceTest {
 
     @Captor
     ArgumentCaptor<EmailSend> emailCaptor;
+
+    /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
+    private static class TestJsonProcessingException extends JsonProcessingException {
+
+        protected TestJsonProcessingException(String msg) {
+            super(msg);
+        }
+    }
+
+    /** Extends {@link ExecutionException} so it can be instantiated in these tests. */
+    private static class TestExecutionException extends ExecutionException {
+
+        protected TestExecutionException(String msg) {
+            super(msg);
+        }
+    }
 
     @Test
     void sendsCertificateOrderConfirmation() throws Exception {
@@ -72,6 +93,68 @@ class EmailServiceTest {
         assertThat(emailSent.getData(), is(EMAIL_CONTENT));
         assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+    }
+
+    @Test
+    void propagatesJsonProcessingException() throws Exception  {
+
+        // Given
+        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(objectMapper.writeValueAsString(confirmation)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
+
+        // When and then
+        thenExceptionIsPropagated(JsonProcessingException.class);
+    }
+
+    @Test
+    void propagatesSerializationException() throws Exception  {
+
+        // Given
+        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
+        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
+        doThrow(new SerializationException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+
+        // When and then
+        thenExceptionIsPropagated(SerializationException.class);
+    }
+
+    @Test
+    void propagatesExecutionException() throws Exception  {
+
+        // Given
+        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
+        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
+        doThrow(new TestExecutionException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+
+        // When and then
+        thenExceptionIsPropagated(ExecutionException.class);
+    }
+
+    @Test
+    void propagatesInterruptedException() throws Exception  {
+
+        // Given
+        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
+        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
+        doThrow(new InterruptedException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+
+        // When and then
+        thenExceptionIsPropagated(InterruptedException.class);
+    }
+
+    /**
+     * Asserts that an exception of the type indicated is thrown by
+     * {@link EmailService#sendCertificateOrderConfirmation(OrderData)}.
+     * @param exception the class of the exception to be thrown
+     */
+    private void thenExceptionIsPropagated(final Class exception) {
+        assertThatExceptionOfType(exception).isThrownBy(() ->
+        { emailServiceUnderTest.sendCertificateOrderConfirmation(order); })
+                .withMessage(TEST_EXCEPTION_MESSAGE)
+                .withNoCause();
     }
 
     /**
