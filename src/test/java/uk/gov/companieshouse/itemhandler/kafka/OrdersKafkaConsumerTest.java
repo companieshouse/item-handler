@@ -81,7 +81,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageToRetryTopicThrowsInterruptedException()
+    public void republishMessageToRetryTopicThrowsSerializationException()
         throws ExecutionException, InterruptedException, SerializationException {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
