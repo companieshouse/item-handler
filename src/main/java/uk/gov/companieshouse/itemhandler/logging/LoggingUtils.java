@@ -15,6 +15,7 @@ public class LoggingUtils {
     public static final String MESSAGE = "message";
     public static final String CURRENT_TOPIC = "current_topic";
     public static final String NEXT_TOPIC = "next_topic";
+    public static final String ORDER_RECEIVED_GROUP_ERROR = "order_received_error";
 
     public static Map<String, Object> createLogMap() {
         return new HashMap<String, Object>();

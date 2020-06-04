@@ -102,7 +102,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         }
         else {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
-            logMap.put(ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset);
+            logMap.put(LoggingUtils.ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset);
+            logMap.put(LoggingUtils.TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
             LOGGER.info("Pausing error consumer as error recovery offset reached.", logMap);
             registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
         }
@@ -241,6 +242,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, topic);
+            LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
             logMap.put(LoggingUtils.EXCEPTION, e);
             LOGGER.error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
                     orderUri, topic), logMap);
