@@ -18,7 +18,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper.TIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.TIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.

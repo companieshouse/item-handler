@@ -8,16 +8,14 @@ import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Boolean.TRUE;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.TIME_OF_PAYMENT_FORMATTER;
 
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertificateOrderConfirmationMapper {
-
-    DateTimeFormatter TIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
 
     // Name/address mappings
     @Mapping(source = "deliveryDetails.forename", target="forename")
