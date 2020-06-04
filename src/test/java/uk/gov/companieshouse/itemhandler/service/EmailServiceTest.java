@@ -19,6 +19,7 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -110,10 +111,7 @@ class EmailServiceTest {
     void propagatesSerializationException() throws Exception  {
 
         // Given
-        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
-        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
-        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
-        doThrow(new SerializationException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+        givenSendMessageThrowsException(SerializationException::new);
 
         // When and then
         thenExceptionIsPropagated(SerializationException.class);
@@ -123,10 +121,7 @@ class EmailServiceTest {
     void propagatesExecutionException() throws Exception  {
 
         // Given
-        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
-        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
-        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
-        doThrow(new TestExecutionException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+        givenSendMessageThrowsException(TestExecutionException::new);
 
         // When and then
         thenExceptionIsPropagated(ExecutionException.class);
@@ -136,13 +131,23 @@ class EmailServiceTest {
     void propagatesInterruptedException() throws Exception  {
 
         // Given
-        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
-        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
-        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
-        doThrow(new InterruptedException(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+        givenSendMessageThrowsException(InterruptedException::new);
 
         // When and then
         thenExceptionIsPropagated(InterruptedException.class);
+    }
+
+    /**
+     * Sets up mocks to throw the exception for which the constructor is provided when the service calls
+     * {@link EmailSendMessageProducer#sendMessage(EmailSend)}.
+     * @param constructor the Exception constructor to use
+     * @throws Exception should something unexpected happen
+     */
+    private void givenSendMessageThrowsException(final Function<String, Exception> constructor) throws Exception {
+        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
+        when(confirmation.getOrderReferenceNumber()).thenReturn("123");
+        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
     }
 
     /**
