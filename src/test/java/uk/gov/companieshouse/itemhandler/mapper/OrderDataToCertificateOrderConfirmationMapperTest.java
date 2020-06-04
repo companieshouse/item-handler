@@ -10,7 +10,9 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,6 +40,15 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
             "Registered office address",
             "Company objects"
     };
+
+    private static final LocalTime AM = LocalTime.of(7, 30, 15);
+    private static final LocalTime PM = LocalTime.of(15, 30, 15);
+    private static final LocalDate DATE = LocalDate.of(2020, 6, 4);
+    private static final LocalDateTime MORNING_DATE_TIME = LocalDateTime.of(DATE, AM);
+    private static final LocalDateTime AFTERNOON_DATE_TIME = LocalDateTime.of(DATE, PM);
+
+    private static final String EXPECTED_AM_DATE_TIME_RENDERING = "04 June 2020 at 07:30";
+    private static final String EXPECTED_PM_DATE_TIME_RENDERING = "04 June 2020 at 15:30";
 
     @Configuration
     @ComponentScan(basePackageClasses = {OrderDataToCertificateOrderConfirmationMapperTest.class})
@@ -161,6 +172,12 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(mapperUnderTest.toSentenceCase("INCORPORATION_WITH_ALL_NAME_CHANGES"), is("Incorporation with all name changes"));
         assertThat(mapperUnderTest.toSentenceCase("STANDARD delivery"), is("Standard delivery"));
         assertThat(mapperUnderTest.toSentenceCase("SAME_DAY delivery"), is("Same day delivery"));
+    }
+
+    @Test
+    void getTimeOfPaymentBehavesAsExpected() {
+        assertThat(mapperUnderTest.getTimeOfPayment(MORNING_DATE_TIME), is(EXPECTED_AM_DATE_TIME_RENDERING));
+        assertThat(mapperUnderTest.getTimeOfPayment(AFTERNOON_DATE_TIME), is(EXPECTED_PM_DATE_TIME_RENDERING));
     }
 
 }

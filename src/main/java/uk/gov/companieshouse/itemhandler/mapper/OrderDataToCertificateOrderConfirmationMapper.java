@@ -7,6 +7,7 @@ import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ import static java.lang.Boolean.TRUE;
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertificateOrderConfirmationMapper {
 
-    DateTimeFormatter TIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm");
+    DateTimeFormatter TIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
 
     // Name/address mappings
     @Mapping(source = "deliveryDetails.forename", target="forename")
@@ -48,7 +49,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
         // Order details field mappings
         final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
         confirmation.setDeliveryMethod(toSentenceCase(timescale) + " delivery");
-        confirmation.setTimeOfPayment(TIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt()));
+        confirmation.setTimeOfPayment(getTimeOfPayment(order.getOrderedAt()));
 
         // Certificate details field mappings
         confirmation.setCompanyName(item.getCompanyName());
@@ -97,5 +98,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
             includes.add("Company objects");
         }
         return includes.toArray(new String[0]);
+    }
+
+    /**
+     * Renders the {@link LocalDateTime} provided as a 24h date time string.
+     * @param timeOfPayment the date/time of payment
+     * @return 24h date time representation string
+     */
+    default String getTimeOfPayment(final LocalDateTime timeOfPayment) {
+        return TIME_OF_PAYMENT_FORMATTER.format(timeOfPayment);
     }
 }
