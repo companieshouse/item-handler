@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -14,10 +13,9 @@ import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.util.TimestampedEntity;
-import uk.gov.companieshouse.itemhandler.util.TimestampedEntityVerifier;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -52,51 +50,18 @@ class EmailServiceTest {
     @Captor
     ArgumentCaptor<EmailSend> emailCaptor;
 
-    private TimestampedEntityVerifier timestamps;
-
-    @BeforeEach
-    void setUp() {
-        timestamps = new TimestampedEntityVerifier();
-    }
-
-
-    /** Implements {@link uk.gov.companieshouse.itemhandler.util.TimestampedEntity} to make
-     * {@link EmailSend#getCreatedAt()} accessible to a {@link TimestampedEntityVerifier}.
-     */
-    private static class EmailSendTimestampedEntity implements TimestampedEntity {
-
-        private EmailSend email;
-
-        private EmailSendTimestampedEntity(EmailSend email) {
-            this.email = email;
-        }
-
-        @Override
-        public LocalDateTime getCreatedAt() {
-            return LocalDateTime.parse(email.getCreatedAt());
-        }
-
-        @Override
-        public LocalDateTime getUpdatedAt() {
-            return null; // not used here
-        }
-    }
-
-
     @Test
     void sendsCertificateOrderConfirmation() throws Exception {
 
-        timestamps.start();
-
         // Given
+        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
         when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
         when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
         when(confirmation.getOrderReferenceNumber()).thenReturn("123");
 
         // When
         emailServiceUnderTest.sendCertificateOrderConfirmation(order);
-
-        timestamps.end();
+        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
         verify(producer).sendMessage(emailCaptor.capture());
@@ -106,8 +71,20 @@ class EmailServiceTest {
         assertThat(emailSent.getMessageType(), is("certificate_order_confirmation_email"));
         assertThat(emailSent.getData(), is(EMAIL_CONTENT));
         assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        final EmailSendTimestampedEntity emailSendTimestampedEntity = new EmailSendTimestampedEntity(emailSent);
-        timestamps.verifyCreationTimestampsWithinExecutionInterval(emailSendTimestampedEntity);
+        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+    }
+
+    /**
+     * Verifies that the email created at timestamp is within the expected interval
+     * for the creation.
+     * @param emailSent the email
+     */
+    private void verifyCreationTimestampWithinExecutionInterval(final EmailSend emailSent,
+                                                                final LocalDateTime intervalStart,
+                                                                final LocalDateTime intervalEnd) {
+        final LocalDateTime createdAt = LocalDateTime.parse(emailSent.getCreatedAt());
+        assertThat(createdAt.isAfter(intervalStart) || createdAt.isEqual(intervalStart), is(true));
+        assertThat(createdAt.isBefore(intervalEnd) || createdAt.isEqual(intervalEnd), is(true));
     }
 
 }
