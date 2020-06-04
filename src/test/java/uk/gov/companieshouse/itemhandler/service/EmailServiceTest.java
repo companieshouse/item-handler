@@ -109,32 +109,33 @@ class EmailServiceTest {
 
     @Test
     void propagatesSerializationException() throws Exception  {
-
-        // Given
-        givenSendMessageThrowsException(SerializationException::new);
-
-        // When and then
-        thenExceptionIsPropagated(SerializationException.class);
+        propagatesException(SerializationException::new, SerializationException.class);
     }
 
     @Test
     void propagatesExecutionException() throws Exception  {
-
-        // Given
-        givenSendMessageThrowsException(TestExecutionException::new);
-
-        // When and then
-        thenExceptionIsPropagated(ExecutionException.class);
+        propagatesException(TestExecutionException::new, ExecutionException.class);
     }
 
     @Test
     void propagatesInterruptedException() throws Exception  {
+        propagatesException(InterruptedException::new, InterruptedException.class);
+    }
 
+    /**
+     * Verifies that an exception thrown by {@link EmailSendMessageProducer#sendMessage(EmailSend)} is propagated by
+     * {@link EmailService#sendCertificateOrderConfirmation(OrderData)}.
+     * @param constructor the Exception constructor to use
+     * @param exception the class of the exception to be thrown
+     * @throws Exception should something unexpected happen
+     */
+    private void propagatesException(final Function<String, Exception> constructor,
+                                     final Class<? extends Throwable> exception) throws Exception {
         // Given
-        givenSendMessageThrowsException(InterruptedException::new);
+        givenSendMessageThrowsException(constructor);
 
         // When and then
-        thenExceptionIsPropagated(InterruptedException.class);
+        thenExceptionIsPropagated(exception);
     }
 
     /**
