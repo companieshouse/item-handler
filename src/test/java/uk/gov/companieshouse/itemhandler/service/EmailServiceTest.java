@@ -150,9 +150,9 @@ class EmailServiceTest {
      * {@link EmailService#sendCertificateOrderConfirmation(OrderData)}.
      * @param exception the class of the exception to be thrown
      */
-    private void thenExceptionIsPropagated(final Class exception) {
+    private void thenExceptionIsPropagated(final Class<? extends Throwable> exception) {
         assertThatExceptionOfType(exception).isThrownBy(() ->
-        { emailServiceUnderTest.sendCertificateOrderConfirmation(order); })
+        emailServiceUnderTest.sendCertificateOrderConfirmation(order))
                 .withMessage(TEST_EXCEPTION_MESSAGE)
                 .withNoCause();
     }
