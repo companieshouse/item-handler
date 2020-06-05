@@ -104,7 +104,8 @@ public class OrderProcessorServiceTest {
      * @param constructor the Exception constructor to use
      * @throws Exception should something unexpected happen
      */
-    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor) throws Exception {
+    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor)
+            throws Exception {
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
         when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
         doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(emailer).sendCertificateOrderConfirmation(any(OrderData.class));

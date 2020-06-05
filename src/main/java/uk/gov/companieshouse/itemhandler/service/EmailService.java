@@ -51,13 +51,15 @@ public class EmailService {
     /**
      * Sends out a certificate order confirmation email.
      * @param order the order information used to compose the order confirmation email.
-     * @throws JsonProcessingException TODO GCI-931 are these really necessary?
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
+     * @throws JsonProcessingException should there be a failure to serialize the CertificateOrderConfirmation object
+     * @throws SerializationException should there be a failure to serialize the EmailSend object
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      */
     public void sendCertificateOrderConfirmation(final OrderData order) throws JsonProcessingException,
-            InterruptedException, ExecutionException, SerializationException {
+            ExecutionException, SerializationException, InterruptedException {
         final CertificateOrderConfirmation confirmation = orderToConfirmationMapper.orderToConfirmation(order);
         confirmation.setTo(recipients);
         LOGGER.info("Sending confirmation for order reference number " + confirmation.getOrderReferenceNumber());

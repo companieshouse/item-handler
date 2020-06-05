@@ -24,13 +24,15 @@ public class EmailSendKafkaProducer implements InitializingBean {
     private String brokerAddresses;
 
     /**
-     * Sends message to Kafka topic
+     * Sends message to Kafka topic, waiting on its delivery to the topic
      * @param message message
-     * @throws ExecutionException should something unexpected happen
-     * @throws InterruptedException should something unexpected happen
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      */
     public void sendMessage(final Message message) throws ExecutionException, InterruptedException {
-        LOGGER.trace("Sending message to kafka");
+        LOGGER.info("Sending message to kafka " + message.getTopic() + " topic.");
         chKafkaProducer.send(message);
     }
 

@@ -91,7 +91,7 @@ public class OrdersKafkaConsumerTest {
 
     @Test
     public void republishMessageSuccessfullyCalledForFirstMainMessageOnRetryableErrorException()
-            throws SerializationException {
+            throws SerializationException, InterruptedException {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
@@ -106,7 +106,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageNotCalledForFirstRetryMessageOnRetryableErrorException() {
+    public void republishMessageNotCalledForFirstRetryMessageOnRetryableErrorException() throws InterruptedException {
         // Given & When
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
@@ -115,7 +115,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageNotCalledForFirstErrorMessageOnRetryableErrorException() {
+    public void republishMessageNotCalledForFirstErrorMessageOnRetryableErrorException() throws InterruptedException {
         // Given & When
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_ERROR));
@@ -124,7 +124,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void republishMessageNotCalledOnNonRetryableErrorException() {
+    public void republishMessageNotCalledOnNonRetryableErrorException() throws InterruptedException {
         // Given & When
         doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
@@ -133,7 +133,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void mainListenerExceptionIsCorrectlyHandled() {
+    public void mainListenerExceptionIsCorrectlyHandled() throws InterruptedException {
         // Given & When
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).processOrderReceived(any());
         RetryableErrorException exception = Assertions.assertThrows(RetryableErrorException.class, () -> {
@@ -146,7 +146,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void retryListenerExceptionIsCorrectlyHandled() {
+    public void retryListenerExceptionIsCorrectlyHandled() throws InterruptedException {
         // Given & When
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).processOrderReceivedRetry(any());
         RetryableErrorException exception = Assertions.assertThrows(RetryableErrorException.class, () -> {
@@ -159,7 +159,7 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
-    public void errorListenerExceptionIsCorrectlyHandled() {
+    public void errorListenerExceptionIsCorrectlyHandled() throws InterruptedException {
         // Given & When
         doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).processOrderReceivedError(any());
         RetryableErrorException exception = Assertions.assertThrows(RetryableErrorException.class, () -> {

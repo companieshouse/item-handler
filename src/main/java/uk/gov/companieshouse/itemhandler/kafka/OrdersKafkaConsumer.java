@@ -71,7 +71,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     topics = ORDER_RECEIVED_TOPIC,
                     autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
                     containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
+    public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) throws InterruptedException {
         handleMessage(message);
     }
 
@@ -83,7 +83,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     topics = ORDER_RECEIVED_TOPIC_RETRY,
                     autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
                     containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceivedRetry(org.springframework.messaging.Message<OrderReceived> message) {
+    public void processOrderReceivedRetry(org.springframework.messaging.Message<OrderReceived> message) throws InterruptedException {
         handleMessage(message);
     }
 
@@ -99,7 +99,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                     topics = ORDER_RECEIVED_TOPIC_ERROR,
                     autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}",
                     containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceivedError(org.springframework.messaging.Message<OrderReceived> message) {
+    public void processOrderReceivedError(org.springframework.messaging.Message<OrderReceived> message) throws InterruptedException {
         long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
         if (offset <= errorRecoveryOffset) {
             handleMessage(message);
@@ -115,7 +115,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      * Handles processing of received message.
      * @param message
      */
-    protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
+    protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) throws InterruptedException {
         OrderReceived msg = message.getPayload();
         String orderReceivedUri = msg.getOrderUri();
         MessageHeaders headers = message.getHeaders();
@@ -124,7 +124,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageReceived(message);
 
             // process message
-            // TODO GCI-931 Exceptions?
             processor.processOrderReceived(orderReceivedUri);
 
             // on successful processing remove counterKey from retryCount
@@ -132,8 +131,11 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                 resetRetryCount(receivedTopic + "-" + orderReceivedUri);
             }
             logMessageProcessed(message);
-        } catch (RetryableErrorException ex){
+        } catch (RetryableErrorException ex) {
             retryMessage(message, orderReceivedUri, receivedTopic, ex);
+        } catch (InterruptedException ie) {
+            // GCI-1161. Propagate this exception up the call stack.
+            throw ie;
         } catch (Exception x) {
             logMessageProcessingFailureNonRecoverable(message, x);
         }
@@ -149,7 +151,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      * @param ex
      */
     private void retryMessage(org.springframework.messaging.Message<OrderReceived> message,
-                              String orderReceivedUri, String receivedTopic, RetryableErrorException ex) {
+                              String orderReceivedUri, String receivedTopic, RetryableErrorException ex) throws InterruptedException {
         String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
                 || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR))
                 ? ORDER_RECEIVED_TOPIC_RETRY : ORDER_RECEIVED_TOPIC_ERROR;

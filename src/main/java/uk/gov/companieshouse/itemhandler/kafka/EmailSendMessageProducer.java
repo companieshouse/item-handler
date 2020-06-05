@@ -26,8 +26,10 @@ public class EmailSendMessageProducer {
      * Sends an email-send message to the Kafka producer.
      * @param email EmailSend object
      * @throws SerializationException should there be a failure to serialize the EmailSend object
-     * @throws ExecutionException should something unexpected happen
-     * @throws InterruptedException should something unexpected happen
+     * @throws ExecutionException if the computation threw an
+     * exception
+     * @throws InterruptedException if the current thread was interrupted
+     * while waiting
      */
     public void sendMessage(final EmailSend email)
             throws SerializationException, ExecutionException, InterruptedException {
