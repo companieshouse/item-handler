@@ -79,6 +79,17 @@ public class OrdersKafkaConsumerTest {
     }
 
     @Test
+    public void republishMessageToRetryTopicThrowsSerializationException()
+        throws ExecutionException, InterruptedException, SerializationException {
+        // Given & When
+        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
+        when(serializer.toBinary(any())).thenThrow(SerializationException.class);
+        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY);
+        // Then
+        verify(ordersKafkaProducer, times(1)).sendMessage(any());
+    }
+
+    @Test
     public void republishMessageToErrorTopicRunsSuccessfully()
             throws ExecutionException, InterruptedException, SerializationException {
         // Given & When

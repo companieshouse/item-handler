@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.exceptions.ProducerConfigException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.Acks;
@@ -11,6 +12,7 @@ import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
@@ -29,7 +31,10 @@ public class OrdersKafkaProducer implements InitializingBean {
      * @throws InterruptedException
      */
     public void sendMessage(final Message message) throws ExecutionException, InterruptedException {
-        LOGGER.trace("Sending message to kafka topic.");
+        Map<String, Object> logMap = LoggingUtils.createLogMap();
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, message.getTopic());
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
+        LOGGER.info("Sending message to kafka topic", logMap);
         chKafkaProducer.send(message);
     }
 
