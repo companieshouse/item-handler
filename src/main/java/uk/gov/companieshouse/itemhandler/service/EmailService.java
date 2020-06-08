@@ -38,7 +38,7 @@ public class EmailService {
     private final EmailSendMessageProducer producer;
 
     @Value("${certificate.order.confirmation.recipient}")
-    private String recipients;
+    private String recipient;
 
     public EmailService(final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
                         final ObjectMapper objectMapper,
@@ -59,7 +59,7 @@ public class EmailService {
     public void sendCertificateOrderConfirmation(final OrderData order) throws JsonProcessingException,
             InterruptedException, ExecutionException, SerializationException {
         final CertificateOrderConfirmation confirmation = orderToConfirmationMapper.orderToConfirmation(order);
-        confirmation.setTo(recipients);
+        confirmation.setTo(recipient);
         LOGGER.info("Sending confirmation for order reference number " + confirmation.getOrderReferenceNumber());
 
         final EmailSend email = new EmailSend();

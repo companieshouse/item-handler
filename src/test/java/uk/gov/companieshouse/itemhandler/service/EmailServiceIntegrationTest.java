@@ -42,7 +42,7 @@ public class EmailServiceIntegrationTest {
 
     @Test
     @DisplayName("EmailService sets the to line on the confirmation to the configured certificate.order.confirmation.recipient value")
-    void usesConfiguredRecipientsValue() throws Exception {
+    void usesConfiguredRecipientValue() throws Exception {
 
         // Given
         when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
