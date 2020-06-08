@@ -7,7 +7,7 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipients = nobody@nowhere.com")
+@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
 class ItemHandlerApplicationTests {
 
 	@Test

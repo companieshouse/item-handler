@@ -25,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipients = nobody@nowhere.com")
+@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
 public class EmailSendMessageProducerIntegrationTest {
 
     private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =

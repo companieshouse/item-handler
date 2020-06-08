@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.*;
 @DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
-                                "certificate.order.confirmation.recipients = nobody@nowhere.com"})
+                                "certificate.order.confirmation.recipient = nobody@nowhere.com"})
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
 public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";

@@ -37,7 +37,7 @@ public class EmailService {
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
 
-    @Value("${certificate.order.confirmation.recipients}")
+    @Value("${certificate.order.confirmation.recipient}")
     private String recipients;
 
     public EmailService(final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,

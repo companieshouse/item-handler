@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 /** Integration tests the {@link EmailService} service. */
 @SpringBootTest
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipients = nobody@nowhere.com")
+@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
 public class EmailServiceIntegrationTest {
 
     @Autowired
@@ -41,7 +41,7 @@ public class EmailServiceIntegrationTest {
     private CertificateOrderConfirmation confirmation;
 
     @Test
-    @DisplayName("EmailService sets the to line on the confirmation to the configured certificate.order.confirmation.recipients value")
+    @DisplayName("EmailService sets the to line on the confirmation to the configured certificate.order.confirmation.recipient value")
     void usesConfiguredRecipientsValue() throws Exception {
 
         // Given
