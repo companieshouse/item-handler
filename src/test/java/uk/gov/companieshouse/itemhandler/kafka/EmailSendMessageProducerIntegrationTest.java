@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -24,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
+@TestPropertySource(properties="certificate.order.confirmation.recipients = nobody@nowhere.com")
 public class EmailSendMessageProducerIntegrationTest {
 
     private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =
