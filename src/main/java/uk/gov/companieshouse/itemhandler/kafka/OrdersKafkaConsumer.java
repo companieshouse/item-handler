@@ -126,7 +126,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageReceived(message);
 
             // process message
-            // TODO GCI-931 Exceptions?
             processor.processOrderReceived(orderReceivedUri);
 
             // on successful processing remove counterKey from retryCount

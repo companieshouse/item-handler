@@ -82,7 +82,6 @@ public class OrderProcessorServiceTest {
         doesNotPropagateException(TestExecutionException::new);
     }
 
-    // TODO GCI-931 This needs fixing.
     @Test
     void doesNotPropagateInterruptedException() throws Exception {
         doesNotPropagateException(InterruptedException::new);

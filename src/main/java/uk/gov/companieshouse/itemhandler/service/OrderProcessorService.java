@@ -32,7 +32,6 @@ public class OrderProcessorService {
      * Implements all of the business logic required to process the notification of an order received.
      * @param orderUri the URI representing the order received
      */
-    // TODO GCI-931 Exceptions?
     public void processOrderReceived(final String orderUri) {
         final OrderData order;
         try {

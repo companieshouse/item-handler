@@ -51,7 +51,7 @@ public class EmailService {
     /**
      * Sends out a certificate order confirmation email.
      * @param order the order information used to compose the order confirmation email.
-     * @throws JsonProcessingException TODO GCI-931 are these really necessary?
+     * @throws JsonProcessingException
      * @throws InterruptedException
      * @throws ExecutionException
      * @throws SerializationException
