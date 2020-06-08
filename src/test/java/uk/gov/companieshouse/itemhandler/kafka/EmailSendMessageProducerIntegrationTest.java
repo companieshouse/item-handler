@@ -48,7 +48,7 @@ public class EmailSendMessageProducerIntegrationTest {
 
         // Given an EmailSend object is created
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
-        confirmation.setTo("lmccarthy@companieshouse.gov.uk");
+        confirmation.setTo("nobody@nowhere.com");
 
         confirmation.setForename("Jenny");
         confirmation.setSurname("Wilson");
