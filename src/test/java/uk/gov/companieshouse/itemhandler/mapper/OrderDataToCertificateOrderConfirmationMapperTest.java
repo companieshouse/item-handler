@@ -93,8 +93,8 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         order.setDeliveryDetails(delivery);
         final Item item = new Item();
-        item.setCompanyName("THE GIRLS' DAY SCHOOL TRUST");
-        item.setCompanyNumber("00006400");
+        item.setCompanyName("THE COMPANY");
+        item.setCompanyNumber("00000001");
         final CertificateItemOptions options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
@@ -135,8 +135,8 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
 
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
-        assertThat(confirmation.getCompanyName(), is("THE GIRLS' DAY SCHOOL TRUST"));
-        assertThat(confirmation.getCompanyNumber(), is("00006400"));
+        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
+        assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all name changes"));
         assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(TIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
