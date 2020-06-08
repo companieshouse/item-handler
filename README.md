@@ -15,6 +15,7 @@ Name | Description | Mandatory | Default | Location
 --- | --- | --- | --- | ---
 ITEM_HANDLER_PORT | Port this application runs on when deployed. | ✓ |  | start.sh
 IS_ERROR_QUEUE_CONSUMER | Setting to `true` configures app to listen only to `order-received-error`. | ✓ | `false` | env var
+CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT | The recipient certificate order confirmation emails are sent to. | ✓ | | env var
 
 ### Endpoints
 Path | Method | Description

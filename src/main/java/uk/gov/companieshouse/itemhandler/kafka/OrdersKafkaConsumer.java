@@ -12,6 +12,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -49,14 +50,17 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private final OrdersKafkaProducer kafkaProducer;
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
+    private final OrderProcessorService processor;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
                                OrdersKafkaProducer kafkaProducer,
-                               KafkaListenerEndpointRegistry registry) {
+                               KafkaListenerEndpointRegistry registry,
+                               final OrderProcessorService processor) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
         this.retryCount = new HashMap<>();
+        this.processor = processor;
     }
 
     /**
@@ -122,6 +126,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageReceived(message);
 
             // process message
+            processor.processOrderReceived(orderReceivedUri);
 
             // on successful processing remove counterKey from retryCount
             if (retryCount.containsKey(orderReceivedUri)) {

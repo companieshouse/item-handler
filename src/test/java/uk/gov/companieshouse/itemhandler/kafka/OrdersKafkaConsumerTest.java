@@ -8,12 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
@@ -40,13 +39,7 @@ public class OrdersKafkaConsumerTest {
     @Mock
     private OrdersKafkaProducer ordersKafkaProducer;
     @Mock
-    private CHKafkaProducer chKafkaProducer;
-    @Mock
     private SerializerFactory serializerFactory;
-    @Mock
-    private KafkaListenerEndpointRegistry registry;
-    @Mock
-    private MessageListenerContainer container;
     @Mock
     private AvroSerializer serializer;
     @Captor
@@ -55,12 +48,17 @@ public class OrdersKafkaConsumerTest {
     ArgumentCaptor<String> currentTopicArgument;
     @Captor
     ArgumentCaptor<String> nextTopicArgument;
+    @Mock
+    private OrderProcessorService processor;
 
     @Test
     public void createRetryMessageBuildsMessageSuccessfully() {
         // Given & When
         OrdersKafkaConsumer consumerUnderTest =
-                new OrdersKafkaConsumer(new SerializerFactory(), new OrdersKafkaProducer(), new KafkaListenerEndpointRegistry());
+                new OrdersKafkaConsumer(new SerializerFactory(),
+                                        new OrdersKafkaProducer(),
+                                        new KafkaListenerEndpointRegistry(),
+                                        processor);
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         // Then
