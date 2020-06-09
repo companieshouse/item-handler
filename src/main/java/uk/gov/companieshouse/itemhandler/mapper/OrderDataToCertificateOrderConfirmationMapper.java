@@ -26,6 +26,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
     @Mapping(source = "deliveryDetails.premises", target="houseNumberStreetName")
     @Mapping(source = "deliveryDetails.region", target="city")
     @Mapping(source = "deliveryDetails.postalCode", target="postCode")
+    @Mapping(source = "deliveryDetails.country", target="country")
 
     // Order details field mappings
     @Mapping(source = "reference", target="orderReferenceNumber")

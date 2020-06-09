@@ -90,6 +90,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         delivery.setPremises("152-160 City Road");
         delivery.setRegion("London");
         delivery.setPostalCode("EC1V 2NX");
+        delivery.setCountry("England");
 
         order.setDeliveryDetails(delivery);
         final Item item = new Item();
@@ -133,6 +134,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
         assertThat(confirmation.getCity(), is("London"));
         assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
+        assertThat(confirmation.getCountry(), is("England"));
 
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
