@@ -18,6 +18,7 @@ public class CertificateOrderConfirmation {
     private String houseNumberStreetName;
     private String city;
     private String postCode;
+    private String country;
     private String orderReferenceNumber;
     private String emailAddress;
     private String deliveryMethod;
@@ -99,6 +100,14 @@ public class CertificateOrderConfirmation {
 
     public void setPostCode(String postCode) {
         this.postCode = postCode;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public String getOrderReferenceNumber() {
