@@ -15,10 +15,12 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.TIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -101,7 +103,9 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
 
         options.setIncludeGoodStandingInformation(true);
-        options.setRegisteredOfficeAddressDetails(new RegisteredOfficeAddressDetails());
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
         final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
         directors.setIncludeBasicInformation(true);
         options.setDirectorDetails(directors);
@@ -154,7 +158,9 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
 
         options.setIncludeGoodStandingInformation(true);
-        options.setRegisteredOfficeAddressDetails(new RegisteredOfficeAddressDetails());
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
         final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
         options.setDirectorDetails(directors);
         options.setIncludeCompanyObjectsInformation(true);
@@ -180,6 +186,59 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     void getTimeOfPaymentBehavesAsExpected() {
         assertThat(mapperUnderTest.getTimeOfPayment(MORNING_DATE_TIME), is(EXPECTED_AM_DATE_TIME_RENDERING));
         assertThat(mapperUnderTest.getTimeOfPayment(AFTERNOON_DATE_TIME), is(EXPECTED_PM_DATE_TIME_RENDERING));
+    }
+
+    @Test
+    void includesCurrentRegisteredOfficeAddress() {
+
+        // Given
+        final Item item = new Item();
+        final CertificateItemOptions options = new CertificateItemOptions();
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        item.setItemOptions(options);
+
+        // When
+        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+
+        // Then
+        assertThat(asList(includes), contains("Registered office address"));
+    }
+
+    @Test
+    void doesNotIncludeCurrentAndPreviousRegisteredOfficeAddress() {
+
+        // Given
+        final Item item = new Item();
+        final CertificateItemOptions options = new CertificateItemOptions();
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT_AND_PREVIOUS);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        item.setItemOptions(options);
+
+        // When
+        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+
+        // Then
+        assertThat(asList(includes), not(contains("Registered office address")));
+
+    }
+
+    @Test
+    void doesNotIncludeRegisteredOfficeAddressWithNoRecordsType() {
+        // Given
+        final Item item = new Item();
+        final CertificateItemOptions options = new CertificateItemOptions();
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        item.setItemOptions(options);
+
+        // When
+        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+
+        // Then
+        assertThat(asList(includes), not(contains("Registered office address")));
     }
 
 }
