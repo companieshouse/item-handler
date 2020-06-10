@@ -2,10 +2,7 @@ package uk.gov.companieshouse.itemhandler.mapper;
 
 import org.mapstruct.*;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
-import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,6 +10,7 @@ import java.util.List;
 
 import static java.lang.Boolean.TRUE;
 import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.TIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertificateOrderConfirmationMapper {
@@ -82,7 +80,8 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
         if (TRUE.equals(options.getIncludeGoodStandingInformation())) {
             includes.add("Statement of good standing");
         }
-        if (options.getRegisteredOfficeAddressDetails() != null) {
+        final RegisteredOfficeAddressDetails office = options.getRegisteredOfficeAddressDetails();
+        if (office != null && office.getIncludeAddressRecordsType() == CURRENT ) {
             includes.add("Registered office address");
         }
         final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
