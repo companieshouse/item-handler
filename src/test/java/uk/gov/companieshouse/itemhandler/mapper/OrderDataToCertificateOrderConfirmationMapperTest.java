@@ -14,8 +14,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static java.util.Collections.singletonList;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.TIME_OF_PAYMENT_FORMATTER;
@@ -143,7 +143,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
-        assertThat(confirmation.getCertificateType(), is("Incorporation with all name changes"));
+        assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
         assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(TIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
@@ -239,6 +239,17 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertThat(asList(includes), not(contains("Registered office address")));
+    }
+
+    @Test
+    void incorporationWithAllNameChangesHasASpecialLabel() {
+        for (final CertificateType type : CertificateType.values()) {
+            if (type == CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES) {
+                assertThat(mapperUnderTest.getCertificateType(type), is("Incorporation with all company name changes"));
+            } else {
+                assertThat(mapperUnderTest.getCertificateType(type), is(mapperUnderTest.toSentenceCase(type.toString())));
+            }
+        }
     }
 
 }
