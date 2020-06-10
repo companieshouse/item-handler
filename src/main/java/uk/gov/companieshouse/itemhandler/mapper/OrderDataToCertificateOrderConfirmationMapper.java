@@ -51,7 +51,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
         // Certificate details field mappings
         confirmation.setCompanyName(item.getCompanyName());
         confirmation.setCompanyNumber(item.getCompanyNumber());
-        confirmation.setCertificateType(toSentenceCase(item.getItemOptions().getCertificateType().toString()));
+        confirmation.setCertificateType(getCertificateType(item.getItemOptions().getCertificateType()));
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
     }
 
@@ -105,5 +105,15 @@ public interface OrderDataToCertificateOrderConfirmationMapper {
      */
     default String getTimeOfPayment(final LocalDateTime timeOfPayment) {
         return TIME_OF_PAYMENT_FORMATTER.format(timeOfPayment);
+    }
+
+    /**
+     * Gets the appropriate label for the {@link CertificateType} value provided.
+     * @param type the type to be labelled
+     * @return the label string representing the type as it is to be rendered in a certificate confirmation email
+     */
+    default String getCertificateType(final CertificateType type) {
+        return type == CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES ?
+                "Incorporation with all company name changes" : toSentenceCase(type.toString());
     }
 }
