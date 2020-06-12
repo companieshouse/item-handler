@@ -28,6 +28,8 @@
 		<api-sdk-java.version>4.1.48</api-sdk-java.version>
 		<kafka-models.version>1.0.14</kafka-models.version>
 		<ch-kafka.version>1.4.2</ch-kafka.version>
+		<spring-cloud-contract-wiremock-version>2.2.2.RELEASE</spring-cloud-contract-wiremock-version>
+		<system-rules-version>1.19.0</system-rules-version>
 	</properties>
 
 	<dependencies>
@@ -117,6 +119,18 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-aop</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.stefanbirkner</groupId>
+			<artifactId>system-rules</artifactId>
+			<version>${system-rules-version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-contract-wiremock</artifactId>
+			<version>${spring-cloud-contract-wiremock-version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
