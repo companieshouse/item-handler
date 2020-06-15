@@ -76,7 +76,6 @@ public class OrdersApiClientServiceIntegrationTest {
     @MockBean
     private OrdersApiToOrderDataMapper ordersApiToOrderDataMapper;
 
-    // TODO GCI-1182 Why?
     @MockBean
     private EmailService emailService;
 
