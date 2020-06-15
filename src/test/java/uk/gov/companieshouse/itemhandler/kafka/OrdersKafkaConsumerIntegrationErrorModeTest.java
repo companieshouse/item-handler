@@ -40,8 +40,8 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String CONSUMER_GROUP_MAIN_RETRY = "order-received-main-retry";
-    private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\"}";
+    private static final String ORDER_RECEIVED_URI = "/orders/ORDER-12345";
+    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/orders/ORDER-12345\"}";
     @Value("${spring.kafka.consumer.bootstrap-servers}")
     private String brokerAddresses;
     @Autowired
