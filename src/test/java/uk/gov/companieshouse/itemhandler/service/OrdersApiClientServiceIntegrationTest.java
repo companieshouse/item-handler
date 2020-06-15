@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -78,11 +80,13 @@ public class OrdersApiClientServiceIntegrationTest {
     @MockBean
     private EmailService emailService;
 
-//    @MockBean
-//    private OrdersKafkaConsumerWrapper consumerWrapper;
-
     @Autowired
     private ObjectMapper objectMapper;
+
+    @After
+    public void tearDown() {
+        WireMock.reset();
+    }
 
     @Test
     public void getsOrderSuccessfully() throws Exception {
@@ -93,7 +97,7 @@ public class OrdersApiClientServiceIntegrationTest {
         ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
         ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
         ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
-        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(ORDER_URL))
+        givenThat(WireMock.get(urlEqualTo(ORDER_URL))
                 .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(ORDER))));
@@ -122,7 +126,7 @@ public class OrdersApiClientServiceIntegrationTest {
                         .withHeader("Content-Type", "application/json")));
 
         // Handle the redirected request
-        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(REDIRECTED_ORDER_URL))
+        givenThat(WireMock.get(urlEqualTo(REDIRECTED_ORDER_URL))
                 .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(ORDER))));
