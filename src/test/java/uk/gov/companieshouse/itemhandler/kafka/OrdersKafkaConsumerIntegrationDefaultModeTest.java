@@ -1,33 +1,15 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.MessageListener;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
-import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
-import uk.gov.companieshouse.orders.OrderReceived;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,57 +25,18 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
-    private static final String GROUP_NAME = "order-received-consumers";
     private static final String ORDER_RECEIVED_URI = "/orders/ORDER-12345";
     private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/orders/ORDER-12345\"}";
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
-    private String brokerAddresses;
-    @Autowired
-    private SerializerFactory serializerFactory;
+
     @Autowired
     private OrdersKafkaProducer kafkaProducer;
-
-    private KafkaMessageListenerContainer<String, OrderReceived> container;
-
-    private BlockingQueue<ConsumerRecord<String, String>> records;
 
     @Autowired
     private OrdersKafkaConsumerWrapper consumerWrapper;
 
-    @BeforeEach
-    public void setUp() {
-        setUpTestKafkaOrdersConsumer();
-    }
-
     @AfterEach
     public void tearDown() {
         consumerWrapper.reset();
-        container.stop();
-    }
-
-    private void setUpTestKafkaOrdersConsumer() {
-        final Map<String, Object> consumerProperties = new HashMap<>();
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserializer.class);
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_NAME);
-        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses);
-
-        final DefaultKafkaConsumerFactory<String, OrderReceived> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProperties);
-
-        final ContainerProperties containerProperties = new ContainerProperties(ORDER_RECEIVED_TOPIC);
-
-        container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
-
-        records = new LinkedBlockingQueue<>();
-
-        container.setupMessageListener((MessageListener<String, String>) record -> {
-                    records.add(record);
-                });
-
-        container.start();
-
-        ContainerTestUtils.waitForAssignment(container, 0);
     }
 
     @Test
