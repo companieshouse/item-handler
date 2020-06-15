@@ -1,5 +1,9 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -14,9 +18,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.companieshouse.api.model.order.OrdersApi;
 import uk.gov.companieshouse.itemhandler.client.ApiClient;
 import uk.gov.companieshouse.itemhandler.mapper.OrdersApiToOrderDataMapper;
 
+import static com.fasterxml.jackson.databind.PropertyNamingStrategy.SNAKE_CASE;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 /**
@@ -31,6 +37,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 public class OrdersApiClientServiceIntegrationTest {
 
     private static final String ORDER_URL = "/orders/1234";
+    private static final String REDIRECTED_ORDER_URL = "/new_orders/1234";
+    private static final OrdersApi ORDER = new OrdersApi();
 
     @ClassRule
     public static final EnvironmentVariables ENVIRONMENT_VARIABLES = new EnvironmentVariables();
@@ -41,6 +49,16 @@ public class OrdersApiClientServiceIntegrationTest {
         @Bean
         ApiClient getApiClient() {
             return new ApiClient();
+        }
+
+        @Bean
+        public ObjectMapper objectMapper() {
+            return new ObjectMapper()
+                    .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
+                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                    .setPropertyNamingStrategy(SNAKE_CASE)
+                    .findAndRegisterModules();
         }
     }
 
@@ -63,20 +81,58 @@ public class OrdersApiClientServiceIntegrationTest {
 //    @MockBean
 //    private OrdersKafkaConsumerWrapper consumerWrapper;
 
-    @Test
-    public void redirectsReportedAsErrors() throws Exception {
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    @Test
+    public void getsOrderSuccessfully() throws Exception {
+
+        // Given
         final String wireMockPort = environment.getProperty("wiremock.server.port");
 
         ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
         ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
         ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
-        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo("blah"))
-                .willReturn(temporaryRedirect("somewhere else")
-                        .withHeader("Content-Type", "application/json")));
-                        /*.withBody(objectMapper.writeValueAsString(COMPANY_NOT_FOUND))));*/
+        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(ORDER_URL))
+                .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody(objectMapper.writeValueAsString(ORDER))));
 
+        // When
         serviceUnderTest.getOrderData(ORDER_URL);
+
+        // Then
+        verify(1, getRequestedFor(urlEqualTo(ORDER_URL)));
+
+    }
+
+    @Test
+    public void redirectsHandledAutomatically() throws Exception {
+
+        // Given
+        final String wireMockPort = environment.getProperty("wiremock.server.port");
+
+        ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
+        ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
+        ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
+
+        // Redirect the original request
+        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(ORDER_URL))
+                .willReturn(temporaryRedirect(REDIRECTED_ORDER_URL)
+                        .withHeader("Content-Type", "application/json")));
+
+        // Handle the redirected request
+        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(REDIRECTED_ORDER_URL))
+                .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")
+                .withBody(objectMapper.writeValueAsString(ORDER))));
+
+        // When
+        serviceUnderTest.getOrderData(ORDER_URL);
+
+        // Then
+        verify(1, getRequestedFor(urlEqualTo(ORDER_URL)));
+        verify(1, getRequestedFor(urlEqualTo(REDIRECTED_ORDER_URL)));
 
     }
 
