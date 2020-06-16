@@ -20,7 +20,6 @@ import static org.hamcrest.Matchers.*;
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=false",
                                 "certificate.order.confirmation.recipient = nobody@nowhere.com"})
-@TestMethodOrder(MethodOrderer.Alphanumeric.class)
 public class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
