@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -93,14 +92,14 @@ public class OrdersApiClientServiceIntegrationTest {
 
     @After
     public void tearDown() {
-        WireMock.reset();
+        reset();
     }
 
     @Test
     public void getsOrderSuccessfully() throws Exception {
 
         // Given
-        givenThat(WireMock.get(urlEqualTo(ORDER_URL))
+        givenThat(get(urlEqualTo(ORDER_URL))
                 .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(ORDER))));
@@ -118,12 +117,12 @@ public class OrdersApiClientServiceIntegrationTest {
 
         // Given
         // Redirect the original request
-        givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(ORDER_URL))
+        givenThat(get(urlEqualTo(ORDER_URL))
                 .willReturn(temporaryRedirect(REDIRECTED_ORDER_URL)
-                        .withHeader("Content-Type", "application/json")));
+                .withHeader("Content-Type", "application/json")));
 
         // Handle the redirected request
-        givenThat(WireMock.get(urlEqualTo(REDIRECTED_ORDER_URL))
+        givenThat(get(urlEqualTo(REDIRECTED_ORDER_URL))
                 .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
                 .withBody(objectMapper.writeValueAsString(ORDER))));
