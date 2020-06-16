@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -138,20 +139,27 @@ public class OrdersKafkaConsumerIntegrationTest {
         // Given
         // The initial request is rejected due to the Orders API hitting a Server Internal Error
         givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
+                .inScenario("5xx retry")
+                .whenScenarioStateIs(STARTED)
+                .willSetStateTo("Initial request rejected")
                 .willReturn(serverError()
                 .withHeader("Content-Type", "application/json")));
 
         // and the subsequent request is responded to correctly as the Orders API has recovered
         givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
+                .inScenario("5xx retry")
+                .whenScenarioStateIs("Initial request rejected")
                 .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(objectMapper.writeValueAsString(ORDER))));
+                .withHeader("Content-Type", "application/json")
+                .withBody(objectMapper.writeValueAsString(ORDER))));
 
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+        // TODO GCI-1182 Give scenario time to play out?
+        Thread.sleep(100);
         verify(2, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
     }
 
