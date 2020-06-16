@@ -1,0 +1,169 @@
+package uk.gov.companieshouse.itemhandler.kafka;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.EnvironmentVariables;
+//import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
+import org.springframework.core.env.Environment;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
+import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
+import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.givenThat;
+import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
+import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+/**
+ * Partially Unit/integration tests the {@link OrdersKafkaConsumer} class. Uses JUnit4 to take advantage of the
+ * system-rules {@link EnvironmentVariables} class rule. The JUnit5 system-extensions equivalent does not
+ * seem to have been released.
+ */
+@SpringBootTest
+@RunWith(SpringJUnit4ClassRunner.class)
+@DirtiesContext
+@EmbeddedKafka
+@TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=false",
+                                "certificate.order.confirmation.recipient = nobody@nowhere.com"})
+@AutoConfigureWireMock(port = 0)
+public class OrdersKafkaConsumerIntegrationTest {
+    private static final String ORDER_RECEIVED_TOPIC = "order-received";
+
+    // TODO GCI-1182 Use or lose.
+    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
+
+    private static final String ORDER_RECEIVED_URI = "/orders/ORDER-12345";
+    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/orders/ORDER-12345\"}";
+
+    private static final String ORDER_URL = "/orders/1234";
+
+    @ClassRule
+    public static final EnvironmentVariables ENVIRONMENT_VARIABLES = new EnvironmentVariables();
+
+    @Autowired
+    private OrdersKafkaProducer kafkaProducer;
+
+    @Autowired
+    private OrdersKafkaConsumerWrapper consumerWrapper;
+
+    @Autowired
+    private Environment environment;
+
+    @Before
+    public void setUp() {
+        final String wireMockPort = environment.getProperty("wiremock.server.port");
+        ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
+        ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
+        ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
+    }
+
+    @After
+    public void tearDown() {
+        consumerWrapper.reset();
+    }
+
+// TODO GCI-1182 Use or lose.
+//    @Test
+//    @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+//    public void testOrdersConsumerReceivesOrderReceivedMessage1Error() throws InterruptedException, ExecutionException, SerializationException {
+//        // When
+//        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
+//
+//        // Then
+//        verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
+//    }
+//
+//    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
+//        consumerWrapper.setTestType(type);
+//        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
+//        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
+//        String processedOrderUri = consumerWrapper.getOrderUri();
+//        assertThat(processedOrderUri, isEmptyOrNullString());
+//    }
+
+    @Test
+    public void fairWeather() throws InterruptedException, ExecutionException, SerializationException {
+
+        // Given
+        givenThat(get(urlEqualTo(ORDER_URL))
+                .willReturn(aResponse()
+                .withHeader("Content-Type", "application/json")));
+
+        // When
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+    }
+
+    @Test
+    public void fourXxIsNotRetryable() throws InterruptedException, ExecutionException, SerializationException {
+
+        // Given
+        givenThat(get(urlEqualTo(ORDER_URL))
+                .willReturn(notFound()
+                .withHeader("Content-Type", "application/json")));
+
+        // When
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+    }
+
+    @Test
+    public void fiveXxIsRetryable() throws InterruptedException, ExecutionException, SerializationException {
+
+        // Given
+        givenThat(get(urlEqualTo(ORDER_URL))
+                .willReturn(serverError()
+                .withHeader("Content-Type", "application/json")));
+
+        // When
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+    }
+
+// TODO GCI-1182 Use or lose.
+//    @Test
+//    @DisplayName("order-received-retry topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+//    public void testOrdersConsumerReceivesOrderReceivedMessage3Retry() throws InterruptedException, ExecutionException, SerializationException {
+//        // When
+//        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
+//
+//        // Then
+//        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
+//    }
+
+    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
+        consumerWrapper.setTestType(type);
+        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
+        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
+        String processedOrderUri = consumerWrapper.getOrderUri();
+        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
+    }
+}
