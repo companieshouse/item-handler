@@ -1,14 +1,12 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
-//import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,22 +16,17 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import uk.gov.companieshouse.itemhandler.service.OrdersApiClientService;
+import uk.gov.companieshouse.api.model.order.OrdersApi;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.givenThat;
-import static com.github.tomakehurst.wiremock.client.WireMock.notFound;
-import static com.github.tomakehurst.wiremock.client.WireMock.serverError;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 /**
  * Partially Unit/integration tests the {@link OrdersKafkaConsumer} class. Uses JUnit4 to take advantage of the
@@ -56,8 +49,7 @@ public class OrdersKafkaConsumerIntegrationTest {
 
     private static final String ORDER_RECEIVED_URI = "/orders/ORDER-12345";
     private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/orders/ORDER-12345\"}";
-
-    private static final String ORDER_URL = "/orders/1234";
+    private static final OrdersApi ORDER = new OrdersApi();
 
     @ClassRule
     public static final EnvironmentVariables ENVIRONMENT_VARIABLES = new EnvironmentVariables();
@@ -70,6 +62,9 @@ public class OrdersKafkaConsumerIntegrationTest {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Before
     public void setUp() {
@@ -104,12 +99,13 @@ public class OrdersKafkaConsumerIntegrationTest {
 //    }
 
     @Test
-    public void fairWeather() throws InterruptedException, ExecutionException, SerializationException {
+    public void fairWeather() throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
 
         // Given
-        givenThat(get(urlEqualTo(ORDER_URL))
+        givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
                 .willReturn(aResponse()
-                .withHeader("Content-Type", "application/json")));
+                .withHeader("Content-Type", "application/json")
+                .withBody(objectMapper.writeValueAsString(ORDER))));
 
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
@@ -122,7 +118,7 @@ public class OrdersKafkaConsumerIntegrationTest {
     public void fourXxIsNotRetryable() throws InterruptedException, ExecutionException, SerializationException {
 
         // Given
-        givenThat(get(urlEqualTo(ORDER_URL))
+        givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
                 .willReturn(notFound()
                 .withHeader("Content-Type", "application/json")));
 
@@ -137,7 +133,7 @@ public class OrdersKafkaConsumerIntegrationTest {
     public void fiveXxIsRetryable() throws InterruptedException, ExecutionException, SerializationException {
 
         // Given
-        givenThat(get(urlEqualTo(ORDER_URL))
+        givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
                 .willReturn(serverError()
                 .withHeader("Content-Type", "application/json")));
 
