@@ -123,7 +123,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         MessageHeaders headers = message.getHeaders();
         String receivedTopic = headers.get(KafkaHeaders.RECEIVED_TOPIC).toString();
         try {
-            logMessageReceived(message);
+            logMessageReceived(message, orderReceivedUri);
 
             // process message
             processor.processOrderReceived(orderReceivedUri);
@@ -132,7 +132,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             if (retryCount.containsKey(orderReceivedUri)) {
                 resetRetryCount(receivedTopic + "-" + orderReceivedUri);
             }
-            logMessageProcessed(message);
+            logMessageProcessed(message, orderReceivedUri);
         } catch (RetryableErrorException ex){
             retryMessage(message, orderReceivedUri, receivedTopic, ex);
         } catch (Exception x) {
@@ -179,9 +179,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         retryCount.remove(counterKey);
     }
 
-    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message){
-        LOGGER.info("'order-received' message received",
-                getMessageHeadersAsMap(message));
+    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message, String orderUri){
+        Map<String, Object> logMap = getMessageHeadersAsMap(message);
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
+        LOGGER.info("'order-received' message received", logMap);
     }
 
     protected void logMessageProcessingFailureRecoverable(org.springframework.messaging.Message<OrderReceived> message,
@@ -199,8 +200,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         LOGGER.error("order-received message processing failed with a non-recoverable exception", logMap);
     }
 
-    private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message){
-        LOGGER.info("Order received message successfully processed", getMessageHeadersAsMap(message));
+    private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message, String orderUri){
+        Map<String, Object> logMap = getMessageHeadersAsMap(message);
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
+        LOGGER.info("Order received message successfully processed", logMap);
     }
 
     private Map<String, Object> getMessageHeadersAsMap(org.springframework.messaging.Message<OrderReceived> message){
@@ -217,7 +220,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {
         Map<String, Object> logMap = LoggingUtils.createLogMap();
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.CURRENT_TOPIC, currentTopic);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.NEXT_TOPIC, nextTopic);
         LOGGER.info(String.format("Republishing message: \"%1$s\" received from topic: \"%2$s\" to topic: \"%3$s\"",

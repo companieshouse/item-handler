@@ -1,23 +1,23 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
 /**
  * Communicates with <code>chs-email-sender</code> via the `
@@ -60,7 +60,9 @@ public class EmailService {
             InterruptedException, ExecutionException, SerializationException {
         final CertificateOrderConfirmation confirmation = orderToConfirmationMapper.orderToConfirmation(order);
         confirmation.setTo(recipient);
-        LOGGER.info("Sending confirmation for order reference number " + confirmation.getOrderReferenceNumber());
+        Map<String, Object> logMap = LoggingUtils.createLogMap();
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, confirmation.getOrderReferenceNumber());
+        LOGGER.info("Sending confirmation email for order", logMap);
 
         final EmailSend email = new EmailSend();
         email.setAppId(NOTIFICATION_API_APP_ID);
@@ -70,7 +72,7 @@ public class EmailService {
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 
-        producer.sendMessage(email);
+        producer.sendMessage(email, confirmation.getOrderReferenceNumber());
     }
 
 }

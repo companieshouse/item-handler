@@ -28,6 +28,8 @@ import static org.junit.Assert.assertEquals;
 @TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
 public class EmailSendMessageProducerIntegrationTest {
 
+    private static final String ORDER_REFERENCE = "ORD-432118-793830";
+
     private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =
             DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm");
 
@@ -59,7 +61,7 @@ public class EmailSendMessageProducerIntegrationTest {
         confirmation.setHouseNumberStreetName("152-160 City Road");
         confirmation.setCity("London");
         confirmation.setPostCode("EC1V 2NX");
-        confirmation.setOrderReferenceNumber("ORD-432118-793830");
+        confirmation.setOrderReferenceNumber(ORDER_REFERENCE);
         confirmation.setEmailAddress("mail@globaloffshore.com");
         confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setFeeAmount("15");
@@ -106,7 +108,7 @@ public class EmailSendMessageProducerIntegrationTest {
         int count = 0;
         do {
             messages = testEmailSendMessageConsumer.pollConsumerGroup();
-            emailSendMessageProducerUnderTest.sendMessage(email);
+            emailSendMessageProducerUnderTest.sendMessage(email, ORDER_REFERENCE);
             count++;
         } while (messages.isEmpty() && count < 15);
 

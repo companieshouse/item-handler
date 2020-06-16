@@ -1,8 +1,12 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.exceptions.ProducerConfigException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.Acks;
@@ -10,10 +14,6 @@ import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-
-import java.util.concurrent.ExecutionException;
-
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
 
 @Service
@@ -29,8 +29,10 @@ public class EmailSendKafkaProducer implements InitializingBean {
      * @throws ExecutionException should something unexpected happen
      * @throws InterruptedException should something unexpected happen
      */
-    public void sendMessage(final Message message) throws ExecutionException, InterruptedException {
-        LOGGER.trace("Sending message to kafka");
+    public void sendMessage(final Message message, String orderReference) throws ExecutionException, InterruptedException {
+        Map<String, Object> logMap = LoggingUtils.createLogMapWithKafkaMessage(message);
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, orderReference);
+        LOGGER.info("Sending message to Kafka", logMap);
         chKafkaProducer.send(message);
     }
 

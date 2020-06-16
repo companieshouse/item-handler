@@ -2,6 +2,8 @@ package uk.gov.companieshouse.itemhandler.logging;
 
 import java.util.HashMap;
 import java.util.Map;
+import uk.gov.companieshouse.kafka.message.Message;
+import org.springframework.messaging.MessageHeaders;
 
 public class LoggingUtils {
 
@@ -20,9 +22,19 @@ public class LoggingUtils {
     public static final String CURRENT_TOPIC = "current_topic";
     public static final String NEXT_TOPIC = "next_topic";
     public static final String ORDER_RECEIVED_GROUP_ERROR = "order_received_error";
+    public static final String ORDER_REFERENCE_NUMBER = "order_reference_number";
+    public static final String ORDER_URI = "order_uri";
 
     public static Map<String, Object> createLogMap() {
         return new HashMap<>();
+    }
+    
+    public static Map<String,Object> createLogMapWithKafkaMessage(Message message){
+        Map<String, Object> logMap = createLogMap();
+        logIfNotNull(logMap, TOPIC, message.getTopic());
+        logIfNotNull(logMap, PARTITION, message.getPartition());
+        logIfNotNull(logMap, OFFSET, message.getOffset());
+        return logMap;
     }
 
     public static void logIfNotNull(Map<String, Object> logMap, String key, Object loggingObject) {
