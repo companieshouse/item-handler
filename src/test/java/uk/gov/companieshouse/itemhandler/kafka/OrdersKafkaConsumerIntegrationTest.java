@@ -77,6 +77,7 @@ public class OrdersKafkaConsumerIntegrationTest {
     @After
     public void tearDown() {
         consumerWrapper.reset();
+        reset();
     }
 
 // TODO GCI-1182 Use or lose.
@@ -112,6 +113,7 @@ public class OrdersKafkaConsumerIntegrationTest {
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+        verify(1, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
     }
 
     @Test
@@ -127,21 +129,30 @@ public class OrdersKafkaConsumerIntegrationTest {
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+        verify(1, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
     }
 
     @Test
-    public void fiveXxIsRetryable() throws InterruptedException, ExecutionException, SerializationException {
+    public void fiveXxIsRetryable() throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
 
         // Given
+        // The initial request is rejected due to the Orders API hitting a Server Internal Error
         givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
                 .willReturn(serverError()
                 .withHeader("Content-Type", "application/json")));
+
+        // and the subsequent request is responded to correctly as the Orders API has recovered
+        givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(objectMapper.writeValueAsString(ORDER))));
 
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+        verify(2, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
     }
 
 // TODO GCI-1182 Use or lose.
