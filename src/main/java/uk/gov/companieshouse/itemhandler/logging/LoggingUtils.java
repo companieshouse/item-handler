@@ -3,7 +3,6 @@ package uk.gov.companieshouse.itemhandler.logging;
 import java.util.HashMap;
 import java.util.Map;
 import uk.gov.companieshouse.kafka.message.Message;
-import org.springframework.messaging.MessageHeaders;
 
 public class LoggingUtils {
 
