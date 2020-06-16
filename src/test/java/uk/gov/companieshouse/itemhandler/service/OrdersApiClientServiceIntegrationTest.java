@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -82,6 +83,14 @@ public class OrdersApiClientServiceIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Before
+    public void setUp() {
+        final String wireMockPort = environment.getProperty("wiremock.server.port");
+        ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
+        ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
+        ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
+    }
+
     @After
     public void tearDown() {
         WireMock.reset();
@@ -91,11 +100,6 @@ public class OrdersApiClientServiceIntegrationTest {
     public void getsOrderSuccessfully() throws Exception {
 
         // Given
-        final String wireMockPort = environment.getProperty("wiremock.server.port");
-
-        ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
-        ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
-        ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
         givenThat(WireMock.get(urlEqualTo(ORDER_URL))
                 .willReturn(aResponse()
                 .withHeader("Content-Type", "application/json")
@@ -113,12 +117,6 @@ public class OrdersApiClientServiceIntegrationTest {
     public void redirectsHandledAutomatically() throws Exception {
 
         // Given
-        final String wireMockPort = environment.getProperty("wiremock.server.port");
-
-        ENVIRONMENT_VARIABLES.set("CHS_API_KEY", "MGQ1MGNlYmFkYzkxZTM2MzlkNGVmMzg4ZjgxMmEz");
-        ENVIRONMENT_VARIABLES.set("API_URL", "http://localhost:" + wireMockPort);
-        ENVIRONMENT_VARIABLES.set("PAYMENTS_API_URL", "blah");
-
         // Redirect the original request
         givenThat(com.github.tomakehurst.wiremock.client.WireMock.get(urlEqualTo(ORDER_URL))
                 .willReturn(temporaryRedirect(REDIRECTED_ORDER_URL)
