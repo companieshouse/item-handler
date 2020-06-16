@@ -37,7 +37,6 @@ public class EmailSendMessageProducer {
         final Message message = emailSendAvroSerializer.createMessage(email, orderReference);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, message.getTopic());
         emailSendKafkaProducer.sendMessage(message, orderReference);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, orderReference);
         LOGGER.info("Message sent to Kafka producer", logMap);
     }
 }
