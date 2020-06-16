@@ -44,10 +44,6 @@ import static org.hamcrest.Matchers.is;
 public class OrdersKafkaConsumerIntegrationTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
 
-    // TODO GCI-1182 Use or lose.
-    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
-    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
-
     private static final String ORDER_RECEIVED_URI = "/orders/ORDER-12345";
     private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/orders/ORDER-12345\"}";
     private static final OrdersApi ORDER = new OrdersApi();
@@ -80,25 +76,6 @@ public class OrdersKafkaConsumerIntegrationTest {
         consumerWrapper.reset();
         reset();
     }
-
-// TODO GCI-1182 Use or lose.
-//    @Test
-//    @DisplayName("order-received-error topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
-//    public void testOrdersConsumerReceivesOrderReceivedMessage1Error() throws InterruptedException, ExecutionException, SerializationException {
-//        // When
-//        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
-//
-//        // Then
-//        verifyProcessOrderReceivedNotInvoked(CHConsumerType.ERROR_CONSUMER);
-//    }
-//
-//    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
-//        consumerWrapper.setTestType(type);
-//        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-//        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
-//        String processedOrderUri = consumerWrapper.getOrderUri();
-//        assertThat(processedOrderUri, isEmptyOrNullString());
-//    }
 
     @Test
     public void fairWeather() throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
@@ -162,17 +139,6 @@ public class OrdersKafkaConsumerIntegrationTest {
         Thread.sleep(100);
         verify(2, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
     }
-
-// TODO GCI-1182 Use or lose.
-//    @Test
-//    @DisplayName("order-received-retry topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
-//    public void testOrdersConsumerReceivesOrderReceivedMessage3Retry() throws InterruptedException, ExecutionException, SerializationException {
-//        // When
-//        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
-//
-//        // Then
-//        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
-//    }
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
