@@ -31,7 +31,8 @@ public class EmailSendKafkaProducer implements InitializingBean {
      * @throws ExecutionException should something unexpected happen
      * @throws InterruptedException should something unexpected happen
      */
-    public void sendMessage(final Message message, String orderReference) throws ExecutionException, InterruptedException {
+    public void sendMessage(final Message message, final String orderReference)
+            throws ExecutionException, InterruptedException {
         // TODO GCI-1181 Rationalise logging?
         LoggingUtils.logMessageWithOrderReference(message, "Sending message to Kafka", orderReference);
         Map<String, Object> logMap = LoggingUtils.createLogMapWithKafkaMessage(message);
@@ -39,6 +40,7 @@ public class EmailSendKafkaProducer implements InitializingBean {
         try {
             chKafkaProducer.send(message);
         } catch (IllegalStateException | KafkaException retryable) {
+            // TODO GCI-1181 Would the above exceptions come wrapped in an ExecutionException?
             logMap.put(LoggingUtils.EXCEPTION, retryable);
             // TODO GCI-1181 Is it useful to log this here?
             LoggingUtils.getLogger().error(ERROR_MESSAGE, logMap);
