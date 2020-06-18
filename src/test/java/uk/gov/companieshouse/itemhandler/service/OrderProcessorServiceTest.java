@@ -12,7 +12,7 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -68,45 +68,56 @@ public class OrderProcessorServiceTest {
     }
 
     @Test
-    void doesNotPropagateJsonProcessingException() throws Exception {
-        doesNotPropagateException(TestJsonProcessingException::new);
+    void propagatesJsonProcessingException() throws Exception {
+        propagatesException(TestJsonProcessingException::new, TestJsonProcessingException.class);
     }
 
     @Test
-    void doesNotPropagateSerializationException() throws Exception {
-        doesNotPropagateException(SerializationException::new);
+    void propagatesSerializationException() throws Exception {
+        propagatesException(SerializationException::new, SerializationException.class);
     }
 
     @Test
-    void doesNotPropagateExecutionException() throws Exception {
-        doesNotPropagateException(TestExecutionException::new);
+    void propagatesExecutionException() throws Exception {
+        propagatesException(TestExecutionException::new, TestExecutionException.class);
     }
 
     @Test
-    void doesNotPropagateInterruptedException() throws Exception {
-        doesNotPropagateException(InterruptedException::new);
+    void propagatesInterruptedException() throws Exception {
+        propagatesException(InterruptedException::new, InterruptedException.class);
     }
 
-    private void doesNotPropagateException(final Function<String, Exception> constructor)  throws Exception {
+    /**
+     * Asserts that the exception thrown is propagated
+     * @param exceptionConstructor the exception constructor
+     * @param exceptionClass the class of the exception
+     * @throws Exception should something unexpected happen
+     */
+    private void propagatesException(final Function<String, Exception> exceptionConstructor,
+                                     final Class<? extends Throwable> exceptionClass)
+            throws Exception {
 
         // Given
-        givenSendCertificateOrderConfirmationThrowsException(TestJsonProcessingException::new);
+        givenSendCertificateOrderConfirmationThrowsException(exceptionConstructor);
 
         // When and then
-        assertThatCode(() -> orderProcessorUnderTest.processOrderReceived(ORDER_URI))
-                .doesNotThrowAnyException();
+        assertThatExceptionOfType(exceptionClass).isThrownBy(() ->
+                                                    orderProcessorUnderTest.processOrderReceived(ORDER_URI))
+                                                    .withMessage(TEST_EXCEPTION_MESSAGE);
     }
 
     /**
      * Sets up mocks to throw the exception for which the constructor is provided when the service calls
      * {@link EmailService#sendCertificateOrderConfirmation(OrderData)}.
-     * @param constructor the Exception constructor to use
+     * @param exceptionConstructor the exception constructor to use
      * @throws Exception should something unexpected happen
      */
-    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor) throws Exception {
+    private void givenSendCertificateOrderConfirmationThrowsException(
+            final Function<String, Exception> exceptionConstructor) throws Exception {
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
         when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(emailer).sendCertificateOrderConfirmation(any(OrderData.class));
+        doThrow(exceptionConstructor.apply(TEST_EXCEPTION_MESSAGE))
+                .when(emailer).sendCertificateOrderConfirmation(any(OrderData.class));
     }
 
 
