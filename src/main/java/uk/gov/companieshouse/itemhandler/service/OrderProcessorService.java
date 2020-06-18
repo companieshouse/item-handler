@@ -1,12 +1,9 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 
 /**
  * This service does the following:
@@ -18,8 +15,6 @@ import uk.gov.companieshouse.logging.LoggerFactory;
  */
 @Service
 public class OrderProcessorService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     private final OrdersApiClientService ordersApi;
     private final EmailService emailer;
@@ -40,11 +35,11 @@ public class OrderProcessorService {
         try {
             order = ordersApi.getOrderData(orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
-            LOGGER.info("Processing order received", logMap);
+            LoggingUtils.getLogger().info("Processing order received", logMap);
             emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
             logMap.put(LoggingUtils.EXCEPTION, ex);
-            LOGGER.error("Exception caught getting order data.", logMap);
+            LoggingUtils.getLogger().error("Exception caught getting order data.", logMap);
         }
 
     }

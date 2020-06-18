@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 import java.time.LocalDateTime;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,20 +14,18 @@ import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 
 /**
- * Communicates with <code>chs-email-sender</code> via the `
- * <code>send-email</code> Kafka topic to trigger the sending of emails.
+ * Communicates with <code>chs-email-sender</code> via the ` <code>send-email</code> Kafka topic to
+ * trigger the sending of emails.
  */
 @Service
 public class EmailService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
-
-    private static final String NOTIFICATION_API_APP_ID = "item-handler.certificate-order-confirmation";
-    private static final String NOTIFICATION_API_MESSAGE_TYPE = "certificate_order_confirmation_email";
+    private static final String NOTIFICATION_API_APP_ID =
+            "item-handler.certificate-order-confirmation";
+    private static final String NOTIFICATION_API_MESSAGE_TYPE =
+            "certificate_order_confirmation_email";
     /** This email address is supplied only to satisfy Avro contract. */
     private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
@@ -40,9 +36,9 @@ public class EmailService {
     @Value("${certificate.order.confirmation.recipient}")
     private String recipient;
 
-    public EmailService(final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
-                        final ObjectMapper objectMapper,
-                        final EmailSendMessageProducer producer) {
+    public EmailService(
+            final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
+            final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToConfirmationMapper = orderToConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
@@ -50,19 +46,21 @@ public class EmailService {
 
     /**
      * Sends out a certificate order confirmation email.
+     * 
      * @param order the order information used to compose the order confirmation email.
      * @throws JsonProcessingException
      * @throws InterruptedException
      * @throws ExecutionException
      * @throws SerializationException
      */
-    public void sendCertificateOrderConfirmation(final OrderData order) throws JsonProcessingException,
-            InterruptedException, ExecutionException, SerializationException {
-        final CertificateOrderConfirmation confirmation = orderToConfirmationMapper.orderToConfirmation(order);
+    public void sendCertificateOrderConfirmation(final OrderData order)
+            throws JsonProcessingException, InterruptedException, ExecutionException,
+            SerializationException {
+        final CertificateOrderConfirmation confirmation =
+                orderToConfirmationMapper.orderToConfirmation(order);
         confirmation.setTo(recipient);
-        Map<String, Object> logMap = LoggingUtils.createLogMap();
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, confirmation.getOrderReferenceNumber());
-        LOGGER.info("Sending confirmation email for order", logMap);
+        LoggingUtils.logWithOrderReference("Sending confirmation email for order",
+                confirmation.getOrderReferenceNumber());
 
         final EmailSend email = new EmailSend();
         email.setAppId(NOTIFICATION_API_APP_ID);
