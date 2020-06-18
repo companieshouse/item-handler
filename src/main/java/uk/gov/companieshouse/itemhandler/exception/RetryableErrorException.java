@@ -8,4 +8,8 @@ public class RetryableErrorException extends RuntimeException {
     public RetryableErrorException(String message) {
         super(message);
     }
+
+    public RetryableErrorException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }
