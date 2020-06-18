@@ -1,17 +1,16 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
 /**
  * This service does the following:
@@ -23,8 +22,6 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
  */
 @Service
 public class OrderProcessorService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     private final OrdersApiClientService ordersApi;
     private final EmailService emailer;
@@ -46,13 +43,17 @@ public class OrderProcessorService {
                    ApiErrorResponseException,
                    SerializationException {
         final OrderData order;
+        Map<String, Object> logMap = LoggingUtils.createLogMap();
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
         try {
             order = ordersApi.getOrderData(orderUri);
-            LOGGER.info("Got order data for " + orderUri + ", order reference number = " + order.getReference());
+            LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
+            LoggingUtils.getLogger().info("Processing order received", logMap);
             emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
+            logMap.put(LoggingUtils.EXCEPTION, ex);
             // TODO GCI-1182 Is it useful to log this here?
-            LOGGER.error("Exception caught getting order data.", ex);
+            LoggingUtils.getLogger().error("Exception caught getting order data.", logMap);
             // TODO GCI-1182 Should ALL exceptions be propagated here?
             throw ex;
         }

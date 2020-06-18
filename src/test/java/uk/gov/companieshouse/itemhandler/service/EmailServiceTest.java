@@ -86,7 +86,7 @@ class EmailServiceTest {
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
-        verify(producer).sendMessage(emailCaptor.capture());
+        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
         final EmailSend emailSent = emailCaptor.getValue();
         assertThat(emailSent.getAppId(), is("item-handler.certificate-order-confirmation"));
         assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
@@ -148,7 +148,7 @@ class EmailServiceTest {
         when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
         when(objectMapper.writeValueAsString(confirmation)).thenReturn(EMAIL_CONTENT);
         when(confirmation.getOrderReferenceNumber()).thenReturn("123");
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class));
+        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class), any(String.class));
     }
 
     /**
