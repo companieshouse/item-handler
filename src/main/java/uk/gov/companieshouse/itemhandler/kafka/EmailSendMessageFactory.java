@@ -1,21 +1,19 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+
+import java.util.Date;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-
-import java.util.Date;
-
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
 @Service
 public class EmailSendMessageFactory {
-	private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
+
 	private final SerializerFactory serializerFactory;
 	private static final String EMAIL_SEND_TOPIC = "email-send";
 
@@ -29,14 +27,17 @@ public class EmailSendMessageFactory {
 	 * @return email-send avro message
 	 * @throws SerializationException should there be a failure to serialize the EmailSend object
 	 */
-	public Message createMessage(final EmailSend emailSend) throws SerializationException {
-		LOGGER.trace("Configuring CH Kafka producer");
+	public Message createMessage(final EmailSend emailSend, String orderReference) throws SerializationException {
+        Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(orderReference);
+	    logMap.put(LoggingUtils.TOPIC, EMAIL_SEND_TOPIC);
+		LoggingUtils.getLogger().info("Create kafka message", logMap);
 		final AvroSerializer<EmailSend> serializer =
 				serializerFactory.getGenericRecordSerializer(EmailSend.class);
 		final Message message = new Message();
 		message.setValue(serializer.toBinary(emailSend));
 		message.setTopic(EMAIL_SEND_TOPIC);
 		message.setTimestamp(new Date().getTime());
+		LoggingUtils.getLogger().info("Kafka message created", logMap);
 		return message;
 	}
 }

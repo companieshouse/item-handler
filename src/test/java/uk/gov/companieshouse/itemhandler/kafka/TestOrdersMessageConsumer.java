@@ -12,7 +12,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
 @Service
 public class TestOrdersMessageConsumer implements InitializingBean {

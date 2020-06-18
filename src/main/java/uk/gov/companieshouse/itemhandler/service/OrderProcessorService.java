@@ -1,11 +1,9 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import java.util.Map;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-
-import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATION_NAMESPACE;
 
 /**
  * This service does the following:
@@ -17,8 +15,6 @@ import static uk.gov.companieshouse.itemhandler.ItemHandlerApplication.APPLICATI
  */
 @Service
 public class OrderProcessorService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
     private final OrdersApiClientService ordersApi;
     private final EmailService emailer;
@@ -34,12 +30,16 @@ public class OrderProcessorService {
      */
     public void processOrderReceived(final String orderUri) {
         final OrderData order;
+        Map<String, Object> logMap = LoggingUtils.createLogMap();
+        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
         try {
             order = ordersApi.getOrderData(orderUri);
-            LOGGER.info("Got order data for " + orderUri + ", order reference number = " + order.getReference());
+            LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
+            LoggingUtils.getLogger().info("Processing order received", logMap);
             emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
-            LOGGER.error("Exception caught getting order data.", ex);
+            logMap.put(LoggingUtils.EXCEPTION, ex);
+            LoggingUtils.getLogger().error("Exception caught getting order data.", logMap);
         }
 
     }

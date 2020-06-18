@@ -106,7 +106,7 @@ public class OrdersKafkaConsumerTest {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any());
+        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).when(ordersKafkaConsumer).logMessageReceived(any(), any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
         // Then
         verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(orderUriArgument.capture(),
@@ -119,7 +119,7 @@ public class OrdersKafkaConsumerTest {
     @Test
     public void republishMessageNotCalledForFirstRetryMessageOnRetryableErrorException() {
         // Given & When
-        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any());
+        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any(), any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -128,7 +128,7 @@ public class OrdersKafkaConsumerTest {
     @Test
     public void republishMessageNotCalledForFirstErrorMessageOnRetryableErrorException() {
         // Given & When
-        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any());
+        doThrow(new RetryableErrorException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any(), any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_ERROR));
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
@@ -137,7 +137,7 @@ public class OrdersKafkaConsumerTest {
     @Test
     public void republishMessageNotCalledOnNonRetryableErrorException() {
         // Given & When
-        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any());
+        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
