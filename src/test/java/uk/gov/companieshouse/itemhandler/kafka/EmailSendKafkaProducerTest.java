@@ -60,7 +60,7 @@ public class EmailSendKafkaProducerTest {
     }
 
     @Test
-    void propagatesExceptionAsIs() throws ExecutionException, InterruptedException {
+    void propagatesIllegalArgumentExceptionAsIs() throws ExecutionException, InterruptedException {
 
         // Given
         final IllegalArgumentException illegalArgumentException =
