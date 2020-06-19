@@ -39,12 +39,16 @@ public class EmailSendKafkaProducer implements InitializingBean {
         LoggingUtils.getLogger().info("Sending message to kafka topic", logMap);
         try {
             chKafkaProducer.send(message);
-        } catch (IllegalStateException | KafkaException retryable) {
-            // TODO GCI-1181 Would the above exceptions come wrapped in an ExecutionException?
-            logMap.put(LoggingUtils.EXCEPTION, retryable);
-            // TODO GCI-1181 Is it useful to log this here?
+        } catch (ExecutionException exec) {
+            logMap.put(LoggingUtils.EXCEPTION, exec);
+            // TODO GCI-1181 Is it useful to log this here? Log fact classified as retryable?
             LoggingUtils.getLogger().error(ERROR_MESSAGE, logMap);
-            throw new RetryableEmailSendException(ERROR_MESSAGE, retryable);
+            if (exec.getCause() instanceof IllegalArgumentException ||
+                exec.getCause() instanceof KafkaException) {
+                throw new RetryableEmailSendException(ERROR_MESSAGE, exec);
+            } else {
+                throw exec;
+            }
         } catch (Exception ex) {
             logMap.put(LoggingUtils.EXCEPTION, ex);
             // TODO GCI-1181 Is it useful to log this here?
