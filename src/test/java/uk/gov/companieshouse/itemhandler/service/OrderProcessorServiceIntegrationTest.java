@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.service;
 
 import org.apache.kafka.common.errors.TimeoutException;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.gov.companieshouse.itemhandler.exception.RetryableEmailSendException;
@@ -21,17 +23,23 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static uk.gov.companieshouse.itemhandler.model.CertificateType.INCORPORATION;
 import static uk.gov.companieshouse.itemhandler.model.CollectionLocation.BELFAST;
 import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.STANDARD;
 import static uk.gov.companieshouse.itemhandler.model.ProductType.CERTIFICATE;
 
-/** Partially integration tests the {@link OrderProcessorService} to examine the handling of real kafka producer
- * originated exceptions. */
+/**
+ * Partially integration tests the {@link OrderProcessorService} to examine the handling of real kafka producer
+ * originated exceptions.
+ */
 @SpringBootTest
 @RunWith(SpringJUnit4ClassRunner.class)
 @EmbeddedKafka
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
+@FixMethodOrder(NAME_ASCENDING)
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com"})
 public class OrderProcessorServiceIntegrationTest {
 
@@ -69,14 +77,13 @@ public class OrderProcessorServiceIntegrationTest {
     private OrdersApiClientService ordersApiService;
 
     @Test
-    // TODO GCI-1181 Stop this breaking other integration tests
     public void kafkaServerUnavailableWrappedAsRetryableException() throws Exception {
 
         // Given
         final OrderData order = createOrder();
         when(ordersApiService.getOrderData(ORDER_RECEIVED_URI)).thenReturn(order);
 
-        // This provokes a TimeoutException
+        // This provokes a Kafka TimeoutException
         broker.getKafkaServers().get(0).shutdown();
 
         // When and then
@@ -87,13 +94,9 @@ public class OrderProcessorServiceIntegrationTest {
 
     }
 
-    // TODO GCI-1181 Ensure correct ordering or clean tear down/ set up if this test is kept
     @Test
-    public void onceKafkaServerAvailableAbleToProduce() // TODO GCI-1181 Is this test feasible?
+    public void onceKafkaServerAvailableAbleToProduce()
             throws Exception {
-
-        broker.getKafkaServers().get(0).startup(); // TODO GCI-1181 this may not work at all, move to teardown or somewhere
-        Thread.sleep(10000); // TODO GCI-1181 Is this really necessary?
 
         // Given
         final OrderData order = createOrder();
