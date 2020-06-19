@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.core.env.Environment;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
@@ -63,9 +62,6 @@ public class OrdersKafkaConsumerIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private EmbeddedKafkaBroker broker;
 
     @Before
     public void setUp() {
@@ -144,31 +140,6 @@ public class OrdersKafkaConsumerIntegrationTest {
         // TODO GCI-1182 Give scenario time to play out?
         Thread.sleep(100);
         verify(2, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
-    }
-
-    @Test
-    // TODO GCI-1181 Stop this breaking other integration tests
-    public void kafkaServerTemporarilyUnavailable()
-            throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
-
-        // This provokes a TimeoutException
-        broker.getKafkaServers().get(0).shutdown();
-
-        // Given
-        givenThat(get(urlEqualTo(ORDER_RECEIVED_URI))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(objectMapper.writeValueAsString(ORDER))));
-
-        broker.getKafkaServers().get(0).startup(); // TODO GCI-1181 this may not work at all
-
-        // When
-        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
-
-        // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
-        verify(1, getRequestedFor(urlEqualTo(ORDER_RECEIVED_URI)));
-
     }
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
