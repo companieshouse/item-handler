@@ -36,7 +36,8 @@ public class EmailSendKafkaProducerTest {
 
         // Given
         final IllegalStateException illegalStateException = new IllegalStateException(TEST_EXCEPTION_MESSAGE);
-        doThrow(illegalStateException).when(chKafkaProducer).send(message);
+        final ExecutionException executionException = new ExecutionException(illegalStateException);
+        doThrow(executionException).when(chKafkaProducer).send(message);
 
         // When and then
         assertThatExceptionOfType(RetryableEmailSendException.class).isThrownBy(() ->
@@ -50,7 +51,8 @@ public class EmailSendKafkaProducerTest {
 
         // Given
         final KafkaException kafkaException = new KafkaException(TEST_EXCEPTION_MESSAGE);
-        doThrow(kafkaException).when(chKafkaProducer).send(message);
+        final ExecutionException executionException = new ExecutionException(kafkaException);
+        doThrow(executionException).when(chKafkaProducer).send(message);
 
         // When and then
         assertThatExceptionOfType(RetryableEmailSendException.class).isThrownBy(() ->

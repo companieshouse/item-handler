@@ -43,9 +43,10 @@ public class EmailSendKafkaProducer implements InitializingBean {
             logMap.put(LoggingUtils.EXCEPTION, exec);
             // TODO GCI-1181 Is it useful to log this here? Log fact classified as retryable?
             LoggingUtils.getLogger().error(ERROR_MESSAGE, logMap);
-            if (exec.getCause() instanceof IllegalArgumentException ||
+            if (exec.getCause() instanceof IllegalStateException ||
                 exec.getCause() instanceof KafkaException) {
-                throw new RetryableEmailSendException(ERROR_MESSAGE, exec);
+                // Strip off ExecutionException wrapper - clients of this don't need to know about it.
+                throw new RetryableEmailSendException(ERROR_MESSAGE, exec.getCause());
             } else {
                 throw exec;
             }
