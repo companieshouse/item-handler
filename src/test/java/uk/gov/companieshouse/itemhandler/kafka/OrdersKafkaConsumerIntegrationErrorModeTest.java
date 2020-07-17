@@ -35,6 +35,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @SpringBootTest
+@DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
                                 "certificate.order.confirmation.recipient = nobody@nowhere.com"})
@@ -98,7 +99,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException, SerializationException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage() throws InterruptedException, ExecutionException, SerializationException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
@@ -109,7 +110,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received-retry topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException, SerializationException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, SerializationException, ExecutionException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
 
@@ -128,7 +129,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received-error topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException, SerializationException {
+    public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException, SerializationException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
 
