@@ -35,7 +35,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @SpringBootTest
-@DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
                                 "certificate.order.confirmation.recipient = nobody@nowhere.com"})
@@ -67,7 +66,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     @AfterEach
     public void tearDown() {
-        consumerWrapper.reset();
         container.stop();
     }
 
