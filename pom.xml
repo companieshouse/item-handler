@@ -4,9 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>uk.gov.companieshouse</groupId>
-		<artifactId>companies-house-spring-boot-parent</artifactId>
+		<artifactId>companies-house-parent</artifactId>
 		<version>1.2.0</version>
+		<relativePath/>
 	</parent>
+	<groupId>uk.gov.companieshouse</groupId>
 	<artifactId>item-handler</artifactId>
 	<version>unversioned</version>
 	<name>item-handler</name>
@@ -28,7 +30,21 @@
 		<api-sdk-java.version>4.1.48</api-sdk-java.version>
 		<kafka-models.version>1.0.14</kafka-models.version>
 		<ch-kafka.version>1.4.2</ch-kafka.version>
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<spring-boot-dependencies.version>2.1.15.RELEASE</spring-boot-dependencies.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${spring-boot-dependencies.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -43,7 +59,7 @@
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
+			<artifactId>junit-jupiter-api</artifactId>
 			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
 		</dependency>
