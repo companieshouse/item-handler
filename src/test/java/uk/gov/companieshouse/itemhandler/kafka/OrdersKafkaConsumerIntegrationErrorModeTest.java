@@ -6,7 +6,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -38,6 +40,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
                                 "certificate.order.confirmation.recipient = nobody@nowhere.com"})
+@TestMethodOrder(MethodOrderer.Alphanumeric.class)
 public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
@@ -98,7 +101,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessage() throws InterruptedException, ExecutionException, SerializationException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException, SerializationException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
 
@@ -109,7 +112,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received-retry topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessageRetry() throws InterruptedException, SerializationException, ExecutionException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException, SerializationException, ExecutionException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
 
@@ -128,7 +131,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     @Test
     @DirtiesContext
     @DisplayName("order-received-error topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is true")
-    public void testOrdersConsumerReceivesOrderReceivedMessageError() throws InterruptedException, ExecutionException, SerializationException {
+    public void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException, SerializationException {
         // When
         kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
 
