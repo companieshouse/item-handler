@@ -23,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
-@DirtiesContext
 @Aspect
 @Service
 public class OrdersKafkaConsumerWrapper {
@@ -87,6 +86,7 @@ public class OrdersKafkaConsumerWrapper {
     String getOrderUri() { return orderUri; }
     void setTestType(CHConsumerType type) { this.testType = type;}
     CHConsumerType getTestType() { return this.testType; }
+    @DirtiesContext
     void reset() { this.latch = new CountDownLatch(1); }
 
     private void setUpTestKafkaOrdersProducerAndSendMessageToTopic()
