@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
+import org.springframework.test.annotation.DirtiesContext;
 import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
@@ -22,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
+@DirtiesContext
 @Aspect
 @Service
 public class OrdersKafkaConsumerWrapper {
