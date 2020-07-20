@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @SpringBootTest
+@DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
                                 "certificate.order.confirmation.recipient = nobody@nowhere.com"})
@@ -99,7 +100,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    @DirtiesContext
     @DisplayName("order-received topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
     public void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException, SerializationException {
         // When
@@ -110,7 +110,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    @DirtiesContext
     @DisplayName("order-received-retry topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
     public void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException, SerializationException, ExecutionException {
         // When
@@ -129,7 +128,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    @DirtiesContext
     @DisplayName("order-received-error topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is true")
     public void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException, SerializationException {
         // When
@@ -141,7 +139,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(5000, TimeUnit.MILLISECONDS);
+        consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
