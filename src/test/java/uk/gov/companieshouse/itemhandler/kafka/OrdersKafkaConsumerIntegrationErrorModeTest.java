@@ -3,7 +3,12 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,7 +32,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
 
 @SpringBootTest
 @DirtiesContext
@@ -132,7 +139,7 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
+        consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
