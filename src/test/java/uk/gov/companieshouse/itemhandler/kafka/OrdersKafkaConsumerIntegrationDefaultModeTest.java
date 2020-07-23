@@ -143,7 +143,7 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
+        consumerWrapper.getLatch().await(30000, TimeUnit.MILLISECONDS);
         assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
