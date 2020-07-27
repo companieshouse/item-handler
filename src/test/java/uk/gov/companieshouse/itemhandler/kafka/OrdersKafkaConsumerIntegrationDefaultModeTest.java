@@ -70,7 +70,6 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
     @AfterEach
     public void tearDown() {
-        consumerWrapper.reset();
         container.stop();
     }
 
