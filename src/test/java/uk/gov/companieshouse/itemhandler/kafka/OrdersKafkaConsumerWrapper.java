@@ -87,8 +87,6 @@ public class OrdersKafkaConsumerWrapper {
     CountDownLatch getLatch() { return latch; }
     String getOrderUri() { return orderUri; }
     void setTestType(CHConsumerType type) { this.testType = type;}
-    CHConsumerType getTestType() { return this.testType; }
-    void reset() { this.latch = new CountDownLatch(1); }
 
     private void setUpTestKafkaOrdersProducerAndSendMessageToTopic()
             throws ExecutionException, InterruptedException, SerializationException {
