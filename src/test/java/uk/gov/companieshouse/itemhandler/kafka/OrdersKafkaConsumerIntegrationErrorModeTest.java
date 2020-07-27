@@ -121,7 +121,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, isEmptyOrNullString());
     }
@@ -139,7 +138,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
     }
