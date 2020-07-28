@@ -78,7 +78,7 @@ public class OrdersKafkaConsumerWrapper {
      * @param message
      */
     @After(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..)) && args(message)")
-    public void aroundOrderProcessed(final Message message){
+    public void afterOrderProcessed(final Message message){
         LOGGER.info("OrdersKafkaConsumer.processOrderReceivedRetry() @After triggered");
         this.orderUri = "" + message.getPayload();
         latch.countDown();
