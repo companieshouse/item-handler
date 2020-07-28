@@ -83,7 +83,8 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         final DefaultKafkaConsumerFactory<String, OrderReceived> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties);
 
-        final ContainerProperties containerProperties = new ContainerProperties(ORDER_RECEIVED_TOPIC);
+        final ContainerProperties containerProperties = new ContainerProperties(
+                new String[]{ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR});
 
         container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 
@@ -126,6 +127,17 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
 
         // Then
         verifyProcessOrderReceivedInvoked(CHConsumerType.MAIN_CONSUMER);
+    }
+
+    @Test
+    @DirtiesContext
+    @DisplayName("order-received-retry topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is false")
+    public void testOrdersConsumerReceivesOrderReceivedMessage3Retry() throws InterruptedException, ExecutionException, SerializationException {
+        // When
+        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
+
+        // Then
+        verifyProcessOrderReceivedInvoked(CHConsumerType.RETRY_CONSUMER);
     }
 
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {

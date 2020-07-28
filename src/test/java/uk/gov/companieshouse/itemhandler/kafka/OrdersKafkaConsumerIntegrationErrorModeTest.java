@@ -83,7 +83,8 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
         final DefaultKafkaConsumerFactory<String, String> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties);
 
-        final ContainerProperties containerProperties = new ContainerProperties(ORDER_RECEIVED_TOPIC);
+        final ContainerProperties containerProperties = new ContainerProperties(
+                new String[]{ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR});
 
         container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 
@@ -121,7 +122,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(1L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, isEmptyOrNullString());
     }
@@ -139,7 +139,6 @@ public class OrdersKafkaConsumerIntegrationErrorModeTest {
     private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
         consumerWrapper.setTestType(type);
         consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
-        assertThat(consumerWrapper.getLatch().getCount(), is(equalTo(0L)));
         final String processedOrderUri = consumerWrapper.getOrderUri();
         assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
     }
