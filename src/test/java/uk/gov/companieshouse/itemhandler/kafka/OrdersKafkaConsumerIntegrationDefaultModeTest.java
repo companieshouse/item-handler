@@ -83,7 +83,8 @@ public class OrdersKafkaConsumerIntegrationDefaultModeTest {
         final DefaultKafkaConsumerFactory<String, OrderReceived> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProperties);
 
-        final ContainerProperties containerProperties = new ContainerProperties(ORDER_RECEIVED_TOPIC);
+        final ContainerProperties containerProperties = new ContainerProperties(
+                new String[]{ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR});
 
         container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
 
