@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.itemhandler.environment;
 
-public enum EnvironmentVariables {
+public enum RequiredEnvironmentVariables {
     
     IS_ERROR_QUEUE_CONSUMER("IS_ERROR_QUEUE_CONSUMER"),
     CHS_API_KEY("CHS_API_KEY"),
@@ -8,7 +8,7 @@ public enum EnvironmentVariables {
     
     private String name;
     
-    EnvironmentVariables(String name){
+    RequiredEnvironmentVariables(String name){
         this.name = name;
     }
     

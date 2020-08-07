@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.environment.exception.EnvironmentVariableException;
 import uk.gov.companieshouse.environment.impl.EnvironmentReaderImpl;
-import uk.gov.companieshouse.itemhandler.environment.EnvironmentVariables;
+import uk.gov.companieshouse.itemhandler.environment.RequiredEnvironmentVariables;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -28,7 +28,7 @@ public class ItemHandlerApplication {
 	    EnvironmentReader environmentReader = new EnvironmentReaderImpl();
 	    boolean allVariablesPresent = true;
 	    LOGGER.info("Checking all environment variables present");
-	    for(EnvironmentVariables param : EnvironmentVariables.values()) {
+	    for(RequiredEnvironmentVariables param : RequiredEnvironmentVariables.values()) {
 	        try{
 	            environmentReader.getMandatoryString(param.getName());
             } catch (EnvironmentVariableException eve) {
