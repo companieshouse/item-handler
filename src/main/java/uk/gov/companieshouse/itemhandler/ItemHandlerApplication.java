@@ -12,7 +12,6 @@ import uk.gov.companieshouse.logging.Logger;
 @SpringBootApplication
 public class ItemHandlerApplication {
 
-    private static EnvironmentReader environmentReader;
     private static Logger LOGGER = LoggingUtils.getLogger();
 
 	public static void main(String[] args) {
@@ -26,7 +25,7 @@ public class ItemHandlerApplication {
 	 * defined in EnvironmentVariables enum have been set to a value
 	 */
 	public static boolean checkEnvironmentVariables() {
-	    environmentReader = new EnvironmentReaderImpl();
+	    EnvironmentReader environmentReader = new EnvironmentReaderImpl();
 	    boolean allVariablesPresent = true;
 	    LOGGER.info("Checking all environment variables present");
 	    for(EnvironmentVariables param : EnvironmentVariables.values()) {
