@@ -38,8 +38,7 @@ public class OrderProcessorService {
             LoggingUtils.getLogger().info("Processing order received", logMap);
             emailer.sendCertificateOrderConfirmation(order);
         } catch (Exception ex) {
-            logMap.put(LoggingUtils.EXCEPTION, ex);
-            LoggingUtils.getLogger().error("Exception caught getting order data.", logMap);
+            LoggingUtils.getLogger().error("Exception caught getting order data.", ex, logMap);
         }
 
     }

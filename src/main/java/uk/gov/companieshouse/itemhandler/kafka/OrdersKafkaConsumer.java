@@ -197,17 +197,15 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             Exception exception) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
         logMap.put(LoggingUtils.RETRY_ATTEMPT, attempt);
-        logMap.put(LoggingUtils.EXCEPTION, exception);
         LoggingUtils.getLogger().error("'order-received' message processing failed with a recoverable exception",
-                logMap);
+                exception, logMap);
     }
 
     protected void logMessageProcessingFailureNonRecoverable(
             org.springframework.messaging.Message<OrderReceived> message, Exception exception) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        logMap.put(LoggingUtils.EXCEPTION, exception);
         LoggingUtils.getLogger().error("order-received message processing failed with a non-recoverable exception",
-                logMap);
+                exception, logMap);
     }
 
     private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message,
@@ -228,9 +226,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         try {
             kafkaProducer.sendMessage(createRetryMessage(orderUri, nextTopic));
         } catch (ExecutionException | InterruptedException e) {
-            logMap.put(LoggingUtils.EXCEPTION, e);
             LoggingUtils.getLogger().error(String.format("Error sending message: \"%1$s\" to topic: \"%2$s\"",
-                    orderUri, nextTopic), logMap);
+                    orderUri, nextTopic), e, logMap);
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
@@ -252,9 +249,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, topic);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
-            logMap.put(LoggingUtils.EXCEPTION, e);
             LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
-                    orderUri, topic), logMap);
+                    orderUri, topic), e, logMap);
         }
         message.setTopic(topic);
         message.setTimestamp(new Date().getTime());

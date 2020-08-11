@@ -21,7 +21,6 @@ public class LoggingUtils {
     public static final String KEY = "key";
     public static final String PARTITION = "partition";
     public static final String RETRY_ATTEMPT = "retry_attempt";
-    public static final String EXCEPTION = "exception";
     public static final String MESSAGE = "message";
     public static final String CURRENT_TOPIC = "current_topic";
     public static final String NEXT_TOPIC = "next_topic";
