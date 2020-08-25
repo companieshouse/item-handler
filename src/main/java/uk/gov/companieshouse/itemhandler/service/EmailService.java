@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.OrderMappingException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -72,6 +73,12 @@ public class EmailService {
             throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException {
         String descriptionId = order.getItems().get(0).getDescriptionIdentifier();
         OrderConfirmation confirmation = getOrderConfirmation(order);
+        if (confirmation == null) {
+            String errorMessage = String.format("Failed to map order with reference %s to order confirmation.",
+                    order.getReference());
+            LoggingUtils.getLogger().error(errorMessage);
+            throw new OrderMappingException(errorMessage);
+        }
         final EmailSend email = new EmailSend();
 
         if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
@@ -90,11 +97,9 @@ public class EmailService {
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 
-        if (confirmation != null) {
-            String orderReference = confirmation.getOrderReferenceNumber();
-            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-            producer.sendMessage(email, orderReference);
-        }
+        String orderReference = confirmation.getOrderReferenceNumber();
+        LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+        producer.sendMessage(email, orderReference);
     }
 
     private OrderConfirmation getOrderConfirmation(OrderData orderData) {
