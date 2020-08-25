@@ -71,17 +71,15 @@ public class EmailService {
     public void sendOrderConfirmation(final OrderData order)
             throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException {
         String descriptionId = order.getItems().get(0).getDescriptionIdentifier();
-        OrderConfirmation confirmation = null;
+        OrderConfirmation confirmation = getOrderConfirmation(order);
         final EmailSend email = new EmailSend();
 
         if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
-            confirmation = orderToCertificateOrderConfirmationMapper.orderToConfirmation(order);
             confirmation.setTo(certificateOrderRecipient);
             email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
             email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
         }
         else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
-            confirmation = orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(order);
             confirmation.setTo(certifiedCopyOrderRecepient);
             email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
             email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
@@ -92,8 +90,21 @@ public class EmailService {
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 
-        String orderReference = confirmation.getOrderReferenceNumber();
-        LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-        producer.sendMessage(email, orderReference);
+        if (confirmation != null) {
+            String orderReference = confirmation.getOrderReferenceNumber();
+            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+            producer.sendMessage(email, orderReference);
+        }
+    }
+
+    private OrderConfirmation getOrderConfirmation(OrderData orderData) {
+        String descriptionId = orderData.getItems().get(0).getDescriptionIdentifier();
+        if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
+            return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
+        }
+        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
+            return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
+        }
+        return null;
     }
 }
