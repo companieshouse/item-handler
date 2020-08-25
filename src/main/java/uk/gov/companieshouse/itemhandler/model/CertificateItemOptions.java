@@ -1,20 +1,10 @@
 package uk.gov.companieshouse.itemhandler.model;
 
-public class CertificateItemOptions {
+public class CertificateItemOptions extends ItemOptions {
 
     private CertificateType certificateType;
 
-    private CollectionLocation collectionLocation;
-
-    private String contactNumber;
-
-    private DeliveryMethod deliveryMethod;
-
-    private DeliveryTimescale deliveryTimescale;
-
     private DirectorOrSecretaryDetails directorDetails;
-
-    private String forename;
 
     private Boolean includeCompanyObjectsInformation;
 
@@ -26,8 +16,6 @@ public class CertificateItemOptions {
 
     private DirectorOrSecretaryDetails secretaryDetails;
 
-    private String surname;
-
     public CertificateType getCertificateType() {
         return certificateType;
     }
@@ -36,37 +24,6 @@ public class CertificateItemOptions {
         this.certificateType = certificateType;
     }
 
-    public CollectionLocation getCollectionLocation() {
-        return collectionLocation;
-    }
-
-    public void setCollectionLocation(CollectionLocation collectionLocation) {
-        this.collectionLocation = collectionLocation;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
-
-    public DeliveryMethod getDeliveryMethod() {
-        return deliveryMethod;
-    }
-
-    public void setDeliveryMethod(DeliveryMethod deliveryMethod) {
-        this.deliveryMethod = deliveryMethod;
-    }
-
-    public DeliveryTimescale getDeliveryTimescale() {
-        return deliveryTimescale;
-    }
-
-    public void setDeliveryTimescale(DeliveryTimescale deliveryTimescale) {
-        this.deliveryTimescale = deliveryTimescale;
-    }
 
     public DirectorOrSecretaryDetails getDirectorDetails() {
         return directorDetails;
@@ -74,14 +31,6 @@ public class CertificateItemOptions {
 
     public void setDirectorDetails(DirectorOrSecretaryDetails directorOrSecretaryDetails) {
         this.directorDetails = directorOrSecretaryDetails;
-    }
-
-    public String getForename() {
-        return forename;
-    }
-
-    public void setForename(String forename) {
-        this.forename = forename;
     }
 
     public Boolean getIncludeCompanyObjectsInformation() {
@@ -124,11 +73,4 @@ public class CertificateItemOptions {
         this.secretaryDetails = secretaryDetails;
     }
 
-    public String getSurname() {
-        return surname;
-    }
-
-    public void setSurname(String surname) {
-        this.surname = surname;
-    }
 }

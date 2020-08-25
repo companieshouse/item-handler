@@ -14,7 +14,9 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /** Unit tests the {@link OrderProcessorService} class. */
 @ExtendWith(MockitoExtension.class)
@@ -64,7 +66,7 @@ public class OrderProcessorServiceTest {
 
         // Then
         verify(ordersApi).getOrderData(ORDER_URI);
-        verify(emailer).sendCertificateOrderConfirmation(any(OrderData.class));
+        verify(emailer).sendOrderConfirmation(any(OrderData.class));
     }
 
     @Test
@@ -99,14 +101,14 @@ public class OrderProcessorServiceTest {
 
     /**
      * Sets up mocks to throw the exception for which the constructor is provided when the service calls
-     * {@link EmailService#sendCertificateOrderConfirmation(OrderData)}.
+     * {@link EmailService#sendOrderConfirmation(OrderData)}.
      * @param constructor the Exception constructor to use
      * @throws Exception should something unexpected happen
      */
     private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor) throws Exception {
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
         when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(emailer).sendCertificateOrderConfirmation(any(OrderData.class));
+        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(emailer).sendOrderConfirmation(any(OrderData.class));
     }
 
 

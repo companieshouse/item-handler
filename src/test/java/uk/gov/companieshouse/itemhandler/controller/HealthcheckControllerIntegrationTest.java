@@ -15,7 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
+@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
+        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
 class HealthcheckControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;

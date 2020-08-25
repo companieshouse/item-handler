@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,6 +12,7 @@ import uk.gov.companieshouse.api.handler.order.request.OrdersGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
 import uk.gov.companieshouse.itemhandler.client.ApiClient;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.mapper.OrdersApiToOrderDataMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -23,6 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class OrdersApiClientServiceTest {
     private static final String ORDER_URL = "/orders/1234";
+    private static final String ORDER_URL_INCORRECT = "/bad-orders/url";
     private static final String ORDER_ETAG = "abCxYz0324";
 
     @InjectMocks
@@ -66,5 +69,10 @@ public class OrdersApiClientServiceTest {
         OrderData actualOrderData = serviceUnderTest.getOrderData(ORDER_URL);
         assertThat(actualOrderData.getEtag(), is(expectedOrderData.getEtag()));
         verify(ordersApiToOrderDataMapper, times(1)).ordersApiToOrderData(ordersApi);
+    }
+
+    @Test
+    void getOrderDataThrowsServiceExceptionForIncorrectUri() {
+        Assertions.assertThrows(ServiceException.class, () -> serviceUnderTest.getOrderData(ORDER_URL_INCORRECT));
     }
 }

@@ -7,5 +7,5 @@ class OrderDataToCertificateOrderConfirmationMapperConstants {
     private OrderDataToCertificateOrderConfirmationMapperConstants() { }
 
     /** Dictates how the payment date time is rendered in a certificate order confirmation. */
-    static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
+    static final DateTimeFormatter DATETIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
 }
