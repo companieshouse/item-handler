@@ -48,7 +48,7 @@ public class EmailService {
     @Value("${certificate.order.confirmation.recipient}")
     private String certificateOrderRecipient;
     @Value("${certified-copy.order.confirmation.recipient}")
-    private String certifiedCopyOrderRecepient;
+    private String certifiedCopyOrderRecipient;
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
