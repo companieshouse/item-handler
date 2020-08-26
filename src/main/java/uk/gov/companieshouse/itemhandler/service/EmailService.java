@@ -87,7 +87,7 @@ public class EmailService {
             email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
         }
         else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
-            confirmation.setTo(certifiedCopyOrderRecepient);
+            confirmation.setTo(certifiedCopyOrderRecipient);
             email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
             email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
         }
