@@ -32,7 +32,7 @@ public class EmailService {
     private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certified-copy-order-confirmation";
     private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "certified-copy_order_confirmation_email";
+            "certified_copy_order_confirmation_email";
     private static final String ITEM_TYPE_CERTIFICATE = "certificate";
     private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     /**
