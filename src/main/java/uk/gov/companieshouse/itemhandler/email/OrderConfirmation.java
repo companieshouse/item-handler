@@ -20,6 +20,8 @@ public abstract class OrderConfirmation {
     private String deliveryMethod;
     private String timeOfPayment;
     private String paymentReference;
+    private String companyName;
+    private String companyNumber;
 
     public String getTo() {
         return to;
@@ -139,5 +141,21 @@ public abstract class OrderConfirmation {
 
     public void setPaymentReference(String paymentReference) {
         this.paymentReference = paymentReference;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyNumber() {
+        return companyNumber;
+    }
+
+    public void setCompanyNumber(String companyNumber) {
+        this.companyNumber = companyNumber;
     }
 }

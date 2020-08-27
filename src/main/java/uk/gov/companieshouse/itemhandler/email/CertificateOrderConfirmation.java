@@ -6,8 +6,6 @@ package uk.gov.companieshouse.itemhandler.email;
 public class CertificateOrderConfirmation extends OrderConfirmation {
 
     private String feeAmount;
-    private String companyName;
-    private String companyNumber;
     private String certificateType;
     private String[] certificateIncludes;
 
@@ -17,22 +15,6 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setFeeAmount(String feeAmount) {
         this.feeAmount = feeAmount;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getCompanyNumber() {
-        return companyNumber;
-    }
-
-    public void setCompanyNumber(String companyNumber) {
-        this.companyNumber = companyNumber;
     }
 
     public String getCertificateType() {
