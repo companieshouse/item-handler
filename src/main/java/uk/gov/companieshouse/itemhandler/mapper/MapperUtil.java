@@ -4,7 +4,7 @@ import org.mapstruct.Named;
 
 import java.time.LocalDateTime;
 
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 public interface MapperUtil {
 

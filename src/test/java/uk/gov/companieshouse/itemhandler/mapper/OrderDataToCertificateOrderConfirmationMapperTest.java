@@ -18,7 +18,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
 
@@ -98,6 +98,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         final Item item = new Item();
         item.setCompanyName("THE COMPANY");
         item.setCompanyNumber("00000001");
+        item.setKind("item#certificate");
         final CertificateItemOptions options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
@@ -153,6 +154,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     void orderToConfirmationCopesWithMissingDirectorAndSecretaryDetails() {
         final OrderData order = new OrderData();
         final Item item = new Item();
+        item.setKind("item#certificate");
         final CertificateItemOptions options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
@@ -193,6 +195,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Given
         final Item item = new Item();
+        item.setKind("item#certificate");
         final CertificateItemOptions options = new CertificateItemOptions();
         final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
         officeDetails.setIncludeAddressRecordsType(CURRENT);
@@ -211,6 +214,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Given
         final Item item = new Item();
+        item.setKind("item#certificate");
         final CertificateItemOptions options = new CertificateItemOptions();
         final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
         officeDetails.setIncludeAddressRecordsType(CURRENT_AND_PREVIOUS);
@@ -229,6 +233,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     void doesNotIncludeRegisteredOfficeAddressWithNoRecordsType() {
         // Given
         final Item item = new Item();
+        item.setKind("item#certificate");
         final CertificateItemOptions options = new CertificateItemOptions();
         final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
         options.setRegisteredOfficeAddressDetails(officeDetails);

@@ -12,12 +12,14 @@ public class FilingHistoryDocument {
                                  final String filingHistoryDescription,
                                  final Map<String, Object> filingHistoryDescriptionValues,
                                  final String filingHistoryId,
-                                 final String filingHistoryType) {
+                                 final String filingHistoryType,
+                                 final String filingHistoryCost) {
         this.filingHistoryDate = filingHistoryDate;
         this.filingHistoryDescription = filingHistoryDescription;
         this.filingHistoryDescriptionValues = filingHistoryDescriptionValues;
         this.filingHistoryId = filingHistoryId;
         this.filingHistoryType = filingHistoryType;
+        this.filingHistoryCost = filingHistoryCost;
     }
 
     private String filingHistoryDate;
@@ -29,6 +31,8 @@ public class FilingHistoryDocument {
     private String filingHistoryId;
 
     private String filingHistoryType;
+
+    private String filingHistoryCost;
 
     public String getFilingHistoryDate() {
         return filingHistoryDate;
@@ -68,6 +72,14 @@ public class FilingHistoryDocument {
 
     public void setFilingHistoryType(String filingHistoryType) {
         this.filingHistoryType = filingHistoryType;
+    }
+
+    public String getFilingHistoryCost() {
+        return filingHistoryCost;
+    }
+
+    public void setFilingHistoryCost(String filingHistoryCost) {
+        this.filingHistoryCost = filingHistoryCost;
     }
 
     @Override

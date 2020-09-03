@@ -1,6 +1,11 @@
 package uk.gov.companieshouse.itemhandler.model;
 
+import org.springframework.data.annotation.Transient;
+
 public class ItemOptions {
+
+    @Transient
+    private String type;
 
     private CollectionLocation collectionLocation;
 
@@ -61,4 +66,8 @@ public class ItemOptions {
     public void setSurname(String surname) {
         this.surname = surname;
     }
+
+    public String getType() { return type; }
+
+    public void setType(String type) { this.type = type; }
 }

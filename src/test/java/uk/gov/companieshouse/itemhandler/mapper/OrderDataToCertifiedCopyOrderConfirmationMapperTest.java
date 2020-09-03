@@ -7,20 +7,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
-import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
-import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,16 +23,13 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -101,6 +93,7 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         final Item item = new Item();
         item.setCompanyName("THE COMPANY");
         item.setCompanyNumber("00000001");
+        item.setKind("item#certified-copy");
         final CertifiedCopyItemOptions options = new CertifiedCopyItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
 
