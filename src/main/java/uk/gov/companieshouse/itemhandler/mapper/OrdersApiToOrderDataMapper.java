@@ -48,17 +48,13 @@ public interface OrdersApiToOrderDataMapper {
      */
     @AfterMapping
     default void apiToItemOptions(BaseItemApi baseItemApi, @MappingTarget Item item) {
-        item.setItemOptions(
-                mapToSpecificItemOptions(baseItemApi.getItemOptions(), baseItemApi.getKind())
-        );
-    }
-
-    default ItemOptions mapToSpecificItemOptions(BaseItemOptionsApi baseItemOptionsApi, String kind) {
-        if (kind.equals(ItemType.CERTIFICATE.getKind())) {
-            return apiToCertificateItemOptions((CertificateItemOptionsApi) baseItemOptionsApi);
+        final String itemKind = baseItemApi.getKind();
+        final BaseItemOptionsApi baseItemOptionsApi = baseItemApi.getItemOptions();
+        if (itemKind.equals(ItemType.CERTIFICATE.getKind())) {
+            item.setItemOptions(apiToCertificateItemOptions((CertificateItemOptionsApi) baseItemOptionsApi));
         }
         else {
-            return apiToCertifiedCopyItemOptions((CertifiedCopyItemOptionsApi) baseItemOptionsApi);
+            item.setItemOptions(apiToCertifiedCopyItemOptions((CertifiedCopyItemOptionsApi) baseItemOptionsApi));
         }
     }
 
