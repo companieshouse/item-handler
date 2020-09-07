@@ -20,21 +20,6 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 public interface OrdersApiToOrderDataMapper {
     OrderData ordersApiToOrderData(OrdersApi ordersApi);
 
-    @Mapping(source = "id", target="id")
-    @Mapping(source = "companyName", target="companyName")
-    @Mapping(source = "companyNumber", target="companyNumber")
-    @Mapping(source = "customerReference", target="customerReference")
-    @Mapping(source = "description", target="description")
-    @Mapping(source = "descriptionIdentifier", target="descriptionIdentifier")
-    @Mapping(source = "descriptionValues", target="descriptionValues")
-    @Mapping(source = "itemCosts", target="itemCosts")
-    @Mapping(source = "etag", target="etag")
-    @Mapping(source = "kind", target="kind")
-    @Mapping(source = "postalDelivery", target="postalDelivery")
-    @Mapping(source = "quantity", target="quantity")
-    @Mapping(source = "links", target="links")
-    @Mapping(source = "postageCost", target="postageCost")
-    @Mapping(source = "totalItemCost", target="totalItemCost")
     @Mapping(source = "links.self", target="itemUri")
     @Mapping(target = "satisfiedAt", ignore = true)
     @Mapping(target = "status", ignore = true)
