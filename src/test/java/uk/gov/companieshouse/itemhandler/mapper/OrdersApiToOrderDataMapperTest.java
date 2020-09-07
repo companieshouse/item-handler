@@ -108,7 +108,7 @@ public class OrdersApiToOrderDataMapperTest {
     private static final String LINKS_SELF = "links/self";
     private static final CertificateItemOptionsApi CERTIFICATE_ITEM_OPTIONS;
     private static final CertifiedCopyItemOptionsApi CERTIFIED_COPY_ITEM_OPTIONS;
-    public static final FilingHistoryDocument DOCUMENT = new FilingHistoryDocument(
+    private static final FilingHistoryDocument DOCUMENT = new FilingHistoryDocument(
             "1993-04-01",
             "memorandum-articles",
             null,

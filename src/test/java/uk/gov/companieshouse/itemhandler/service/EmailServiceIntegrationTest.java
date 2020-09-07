@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.exception.OrderMappingException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
@@ -97,17 +95,5 @@ public class EmailServiceIntegrationTest {
 
         // Then
         verify(certifiedCopyOrderConfirmation).setTo("certified-copy-handler@nowhere.com");
-    }
-
-    @Test
-    @DisplayName("OrderMappingException is thrown when mapper fails to convert order to order confirmation")
-    void throwsOrderMappingExceptionWhenMappingFails() throws Exception {
-        // Given
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
-        when(orderToCertifiedCopyConfirmationMapper.orderToConfirmation(order)).thenReturn(null);
-        // When
-        Assertions.assertThrows(OrderMappingException.class, () -> emailServiceUnderTest.sendOrderConfirmation(order));
     }
 }
