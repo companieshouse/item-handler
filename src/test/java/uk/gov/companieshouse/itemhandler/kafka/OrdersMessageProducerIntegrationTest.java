@@ -20,7 +20,8 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
+@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
+        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
 public class OrdersMessageProducerIntegrationTest {
     private static final String ORDER_URI = "/order/ORDER-12345";
     private static final String ORDER_TOPIC = "order-received";

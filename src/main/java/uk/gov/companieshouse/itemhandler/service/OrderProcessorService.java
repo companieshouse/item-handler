@@ -36,7 +36,7 @@ public class OrderProcessorService {
             order = ordersApi.getOrderData(orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
             LoggingUtils.getLogger().info("Processing order received", logMap);
-            emailer.sendCertificateOrderConfirmation(order);
+            emailer.sendOrderConfirmation(order);
         } catch (Exception ex) {
             LoggingUtils.getLogger().error("Exception caught getting order data.", ex, logMap);
         }

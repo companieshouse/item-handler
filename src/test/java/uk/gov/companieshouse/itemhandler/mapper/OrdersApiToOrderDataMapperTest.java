@@ -1,18 +1,46 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.api.model.order.ActionedByApi;
 import uk.gov.companieshouse.api.model.order.DeliveryDetailsApi;
-import uk.gov.companieshouse.api.model.order.ItemApi;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
-import uk.gov.companieshouse.api.model.order.item.*;
-import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.api.model.order.item.BaseItemApi;
+import uk.gov.companieshouse.api.model.order.item.CertificateApi;
+import uk.gov.companieshouse.api.model.order.item.CertificateItemOptionsApi;
+import uk.gov.companieshouse.api.model.order.item.CertificateTypeApi;
+import uk.gov.companieshouse.api.model.order.item.CertifiedCopyApi;
+import uk.gov.companieshouse.api.model.order.item.CertifiedCopyItemOptionsApi;
+import uk.gov.companieshouse.api.model.order.item.CollectionLocationApi;
+import uk.gov.companieshouse.api.model.order.item.DeliveryMethodApi;
+import uk.gov.companieshouse.api.model.order.item.DeliveryTimescaleApi;
+import uk.gov.companieshouse.api.model.order.item.DirectorOrSecretaryDetailsApi;
+import uk.gov.companieshouse.api.model.order.item.FilingHistoryDocumentApi;
+import uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTypeApi;
+import uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi;
+import uk.gov.companieshouse.api.model.order.item.ItemCostsApi;
+import uk.gov.companieshouse.api.model.order.item.LinksApi;
+import uk.gov.companieshouse.api.model.order.item.RegisteredOfficeAddressDetailsApi;
+import uk.gov.companieshouse.itemhandler.model.ActionedBy;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
+import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
+import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
+import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.ItemCosts;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.OrderLinks;
+import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,6 +50,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static uk.gov.companieshouse.api.model.order.item.CertificateTypeApi.INCORPORATION;
 import static uk.gov.companieshouse.api.model.order.item.CollectionLocationApi.BELFAST;
 import static uk.gov.companieshouse.api.model.order.item.DeliveryMethodApi.POSTAL;
@@ -29,6 +58,7 @@ import static uk.gov.companieshouse.api.model.order.item.DeliveryTimescaleApi.ST
 import static uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTypeApi.CURRENT;
 import static uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi.PARTIAL;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFICATE;
+import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFIED_COPY_INCORPORATION_SAME_DAY;
 
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrdersApiToOrderDataMapperTest.Config.class)
@@ -36,11 +66,17 @@ public class OrdersApiToOrderDataMapperTest {
 
     @Configuration
     @ComponentScan(basePackageClasses = {OrdersApiToOrderDataMapperTest.class})
-    static class Config {}
+    static class Config {
+        @Bean
+        public ObjectMapper objectMapper() {
+            return new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        }
+    }
 
     @Autowired
     private OrdersApiToOrderDataMapper mapper;
 
+    private static final String ID = "CHS00000000000000001";
     private static final String ORDER_ETAG          = "etag-xyz";
     private static final String ORDER_KIND          = "order";
     private static final String ORDER_REF           = "reference-xyz";
@@ -55,14 +91,33 @@ public class OrdersApiToOrderDataMapperTest {
     private static final String COMPANY_NAME        = "Phillips & Daughters";
     private static final int QUANTITY               = 10;
     private static final String DESCRIPTION         = "Certificate";
-    private static final String DESCRIPTION_IDENTIFIER = "Description Identifier";
+    private static final String DESCRIPTION_IDENTIFIER_CERTIFICATE = "certificate";
+    private static final String DESCRIPTION_IDENTIFIER_CERTIFIEDCOPY = "certified-copy";
     private static final Map<String, String> DESCRIPTION_VALUES = singletonMap("key1", "value1");
     private static final String POSTAGE_COST        = "0";
     private static final String TOTAL_ITEM_COST     = "100";
-    private static final String ITEM_KIND           = "certificate";
+    private static final String KIND_CERTIFICATE    = "item#certificate";
+    private static final String KIND_CERTIFIEDCOPY  = "item#certified-copy";
     private static final boolean POSTAL_DELIVERY    = true;
     private static final String CUSTOMER_REFERENCE  = "Certificate ordered by NJ.";
     private static final String TOKEN_ETAG          = "9d39ea69b64c80ca42ed72328b48c303c4445e28";
+    private static final FilingHistoryDocumentApi FILING_HISTORY;
+    private static final ItemCostsApi CERTIFICATE_ITEM_COSTS;
+    private static final ItemCostsApi CERTIFIED_COPY_ITEM_COSTS;
+    private static final LinksApi LINKS_API;
+    private static final String LINKS_SELF = "links/self";
+    private static final CertificateItemOptionsApi CERTIFICATE_ITEM_OPTIONS;
+    private static final CertifiedCopyItemOptionsApi CERTIFIED_COPY_ITEM_OPTIONS;
+    private static final FilingHistoryDocument DOCUMENT = new FilingHistoryDocument(
+            "1993-04-01",
+            "memorandum-articles",
+            null,
+            "MDAxMTEyNzExOGFkaXF6a2N4",
+            "MEM/ARTS",
+            "£15"
+    );
+    private static final String FORENAME = "John";
+    private static final String SURNAME = "Smith";
 
     private static final boolean INCLUDE_ADDRESS = true;
     private static final boolean INCLUDE_APPOINTMENT_DATE = false;
@@ -78,7 +133,6 @@ public class OrdersApiToOrderDataMapperTest {
     private static final IncludeAddressRecordsTypeApi INCLUDE_ADDRESS_RECORDS_TYPE = CURRENT;
     private static final boolean INCLUDE_DATES = true;
 
-    private final static CertificateItemOptionsApi ITEM_OPTIONS;
     private final static DirectorOrSecretaryDetailsApi DIRECTOR_OR_SECRETARY_DETAILS;
     private final static RegisteredOfficeAddressDetailsApi REGISTERED_OFFICE_ADDRESS_DETAILS;
     static {
@@ -95,18 +149,199 @@ public class OrdersApiToOrderDataMapperTest {
         REGISTERED_OFFICE_ADDRESS_DETAILS.setIncludeAddressRecordsType(INCLUDE_ADDRESS_RECORDS_TYPE);
         REGISTERED_OFFICE_ADDRESS_DETAILS.setIncludeDates(INCLUDE_DATES);
 
-        ITEM_OPTIONS = new CertificateItemOptionsApi();
-        ITEM_OPTIONS.setCertificateType(INCORPORATION);
-        ITEM_OPTIONS.setCollectionLocation(BELFAST);
-        ITEM_OPTIONS.setContactNumber(CONTACT_NUMBER);
-        ITEM_OPTIONS.setDeliveryMethod(POSTAL);
-        ITEM_OPTIONS.setDeliveryTimescale(STANDARD);
-        ITEM_OPTIONS.setDirectorDetails(DIRECTOR_OR_SECRETARY_DETAILS);
-        ITEM_OPTIONS.setIncludeCompanyObjectsInformation(INCLUDE_COMPANY_OBJECTS_INFORMATION);
-        ITEM_OPTIONS.setIncludeEmailCopy(INCLUDE_EMAIL_COPY);
-        ITEM_OPTIONS.setIncludeGoodStandingInformation(INCLUDE_GOOD_STANDING_INFORMATION);
-        ITEM_OPTIONS.setRegisteredOfficeAddressDetails(REGISTERED_OFFICE_ADDRESS_DETAILS);
-        ITEM_OPTIONS.setSecretaryDetails(DIRECTOR_OR_SECRETARY_DETAILS);
+        CERTIFICATE_ITEM_OPTIONS = new CertificateItemOptionsApi();
+        CERTIFICATE_ITEM_OPTIONS.setCertificateType(CertificateTypeApi.INCORPORATION);
+        CERTIFICATE_ITEM_OPTIONS.setCollectionLocation(CollectionLocationApi.BELFAST);
+        CERTIFICATE_ITEM_OPTIONS.setContactNumber(CONTACT_NUMBER);
+        CERTIFICATE_ITEM_OPTIONS.setDeliveryMethod(DeliveryMethodApi.POSTAL);
+        CERTIFICATE_ITEM_OPTIONS.setDeliveryTimescale(DeliveryTimescaleApi.STANDARD);
+        CERTIFICATE_ITEM_OPTIONS.setDirectorDetails(DIRECTOR_OR_SECRETARY_DETAILS);
+        CERTIFICATE_ITEM_OPTIONS.setForename(FORENAME);
+        CERTIFICATE_ITEM_OPTIONS.setIncludeCompanyObjectsInformation(INCLUDE_COMPANY_OBJECTS_INFORMATION);
+        CERTIFICATE_ITEM_OPTIONS.setIncludeEmailCopy(INCLUDE_EMAIL_COPY);
+        CERTIFICATE_ITEM_OPTIONS.setIncludeGoodStandingInformation(INCLUDE_GOOD_STANDING_INFORMATION);
+        CERTIFICATE_ITEM_OPTIONS.setRegisteredOfficeAddressDetails(REGISTERED_OFFICE_ADDRESS_DETAILS);
+        CERTIFICATE_ITEM_OPTIONS.setSecretaryDetails(DIRECTOR_OR_SECRETARY_DETAILS);
+        CERTIFICATE_ITEM_OPTIONS.setSurname(SURNAME);
+
+
+        CERTIFICATE_ITEM_COSTS = new ItemCostsApi();
+        CERTIFICATE_ITEM_COSTS.setDiscountApplied("1");
+        CERTIFICATE_ITEM_COSTS.setItemCost("2");
+        CERTIFICATE_ITEM_COSTS.setCalculatedCost("3");
+        CERTIFICATE_ITEM_COSTS.setProductType(CERTIFICATE);
+
+        CERTIFIED_COPY_ITEM_COSTS = new ItemCostsApi();
+        CERTIFIED_COPY_ITEM_COSTS.setDiscountApplied("1");
+        CERTIFIED_COPY_ITEM_COSTS.setItemCost("2");
+        CERTIFIED_COPY_ITEM_COSTS.setCalculatedCost("3");
+        CERTIFIED_COPY_ITEM_COSTS.setProductType(CERTIFIED_COPY_INCORPORATION_SAME_DAY);
+
+        FILING_HISTORY = new FilingHistoryDocumentApi(DOCUMENT.getFilingHistoryDate(),
+                DOCUMENT.getFilingHistoryDescription(),
+                DOCUMENT.getFilingHistoryDescriptionValues(),
+                DOCUMENT.getFilingHistoryId(),
+                DOCUMENT.getFilingHistoryType(),
+                DOCUMENT.getFilingHistoryCost()
+        );
+
+        CERTIFIED_COPY_ITEM_OPTIONS = new CertifiedCopyItemOptionsApi();
+        CERTIFIED_COPY_ITEM_OPTIONS.setCollectionLocation(CollectionLocationApi.BELFAST);
+        CERTIFIED_COPY_ITEM_OPTIONS.setContactNumber(CONTACT_NUMBER);
+        CERTIFIED_COPY_ITEM_OPTIONS.setDeliveryMethod(DeliveryMethodApi.POSTAL);
+        CERTIFIED_COPY_ITEM_OPTIONS.setDeliveryTimescale(DeliveryTimescaleApi.STANDARD);
+        CERTIFIED_COPY_ITEM_OPTIONS.setFilingHistoryDocuments(singletonList(FILING_HISTORY));
+        CERTIFIED_COPY_ITEM_OPTIONS.setForename(FORENAME);
+        CERTIFIED_COPY_ITEM_OPTIONS.setSurname(SURNAME);
+
+
+        LINKS_API = new LinksApi();
+        LINKS_API.setSelf(LINKS_SELF);
+    }
+
+    @Autowired
+    private OrdersApiToOrderDataMapper apiToOrderDataMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void testCertificateApiToCertificate() {
+        CertificateApi certificateApi = new CertificateApi();
+        certificateApi.setId(ID);
+        certificateApi.setCompanyName(COMPANY_NAME);
+        certificateApi.setCompanyNumber(COMPANY_NUMBER);
+        certificateApi.setCustomerReference(CUSTOMER_REFERENCE);
+        certificateApi.setQuantity(QUANTITY);
+        certificateApi.setDescription(DESCRIPTION);
+        certificateApi.setDescriptionIdentifier(DESCRIPTION_IDENTIFIER_CERTIFICATE);
+        certificateApi.setDescriptionValues(DESCRIPTION_VALUES);
+        certificateApi.setItemCosts(singletonList(CERTIFICATE_ITEM_COSTS));
+        certificateApi.setKind(KIND_CERTIFICATE);
+        certificateApi.setPostalDelivery(POSTAL_DELIVERY);
+        certificateApi.setItemOptions(CERTIFICATE_ITEM_OPTIONS);
+        certificateApi.setLinks(LINKS_API);
+        certificateApi.setPostageCost(POSTAGE_COST);
+        certificateApi.setTotalItemCost(TOTAL_ITEM_COST);
+
+        final Item certificate = apiToOrderDataMapper.apiToItem(certificateApi);
+
+        assertEquals(certificateApi.getId(), certificate.getId());
+        assertThat(certificate.getId(), is(certificateApi.getId()));
+        assertThat(certificate.getCompanyName(), is(certificateApi.getCompanyName()));
+        assertThat(certificate.getCompanyNumber(), is(certificateApi.getCompanyNumber()));
+        assertThat(certificate.getCustomerReference(), is(certificateApi.getCustomerReference()));
+        assertThat(certificate.getQuantity(), is(certificateApi.getQuantity()));
+        assertThat(certificate.getDescription(), is(certificateApi.getDescription()));
+        assertThat(certificate.getDescriptionIdentifier(), is(certificateApi.getDescriptionIdentifier()));
+        assertThat(certificate.getDescriptionValues(), is(certificateApi.getDescriptionValues()));
+        assertThat(certificate.getKind(), is(certificateApi.getKind()));
+        assertThat(certificate.isPostalDelivery(), is(certificateApi.isPostalDelivery()));
+        assertThat(certificate.getEtag(), is(certificateApi.getEtag()));
+        assertThat(certificate.getItemUri(), is(certificateApi.getLinks().getSelf()));
+        assertThat(certificate.getLinks().getSelf(), is(certificateApi.getLinks().getSelf()));
+
+        assertItemCosts(certificateApi.getItemCosts().get(0), certificate.getItemCosts().get(0));
+        assertItemOptionsSame((CertificateItemOptionsApi) certificateApi.getItemOptions(),
+                (CertificateItemOptions) certificate.getItemOptions());
+        assertThat(certificate.getPostageCost(), is(certificateApi.getPostageCost()));
+        assertThat(certificate.getTotalItemCost(), is(certificateApi.getTotalItemCost()));
+    }
+
+    @Test
+    void testCertifiedCopyApiToCertifiedCopy() throws JsonProcessingException {
+        CertifiedCopyApi certifiedCopyApi = new CertifiedCopyApi();
+        certifiedCopyApi.setId(ID);
+        certifiedCopyApi.setCompanyName(COMPANY_NAME);
+        certifiedCopyApi.setCompanyNumber(COMPANY_NUMBER);
+        certifiedCopyApi.setCustomerReference(CUSTOMER_REFERENCE);
+        certifiedCopyApi.setQuantity(QUANTITY);
+        certifiedCopyApi.setDescription(DESCRIPTION);
+        certifiedCopyApi.setDescriptionIdentifier(DESCRIPTION_IDENTIFIER_CERTIFIEDCOPY);
+        certifiedCopyApi.setDescriptionValues(DESCRIPTION_VALUES);
+        certifiedCopyApi.setItemCosts(singletonList(CERTIFIED_COPY_ITEM_COSTS));
+        certifiedCopyApi.setKind(KIND_CERTIFIEDCOPY);
+        certifiedCopyApi.setPostalDelivery(POSTAL_DELIVERY);
+        certifiedCopyApi.setItemOptions(CERTIFIED_COPY_ITEM_OPTIONS);
+        certifiedCopyApi.setLinks(LINKS_API);
+        certifiedCopyApi.setPostageCost(POSTAGE_COST);
+        certifiedCopyApi.setTotalItemCost(TOTAL_ITEM_COST);
+
+        final Item certifiedCopy = apiToOrderDataMapper.apiToItem(certifiedCopyApi);
+
+        assertEquals(certifiedCopyApi.getId(), certifiedCopy.getId());
+        assertThat(certifiedCopy.getId(), is(certifiedCopyApi.getId()));
+        assertThat(certifiedCopy.getCompanyName(), is(certifiedCopyApi.getCompanyName()));
+        assertThat(certifiedCopy.getCompanyNumber(), is(certifiedCopyApi.getCompanyNumber()));
+        assertThat(certifiedCopy.getCustomerReference(), is(certifiedCopyApi.getCustomerReference()));
+        assertThat(certifiedCopy.getQuantity(), is(certifiedCopyApi.getQuantity()));
+        assertThat(certifiedCopy.getDescription(), is(certifiedCopyApi.getDescription()));
+        assertThat(certifiedCopy.getDescriptionIdentifier(), is(certifiedCopyApi.getDescriptionIdentifier()));
+        assertThat(certifiedCopy.getDescriptionValues(), is(certifiedCopyApi.getDescriptionValues()));
+        assertThat(certifiedCopy.getKind(), is(certifiedCopyApi.getKind()));
+        assertThat(certifiedCopy.isPostalDelivery(), is(certifiedCopyApi.isPostalDelivery()));
+        assertThat(certifiedCopy.getEtag(), is(certifiedCopyApi.getEtag()));
+        assertThat(certifiedCopy.getItemUri(), is(certifiedCopyApi.getLinks().getSelf()));
+        assertThat(certifiedCopy.getLinks().getSelf(), is(certifiedCopyApi.getLinks().getSelf()));
+
+        assertItemCosts(certifiedCopyApi.getItemCosts().get(0), certifiedCopy.getItemCosts().get(0));
+        assertItemOptionsSame((CertifiedCopyItemOptionsApi) certifiedCopyApi.getItemOptions(),
+                (CertifiedCopyItemOptions) certifiedCopy.getItemOptions());
+        assertThat(certifiedCopy.getPostageCost(), is(certifiedCopyApi.getPostageCost()));
+        assertThat(certifiedCopy.getTotalItemCost(), is(certifiedCopyApi.getTotalItemCost()));
+    }
+
+    private void assertItemCosts(final ItemCostsApi itemCostsApi, final ItemCosts itemCosts) {
+        assertThat(itemCosts.getDiscountApplied(), is(itemCostsApi.getDiscountApplied()));
+        assertThat(itemCosts.getItemCost(), is(itemCostsApi.getItemCost()));
+        assertThat(itemCosts.getCalculatedCost(), is(itemCostsApi.getCalculatedCost()));
+        assertThat(itemCosts.getProductType().getJsonName(), is(itemCostsApi.getProductType().getJsonName()));
+    }
+
+    private void assertItemOptionsSame(final CertificateItemOptionsApi source,
+                                       final CertificateItemOptions target) {
+        assertThat(target.getCertificateType().getJsonName(), is(source.getCertificateType().getJsonName()));
+        assertThat(target.getCollectionLocation().getJsonName(), is(source.getCollectionLocation().getJsonName()));
+        assertThat(target.getContactNumber(), is(source.getContactNumber()));
+        assertThat(target.getDeliveryMethod().getJsonName(), is(source.getDeliveryMethod().getJsonName()));
+        assertThat(target.getDeliveryTimescale().getJsonName(), is(source.getDeliveryTimescale().getJsonName()));
+        assertDetailsSame(source.getDirectorDetails(), target.getDirectorDetails());
+        assertThat(target.getForename(), is(source.getForename()));
+        assertThat(target.getIncludeCompanyObjectsInformation(), is(source.getIncludeCompanyObjectsInformation()));
+        assertThat(target.getIncludeEmailCopy(), is(source.getIncludeEmailCopy()));
+        assertThat(target.getIncludeGoodStandingInformation(), is(source.getIncludeGoodStandingInformation()));
+        assertAddressDetailsSame(source.getRegisteredOfficeAddressDetails(), target.getRegisteredOfficeAddressDetails());
+        assertDetailsSame(source.getSecretaryDetails(), target.getSecretaryDetails());
+        assertThat(target.getSurname(), is(source.getSurname()));
+    }
+
+    private void assertItemOptionsSame(final CertifiedCopyItemOptionsApi source,
+                                       final CertifiedCopyItemOptions target) throws JsonProcessingException {
+        assertThat(target.getCollectionLocation().getJsonName(), is(source.getCollectionLocation().getJsonName()));
+        assertThat(target.getContactNumber(), is(source.getContactNumber()));
+        assertThat(target.getDeliveryMethod().getJsonName(), is(source.getDeliveryMethod().getJsonName()));
+        assertThat(target.getDeliveryTimescale().getJsonName(), is(source.getDeliveryTimescale().getJsonName()));
+        assertThat(objectMapper.writeValueAsString(target.getFilingHistoryDocuments()),
+                is(objectMapper.writeValueAsString(source.getFilingHistoryDocuments())));
+        assertThat(target.getForename(), is(source.getForename()));
+        assertThat(target.getSurname(), is(source.getSurname()));
+    }
+
+    private void assertDetailsSame(final DirectorOrSecretaryDetailsApi source,
+                                   final DirectorOrSecretaryDetails target) {
+        assertThat(target.getIncludeAddress(), is(source.getIncludeAddress()));
+        assertThat(target.getIncludeAppointmentDate(), is(source.getIncludeAppointmentDate()));
+        assertThat(target.getIncludeBasicInformation(), is(source.getIncludeBasicInformation()));
+        assertThat(target.getIncludeCountryOfResidence(), is(source.getIncludeCountryOfResidence()));
+        assertThat(target.getIncludeDobType().getJsonName(), is(source.getIncludeDobType().getJsonName()));
+        assertThat(target.getIncludeNationality(), is(source.getIncludeNationality()));
+        assertThat(target.getIncludeOccupation(), is(source.getIncludeOccupation()));
+    }
+
+    private void assertAddressDetailsSame(final RegisteredOfficeAddressDetailsApi source,
+                                          final RegisteredOfficeAddressDetails target) {
+        assertThat(target.getIncludeAddressRecordsType().getJsonName(), is(source.getIncludeAddressRecordsType().getJsonName()));
+        assertThat(target.getIncludeDates(), is(source.getIncludeDates()));
     }
 
     @Test
@@ -126,7 +361,7 @@ public class OrdersApiToOrderDataMapperTest {
         actionedByApi.setId(ACTIONED_BY_ID);
         actionedByApi.setEmail(ACTIONED_BY_EMAIL);
         ordersApi.setOrderedBy(actionedByApi);
-        List<ItemApi> items = singletonList(setupTestItemApi());
+        List<BaseItemApi> items = singletonList(setupTestItemApi());
         ordersApi.setItems(items);
 
         final OrderData actualOrderData = mapper.ordersApiToOrderData(ordersApi);
@@ -138,7 +373,7 @@ public class OrdersApiToOrderDataMapperTest {
         assertThat(actualOrderData.getOrderedAt(), is(ordersApi.getOrderedAt()));
 
         Item item = actualOrderData.getItems().get(0);
-        ItemApi itemApi = ordersApi.getItems().get(0);
+        BaseItemApi itemApi = ordersApi.getItems().get(0);
         assertItemCosts(item.getItemCosts().get(0), itemApi.getItemCosts().get(0));
         assertOrderedBy(actualOrderData.getOrderedBy(), ordersApi.getOrderedBy());
         assertLinks(actualOrderData.getLinks(), ordersApi.getLinks());
@@ -172,14 +407,14 @@ public class OrdersApiToOrderDataMapperTest {
         assertThat(deliveryDetails.getCountry(), is(deliveryDetailsApi.getCountry()));
     }
 
-    private ItemApi setupTestItemApi(){
-        ItemApi item = new ItemApi();
+    private BaseItemApi setupTestItemApi(){
+        BaseItemApi item = new BaseItemApi();
         item.setCompanyName(COMPANY_NAME);
         item.setCompanyNumber(COMPANY_NUMBER);
         item.setCustomerReference(CUSTOMER_REFERENCE);
         item.setQuantity(QUANTITY);
         item.setDescription(DESCRIPTION);
-        item.setDescriptionIdentifier(DESCRIPTION_IDENTIFIER);
+        item.setDescriptionIdentifier(DESCRIPTION_IDENTIFIER_CERTIFICATE);
         item.setDescriptionValues(DESCRIPTION_VALUES);
         ItemCostsApi itemCosts = new ItemCostsApi();
         itemCosts.setProductType(CERTIFICATE);
@@ -189,9 +424,9 @@ public class OrdersApiToOrderDataMapperTest {
         item.setItemCosts(singletonList(itemCosts));
         item.setPostageCost(POSTAGE_COST);
         item.setTotalItemCost(TOTAL_ITEM_COST);
-        item.setKind(ITEM_KIND);
+        item.setKind(KIND_CERTIFICATE);
         item.setPostalDelivery(POSTAL_DELIVERY);
-        item.setItemOptions(ITEM_OPTIONS);
+        item.setItemOptions(CERTIFICATE_ITEM_OPTIONS);
         item.setEtag(TOKEN_ETAG);
 
         return item;

@@ -9,9 +9,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+
+import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -19,14 +24,21 @@ import static org.mockito.Mockito.when;
 /** Integration tests the {@link EmailService} service. */
 @SpringBootTest
 @EmbeddedKafka
-@TestPropertySource(properties="certificate.order.confirmation.recipient = nobody@nowhere.com")
+@TestPropertySource(properties={ "certificate.order.confirmation.recipient = certificate-handler@nowhere.com",
+                                "certified-copy.order.confirmation.recipient = certified-copy-handler@nowhere.com" })
 public class EmailServiceIntegrationTest {
+
+    private final static String ITEM_TYPE_CERTIFICATE = "certificate";
+    private final static String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
 
     @Autowired
     private EmailService emailServiceUnderTest;
 
     @MockBean
-    private OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper;
+    private OrderDataToCertificateOrderConfirmationMapper orderToCertificateConfirmationMapper;
+
+    @MockBean
+    private OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyConfirmationMapper;
 
     @MockBean
     private ObjectMapper objectMapper;
@@ -38,20 +50,50 @@ public class EmailServiceIntegrationTest {
     private OrderData order;
 
     @MockBean
-    private CertificateOrderConfirmation confirmation;
+    private List<Item> items;
+
+    @MockBean
+    private Item item;
+
+    @MockBean
+    private CertificateOrderConfirmation certificateOrderConfirmation;
+
+    @MockBean
+    private CertifiedCopyOrderConfirmation certifiedCopyOrderConfirmation;
 
     @Test
-    @DisplayName("EmailService sets the to line on the confirmation to the configured certificate.order.confirmation.recipient value")
-    void usesConfiguredRecipientValue() throws Exception {
+    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
+            "certificate.order.confirmation.recipient value")
+    void usesConfiguredRecipientValueForCertificate() throws Exception {
 
         // Given
-        when(orderToConfirmationMapper.orderToConfirmation(order)).thenReturn(confirmation);
+        when(orderToCertificateConfirmationMapper.orderToConfirmation(order)).thenReturn(certificateOrderConfirmation);
 
         // When
-        emailServiceUnderTest.sendCertificateOrderConfirmation(order);
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
+        emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
-        verify(confirmation).setTo("nobody@nowhere.com");
+        verify(certificateOrderConfirmation).setTo("certificate-handler@nowhere.com");
     }
 
+    @Test
+    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
+            "certified-copy.order.confirmation.recipient value")
+    void usesConfiguredRecipientValueForCertifiedCopy() throws Exception {
+
+        // Given
+        when(orderToCertifiedCopyConfirmationMapper.orderToConfirmation(order)).thenReturn(certifiedCopyOrderConfirmation);
+
+        // When
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
+        emailServiceUnderTest.sendOrderConfirmation(order);
+
+        // Then
+        verify(certifiedCopyOrderConfirmation).setTo("certified-copy-handler@nowhere.com");
+    }
 }

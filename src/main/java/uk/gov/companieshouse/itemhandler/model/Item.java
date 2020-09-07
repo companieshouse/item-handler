@@ -25,7 +25,7 @@ public class Item {
 
     private List<ItemCosts> itemCosts;
 
-    private CertificateItemOptions itemOptions;
+    private ItemOptions itemOptions;
 
     private String etag;
 
@@ -111,11 +111,11 @@ public class Item {
         this.itemCosts = itemCosts;
     }
 
-    public CertificateItemOptions getItemOptions() {
+    public ItemOptions getItemOptions() {
         return itemOptions;
     }
 
-    public void setItemOptions(CertificateItemOptions itemOptions) {
+    public void setItemOptions(ItemOptions itemOptions) {
         this.itemOptions = itemOptions;
     }
 
