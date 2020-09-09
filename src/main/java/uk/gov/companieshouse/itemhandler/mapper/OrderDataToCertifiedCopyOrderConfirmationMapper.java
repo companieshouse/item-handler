@@ -61,7 +61,7 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
             certifiedDocument.setDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate());
             certifiedDocument.setType(filingHistoryDocuments.get(i).getFilingHistoryType());
             certifiedDocument.setDescription(filingHistoryDocuments.get(i).getFilingHistoryDescription());
-            certifiedDocument.setFee("£" + itemCosts.get(i).getCalculatedCost());
+            certifiedDocument.setFee(itemCosts.get(i).getCalculatedCost());
             certifiedDocuments.add(certifiedDocument);
         });
 

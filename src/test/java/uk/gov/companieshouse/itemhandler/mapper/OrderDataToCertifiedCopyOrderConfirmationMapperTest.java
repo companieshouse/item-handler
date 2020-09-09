@@ -36,7 +36,7 @@ import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmat
  */
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrderDataToCertifiedCopyOrderConfirmationMapperTest.Config.class)
-public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
+class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
 
     private static final LocalTime AM = LocalTime.of(7, 30, 15);
     private static final LocalTime PM = LocalTime.of(15, 30, 15);
@@ -149,7 +149,7 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         assertThat(confirmation.getCertifiedDocuments().get(0).getType(), is("AP01"));
         assertThat(confirmation.getCertifiedDocuments().get(0).getDescription(),
                 is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
-        assertThat(confirmation.getCertifiedDocuments().get(0).getFee(), is("£15"));
+        assertThat(confirmation.getCertifiedDocuments().get(0).getFee(), is("15"));
     }
 
     @Test
