@@ -36,7 +36,7 @@ import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmat
  */
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrderDataToCertifiedCopyOrderConfirmationMapperTest.Config.class)
-public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
+class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
 
     private static final LocalTime AM = LocalTime.of(7, 30, 15);
     private static final LocalTime PM = LocalTime.of(15, 30, 15);
@@ -46,6 +46,9 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
 
     private static final String EXPECTED_AM_DATE_TIME_RENDERING = "04 June 2020 at 07:30";
     private static final String EXPECTED_PM_DATE_TIME_RENDERING = "04 June 2020 at 15:30";
+
+    private static final String DATE_FILED = "2009-08-23";
+    private static final String EXPECTED_REFORMATTED_DATE_FILED = "23 Aug 2009";
 
     @Configuration
     @ComponentScan(basePackageClasses = {OrderDataToCertifiedCopyOrderConfirmationMapperTest.class})
@@ -98,7 +101,7 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
 
         FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
-        filingHistoryDocument.setFilingHistoryDate("15 Feb 2018");
+        filingHistoryDocument.setFilingHistoryDate("2018-02-15");
         filingHistoryDocument.setFilingHistoryDescription("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
         filingHistoryDocument.setFilingHistoryType("AP01");
         List<FilingHistoryDocument> filingHistoryDocuments = new ArrayList<>();
@@ -149,7 +152,7 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         assertThat(confirmation.getCertifiedDocuments().get(0).getType(), is("AP01"));
         assertThat(confirmation.getCertifiedDocuments().get(0).getDescription(),
                 is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
-        assertThat(confirmation.getCertifiedDocuments().get(0).getFee(), is("£15"));
+        assertThat(confirmation.getCertifiedDocuments().get(0).getFee(), is("15"));
     }
 
     @Test
@@ -165,6 +168,11 @@ public class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
     void getTimeOfPaymentBehavesAsExpected() {
         assertThat(mapperUnderTest.getTimeOfPayment(MORNING_DATE_TIME), is(EXPECTED_AM_DATE_TIME_RENDERING));
         assertThat(mapperUnderTest.getTimeOfPayment(AFTERNOON_DATE_TIME), is(EXPECTED_PM_DATE_TIME_RENDERING));
+    }
+
+    @Test
+    void reformatDateFiledBehavesAsExpected() {
+        assertThat(mapperUnderTest.reformatDateFiled(DATE_FILED), is(EXPECTED_REFORMATTED_DATE_FILED));
     }
 
 }

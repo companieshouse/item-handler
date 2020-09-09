@@ -4,6 +4,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
 import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.CertifiedDocument;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
@@ -12,12 +13,16 @@ import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATE_FILED_FORMATTER;
+
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperUtil {
+
     // Name/address mappings
     @Mapping(source = "deliveryDetails.forename", target="forename")
     @Mapping(source = "deliveryDetails.surname", target="surname")
@@ -58,13 +63,24 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
         List<CertifiedDocument> certifiedDocuments = new ArrayList<>();
         IntStream.range(0, filingHistoryDocuments.size()).forEach(i -> {
             CertifiedDocument certifiedDocument = new CertifiedDocument();
-            certifiedDocument.setDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate());
+            certifiedDocument.setDateFiled(reformatDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate()));
             certifiedDocument.setType(filingHistoryDocuments.get(i).getFilingHistoryType());
             certifiedDocument.setDescription(filingHistoryDocuments.get(i).getFilingHistoryDescription());
-            certifiedDocument.setFee("£" + itemCosts.get(i).getCalculatedCost());
+            certifiedDocument.setFee(itemCosts.get(i).getCalculatedCost());
             certifiedDocuments.add(certifiedDocument);
         });
 
         return certifiedDocuments;
+    }
+
+    /**
+     * Reformats a date filed string such as "2009-08-23" as "23 Aug 2009".
+     * @param dateFiled the date filed as reported from the filing history
+     * @return the same date rendered for display purposes
+     */
+    @Named("reformatDateFiled")
+    default String reformatDateFiled(final String dateFiled) {
+        final LocalDate parsedDate = LocalDate.parse(dateFiled);
+        return parsedDate.format(DATE_FILED_FORMATTER);
     }
 }
