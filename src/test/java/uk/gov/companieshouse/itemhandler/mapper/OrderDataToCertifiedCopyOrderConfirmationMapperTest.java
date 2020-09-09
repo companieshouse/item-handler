@@ -47,6 +47,9 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
     private static final String EXPECTED_AM_DATE_TIME_RENDERING = "04 June 2020 at 07:30";
     private static final String EXPECTED_PM_DATE_TIME_RENDERING = "04 June 2020 at 15:30";
 
+    private static final String DATE_FILED = "2009-08-23";
+    private static final String EXPECTED_REFORMATTED_DATE_FILED = "23 Aug 2009";
+
     @Configuration
     @ComponentScan(basePackageClasses = {OrderDataToCertifiedCopyOrderConfirmationMapperTest.class})
     static class Config {}
@@ -98,7 +101,7 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
 
         FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
-        filingHistoryDocument.setFilingHistoryDate("15 Feb 2018");
+        filingHistoryDocument.setFilingHistoryDate("2018-02-15");
         filingHistoryDocument.setFilingHistoryDescription("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
         filingHistoryDocument.setFilingHistoryType("AP01");
         List<FilingHistoryDocument> filingHistoryDocuments = new ArrayList<>();
@@ -165,6 +168,11 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
     void getTimeOfPaymentBehavesAsExpected() {
         assertThat(mapperUnderTest.getTimeOfPayment(MORNING_DATE_TIME), is(EXPECTED_AM_DATE_TIME_RENDERING));
         assertThat(mapperUnderTest.getTimeOfPayment(AFTERNOON_DATE_TIME), is(EXPECTED_PM_DATE_TIME_RENDERING));
+    }
+
+    @Test
+    void reformatDateFiledBehavesAsExpected() {
+        assertThat(mapperUnderTest.reformatDateFiled(DATE_FILED), is(EXPECTED_REFORMATTED_DATE_FILED));
     }
 
 }
