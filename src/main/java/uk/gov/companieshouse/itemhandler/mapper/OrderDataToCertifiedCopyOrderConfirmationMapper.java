@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATE_FILED_FORMAT;
+import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATE_FILED_FORMATTER;
 
 @Mapper(componentModel = "spring")
 public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperUtil {
@@ -81,6 +81,6 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
     @Named("reformatDateFiled")
     default String reformatDateFiled(final String dateFiled) {
         final LocalDate parsedDate = LocalDate.parse(dateFiled);
-        return parsedDate.format(DATE_FILED_FORMAT);
+        return parsedDate.format(DATE_FILED_FORMATTER);
     }
 }

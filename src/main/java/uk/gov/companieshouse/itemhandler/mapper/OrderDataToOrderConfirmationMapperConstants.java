@@ -7,5 +7,5 @@ class OrderDataToOrderConfirmationMapperConstants {
     static final DateTimeFormatter DATETIME_OF_PAYMENT_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
 
     /** Dictates how the date filed date is rendered in a certified copy order confirmation. */
-    static final DateTimeFormatter DATE_FILED_FORMAT = DateTimeFormatter.ofPattern("dd MMM yyyy");
+    static final DateTimeFormatter DATE_FILED_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy");
 }
