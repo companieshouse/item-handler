@@ -115,7 +115,7 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
 
         FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
-        filingHistoryDocument.setFilingHistoryDate("15 Feb 2018");
+        filingHistoryDocument.setFilingHistoryDate("2018-02-15");
         filingHistoryDocument.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
         filingHistoryDocument.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
         filingHistoryDocument.setFilingHistoryType("AP01");

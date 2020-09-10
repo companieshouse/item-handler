@@ -87,7 +87,7 @@ public abstract class OrderDataToCertifiedCopyOrderConfirmationMapper implements
      * @return the same date rendered for display purposes
      */
     @Named("reformatDateFiled")
-    default String reformatDateFiled(final String dateFiled) {
+    public String reformatDateFiled(final String dateFiled) {
         final LocalDate parsedDate = LocalDate.parse(dateFiled);
         return parsedDate.format(DATE_FILED_FORMATTER);
     }
