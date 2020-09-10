@@ -55,6 +55,7 @@ public class FilingHistoryDescriptionProviderService {
         } catch (IOException ioe) {
             // This is very unlikely to happen here given File.exists() check above,
             // and that it is not likely to encounter an error closing the stream either.
+            LoggingUtils.getLogger().error(ioe);
         }
         return filingHistoryDescriptionsLocal;
     }
