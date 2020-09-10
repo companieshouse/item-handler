@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATE_FILED_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATE_FILED_FORMATTER;
 
 @Mapper(componentModel = "spring")
 public abstract class OrderDataToCertifiedCopyOrderConfirmationMapper implements MapperUtil {

@@ -85,7 +85,7 @@ public class FilingHistoryDescriptionProviderService {
             final StringBuilder sb = new StringBuilder(description);
             replaceAll(sb, "*", ""); // remove all asterisks in fetched string
             filingHistoryDescriptionValues.forEach((k,v)-> {
-                String value = k.contains("date") ? reformatDateFiled((String)v) : (String) v;
+                String value = k.contains("date") ? reformatActionDate((String)v) : (String) v;
                 replaceAll(sb, "{"+k+"}", value);
             });
             return sb.toString();
@@ -97,7 +97,7 @@ public class FilingHistoryDescriptionProviderService {
      * @param dateFiled the date filed as reported from the filing history
      * @return the same date rendered for display purposes
      */
-    public static String reformatDateFiled(final String dateFiled) {
+    public static String reformatActionDate(final String dateFiled) {
         final LocalDate parsedDate = LocalDate.parse(dateFiled);
         return parsedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
     }

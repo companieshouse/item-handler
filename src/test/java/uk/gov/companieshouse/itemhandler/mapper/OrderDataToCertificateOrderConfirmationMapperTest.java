@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
 

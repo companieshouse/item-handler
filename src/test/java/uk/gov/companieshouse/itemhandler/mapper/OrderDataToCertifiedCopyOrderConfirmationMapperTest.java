@@ -33,7 +33,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
+import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
