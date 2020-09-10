@@ -4,6 +4,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.CertifiedDocument;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
@@ -11,13 +12,18 @@ import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 
 @Mapper(componentModel = "spring")
-public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperUtil {
+public abstract class OrderDataToCertifiedCopyOrderConfirmationMapper implements MapperUtil {
+
+    @Autowired
+    private FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
+
     // Name/address mappings
     @Mapping(source = "deliveryDetails.forename", target="forename")
     @Mapping(source = "deliveryDetails.surname", target="surname")
@@ -33,10 +39,10 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
     @Mapping(source = "reference", target="orderReferenceNumber")
     @Mapping(source = "orderedBy.email", target="emailAddress")
     @Mapping(source = "totalOrderCost", target="totalFee")
-    CertifiedCopyOrderConfirmation orderToConfirmation(OrderData order);
+    public abstract CertifiedCopyOrderConfirmation orderToConfirmation(OrderData order);
 
     @AfterMapping
-    default void mapCertifiedCopyItems(final OrderData order,
+    public void mapCertifiedCopyItems(final OrderData order,
                                        final @MappingTarget CertifiedCopyOrderConfirmation confirmation) {
         final Item item = order.getItems().get(0);
         final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
@@ -50,7 +56,7 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
         confirmation.setCertifiedDocuments(collateCertifiedDocuments(item));
     }
 
-    default List<CertifiedDocument> collateCertifiedDocuments(Item item) {
+    public List<CertifiedDocument> collateCertifiedDocuments(Item item) {
         CertifiedCopyItemOptions itemOptions = (CertifiedCopyItemOptions) item.getItemOptions();
         List<FilingHistoryDocument> filingHistoryDocuments = itemOptions.getFilingHistoryDocuments();
         List<ItemCosts> itemCosts = item.getItemCosts();
@@ -60,7 +66,10 @@ public interface OrderDataToCertifiedCopyOrderConfirmationMapper extends MapperU
             CertifiedDocument certifiedDocument = new CertifiedDocument();
             certifiedDocument.setDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate());
             certifiedDocument.setType(filingHistoryDocuments.get(i).getFilingHistoryType());
-            certifiedDocument.setDescription(filingHistoryDocuments.get(i).getFilingHistoryDescription());
+            certifiedDocument.setDescription(
+                    filingHistoryDescriptionProviderService.mapFilingHistoryDescription(
+                            filingHistoryDocuments.get(i).getFilingHistoryDescription(),
+                            filingHistoryDocuments.get(i).getFilingHistoryDescriptionValues()));
             certifiedDocument.setFee("£" + itemCosts.get(i).getCalculatedCost());
             certifiedDocuments.add(certifiedDocument);
         });

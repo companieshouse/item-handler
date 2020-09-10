@@ -3,12 +3,14 @@ package uk.gov.companieshouse.itemhandler.mapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -55,6 +57,9 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     @Configuration
     @ComponentScan(basePackageClasses = {OrderDataToCertificateOrderConfirmationMapperTest.class})
     static class Config {}
+
+    @MockBean
+    FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
 
     @Autowired
     private OrderDataToCertificateOrderConfirmationMapper mapperUnderTest;

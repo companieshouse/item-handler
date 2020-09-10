@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -41,6 +42,7 @@ import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.OrderLinks;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
+import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -72,6 +74,9 @@ public class OrdersApiToOrderDataMapperTest {
             return new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         }
     }
+
+    @MockBean
+    FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
 
     @Autowired
     private OrdersApiToOrderDataMapper mapper;

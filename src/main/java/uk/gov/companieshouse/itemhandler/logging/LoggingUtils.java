@@ -27,6 +27,7 @@ public class LoggingUtils {
     public static final String ORDER_RECEIVED_GROUP_ERROR = "order_received_error";
     public static final String ORDER_REFERENCE_NUMBER = "order_reference_number";
     public static final String ORDER_URI = "order_uri";
+    public static final String DESCRIPTION_LOG_KEY = "description_key";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 
