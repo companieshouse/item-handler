@@ -83,7 +83,7 @@ public class FilingHistoryDescriptionProviderService {
         String description = getFilingHistoryDescriptionWithKey(descriptionKey);
         if(filingHistoryDescriptionValues == null){
             return description == null ? null : description.replace("*", "");
-        } if(filingHistoryDescriptionValues.containsKey("description")) {
+        } else if(filingHistoryDescriptionValues.containsKey("description")) {
             return (String) filingHistoryDescriptionValues.get("description");
         } else {
             final StringBuilder sb = new StringBuilder(description);
