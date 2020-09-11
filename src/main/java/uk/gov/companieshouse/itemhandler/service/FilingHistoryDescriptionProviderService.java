@@ -71,7 +71,10 @@ public class FilingHistoryDescriptionProviderService {
 
     /**
      * Fetches the specified key from the filing history enumerations and replaces the variables
-     * with the ones in the description values
+     * with the ones in the filingHistoryDescriptionValues. It strips out all asterisks in description.
+     * If descriptionKey is null, null is returned. If the descriptionKey is not found in the filing history
+     * enumeration, the provided descriptionKey is returned. If filingHistoryDescriptionValues is null the
+     * description found in filing history enumeration is returned (if available).
      * @param descriptionKey the key to fetch from the filing history enumerations
      * @param filingHistoryDescriptionValues the map of the description values to replace in the description
      * @return the formatted filing history description
@@ -87,7 +90,7 @@ public class FilingHistoryDescriptionProviderService {
             return (String) filingHistoryDescriptionValues.get("description");
         } else {
             final StringBuilder sb = new StringBuilder(description);
-            replaceAll(sb, "*", ""); // remove all asterisks in fetched string
+            replaceAll(sb, "*", "");
             filingHistoryDescriptionValues.forEach((k,v)-> {
                 if(v instanceof String) {
                     String value = k.contains("date") ? reformatActionDate((String) v) : (String) v;
