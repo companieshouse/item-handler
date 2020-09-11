@@ -87,8 +87,10 @@ public class FilingHistoryDescriptionProviderService {
             final StringBuilder sb = new StringBuilder(description);
             replaceAll(sb, "*", ""); // remove all asterisks in fetched string
             filingHistoryDescriptionValues.forEach((k,v)-> {
-                String value = k.contains("date") ? reformatActionDate((String)v) : (String) v;
-                replaceAll(sb, "{"+k+"}", value);
+                if(v instanceof String) {
+                    String value = k.contains("date") ? reformatActionDate((String) v) : (String) v;
+                    replaceAll(sb, "{" + k + "}", value);
+                }
             });
             return sb.toString();
         }
