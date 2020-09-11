@@ -41,6 +41,7 @@ import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.OrderLinks;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
+import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,10 +52,6 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static uk.gov.companieshouse.api.model.order.item.CertificateTypeApi.INCORPORATION;
-import static uk.gov.companieshouse.api.model.order.item.CollectionLocationApi.BELFAST;
-import static uk.gov.companieshouse.api.model.order.item.DeliveryMethodApi.POSTAL;
-import static uk.gov.companieshouse.api.model.order.item.DeliveryTimescaleApi.STANDARD;
 import static uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTypeApi.CURRENT;
 import static uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi.PARTIAL;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFICATE;
@@ -70,6 +67,11 @@ public class OrdersApiToOrderDataMapperTest {
         @Bean
         public ObjectMapper objectMapper() {
             return new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        }
+
+        @Bean
+        public FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService() {
+            return new FilingHistoryDescriptionProviderService();
         }
     }
 

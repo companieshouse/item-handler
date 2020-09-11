@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.mapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -16,6 +17,7 @@ import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -24,12 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.companieshouse.itemhandler.mapper.OrderDataToOrderConfirmationMapperConstants.DATETIME_OF_PAYMENT_FORMATTER;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -54,6 +58,9 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
     @ComponentScan(basePackageClasses = {OrderDataToCertifiedCopyOrderConfirmationMapperTest.class})
     static class Config {}
 
+    @MockBean
+    FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
+
     @Autowired
     private OrderDataToCertifiedCopyOrderConfirmationMapper mapperUnderTest;
 
@@ -61,8 +68,11 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
      * Implements {@link OrderDataToCertifiedCopyOrderConfirmationMapper} to facilitate the testing of its default
      * methods.
      */
-    static class TestOrderDataToCertifiedCopyOrderConfirmationMapper implements
-            OrderDataToCertifiedCopyOrderConfirmationMapper {
+    static class TestOrderDataToCertifiedCopyOrderConfirmationMapper extends OrderDataToCertifiedCopyOrderConfirmationMapper {
+        TestOrderDataToCertifiedCopyOrderConfirmationMapper() {
+            super();
+        }
+
         @Override
         public CertifiedCopyOrderConfirmation orderToConfirmation(OrderData order) {
             return null; // Implemented only to satisfy requirement of an interface implementation
@@ -102,7 +112,8 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
 
         FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
         filingHistoryDocument.setFilingHistoryDate("2018-02-15");
-        filingHistoryDocument.setFilingHistoryDescription("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
+        filingHistoryDocument.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
+        filingHistoryDocument.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
         filingHistoryDocument.setFilingHistoryType("AP01");
         List<FilingHistoryDocument> filingHistoryDocuments = new ArrayList<>();
         filingHistoryDocuments.add(filingHistoryDocument);
@@ -122,6 +133,8 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         order.setTotalOrderCost("15");
 
         // When
+        when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
+                .thenReturn("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
         final CertifiedCopyOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
 
         // Then

@@ -12,7 +12,6 @@ import uk.gov.companieshouse.api.model.order.item.CertifiedCopyItemOptionsApi;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.ItemOptions;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
