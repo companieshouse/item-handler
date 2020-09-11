@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.service;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.util.DateConstants;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -94,13 +95,13 @@ public class FilingHistoryDescriptionProviderService {
     }
 
     /**
-     * Reformats a date filed string such as "2009-08-23" as "23 August 2009".
-     * @param dateFiled the date filed as reported from the filing history
+     * Reformats an action date string such as "2009-08-23" as "23 August 2009".
+     * @param actionDate the action date as reported from the filing history
      * @return the same date rendered for display purposes
      */
-    public static String reformatActionDate(final String dateFiled) {
-        final LocalDate parsedDate = LocalDate.parse(dateFiled);
-        return parsedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+    public static String reformatActionDate(final String actionDate) {
+        final LocalDate parsedDate = LocalDate.parse(actionDate);
+        return parsedDate.format(DateConstants.FILING_HISTORY_DATE_DESCRIPTION_FORMATTER);
     }
 
     /**
