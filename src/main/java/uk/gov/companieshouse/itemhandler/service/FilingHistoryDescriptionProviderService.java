@@ -62,10 +62,10 @@ public class FilingHistoryDescriptionProviderService {
     }
 
     private String getFilingHistoryDescriptionWithKey(String descriptionKey) {
-        if(descriptionKey == null || descriptionKey.isEmpty()) {
-            return descriptionKey;
-        } else {
+        if(filingHistoryDescriptions.containsKey(descriptionKey)) {
             return filingHistoryDescriptions.get(descriptionKey);
+        } else {
+            return descriptionKey;
         }
     }
 
@@ -81,7 +81,9 @@ public class FilingHistoryDescriptionProviderService {
             return null;
         }
         String description = getFilingHistoryDescriptionWithKey(descriptionKey);
-        if(filingHistoryDescriptionValues.containsKey("description")) {
+        if(filingHistoryDescriptionValues==null){
+            return description == null ? null : description.replace("*", "");
+        } if(filingHistoryDescriptionValues.containsKey("description")) {
             return (String) filingHistoryDescriptionValues.get("description");
         } else {
             final StringBuilder sb = new StringBuilder(description);
