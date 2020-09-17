@@ -9,6 +9,7 @@ import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 
 import javax.annotation.PostConstruct;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -22,7 +23,7 @@ public enum ItemType {
         @Override
         public void sendMessages(OrderData order)
                 throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
-            itemSender.sendItemsToChd(order);
+            getItemSender().sendItemsToChd(order);
         }
     };
 
@@ -57,15 +58,17 @@ public enum ItemType {
 
         @PostConstruct
         public void postConstruct() {
-            ItemType.emailer = emailer;
-            ItemType.itemSender = itemSender;
+            for (final ItemType type : EnumSet.allOf(ItemType.class)) {
+                type.setEmailer(emailer);
+                type.setItemSender(itemSender);
+            }
         }
     }
 
     private String kind;
     private String topicName;
-    private static EmailService emailer;
-    private static ChdItemSenderService itemSender;
+    private EmailService emailer;
+    private ChdItemSenderService itemSender;
 
     public String getKind(){
         return this.kind;
@@ -88,4 +91,15 @@ public enum ItemType {
         emailer.sendOrderConfirmation(order);
     }
 
+    protected void setEmailer(EmailService emailer) {
+        this.emailer = emailer;
+    }
+
+    protected ChdItemSenderService getItemSender() {
+        return itemSender;
+    }
+
+    protected void setItemSender(ChdItemSenderService itemSender) {
+        this.itemSender = itemSender;
+    }
 }
