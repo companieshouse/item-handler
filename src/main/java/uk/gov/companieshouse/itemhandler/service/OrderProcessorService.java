@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.service;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 /**
@@ -36,7 +37,7 @@ public class OrderProcessorService {
             order = ordersApi.getOrderData(orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
             LoggingUtils.getLogger().info("Processing order received", logMap);
-            emailer.sendOrderConfirmation(order);
+            ItemType.getItemType(order).sendMessages(order);
         } catch (Exception ex) {
             LoggingUtils.getLogger().error("Exception caught getting order data.", ex, logMap);
         }
