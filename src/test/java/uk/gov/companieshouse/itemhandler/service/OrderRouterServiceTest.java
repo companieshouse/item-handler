@@ -29,7 +29,7 @@ import static org.hamcrest.core.Is.is;
 @RunWith(PowerMockRunner.class)
 @ExtendWith(MockitoExtension.class)
 // TODO GCI-1300 ? @PrepareForTest(HttpResponseException.class)
-class OrderRouterServiceTest {
+public class OrderRouterServiceTest { // public required for JUnit 4 test
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
     private static final String CERTIFICATE_ITEM_ID = "CRT-052815-956034";
@@ -50,10 +50,8 @@ class OrderRouterServiceTest {
 
     /**
      * This is a JUnit 4 test to take advantage of PowerMock.
-     * @throws Exception should something unexpected happen
      */
     @org.junit.Test
-    // @DisplayName("Delegates to item type to send messages")
     public void routeOrderDelegatesToItemTypeSendMessages() {
 
         // Given
