@@ -1,10 +1,10 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
-import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+
+import java.util.Map;
 
 /**
  * This service does the following:
@@ -19,10 +19,12 @@ public class OrderProcessorService {
 
     private final OrdersApiClientService ordersApi;
     private final EmailService emailer;
+    private final OrderRouterService orderRouter;
 
-    public OrderProcessorService(final OrdersApiClientService ordersApi, final EmailService emailer) {
+    public OrderProcessorService(final OrdersApiClientService ordersApi, final EmailService emailer, final OrderRouterService orderRouter) {
         this.ordersApi = ordersApi;
         this.emailer = emailer;
+        this.orderRouter = orderRouter;
     }
 
     /**
@@ -37,7 +39,7 @@ public class OrderProcessorService {
             order = ordersApi.getOrderData(orderUri);
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
             LoggingUtils.getLogger().info("Processing order received", logMap);
-            ItemType.getItemType(order).sendMessages(order);
+            orderRouter.routeOrder(order);
         } catch (Exception ex) {
             LoggingUtils.getLogger().error("Exception caught getting order data.", ex, logMap);
         }
