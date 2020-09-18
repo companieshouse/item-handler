@@ -1,10 +1,15 @@
 package uk.gov.companieshouse.itemhandler.service;
 
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.Map;
+
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMap;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogger;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
 /**
  * This service does the following:
@@ -31,15 +36,20 @@ public class OrderProcessorService {
      */
     public void processOrderReceived(final String orderUri) {
         final OrderData order;
-        Map<String, Object> logMap = LoggingUtils.createLogMap();
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
+        Map<String, Object> logMap = createLogMap();
+        logIfNotNull(logMap, ORDER_URI, orderUri);
         try {
             order = ordersApi.getOrderData(orderUri);
-            LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_REFERENCE_NUMBER, order.getReference());
-            LoggingUtils.getLogger().info("Processing order received", logMap);
+        } catch (Exception ex) {
+            getLogger().error("Exception caught getting order data.", ex, logMap);
+            return;
+        }
+        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
+        getLogger().info("Processing order received", logMap);
+        try {
             orderRouter.routeOrder(order);
         } catch (Exception ex) {
-            LoggingUtils.getLogger().error("Exception caught getting order data.", ex, logMap);
+            getLogger().error("Exception caught routing order.", ex, logMap);
         }
 
     }

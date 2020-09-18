@@ -45,16 +45,15 @@ public class OrderRouterService {
     ItemType getItemType(final OrderData order) throws ServiceException {
         final String kind = getKind(order);
         final ItemType type = ItemType.getItemType(kind);
-        // TODO-1300 Are exceptions logged sufficiently clearly?
         if (type == null) {
-            throw new ServiceException("Kind " + kind + " on item " + order.getItems().get(0).getId() + " on order " + order.getReference() + " is unknown.");
+            throw new ServiceException("Kind " + kind + " on item " + order.getItems().get(0).getId() +
+                    " on order " + order.getReference() + " is unknown.");
         }
         return type;
     }
 
     private String getKind(final OrderData order) throws ServiceException {
         final List<Item> items = order.getItems();
-        // TODO-1300 Are exceptions logged sufficiently clearly?
         if (isEmpty(items)) {
             throw new ServiceException("Order " + order.getReference() + " contains no items.");
         }

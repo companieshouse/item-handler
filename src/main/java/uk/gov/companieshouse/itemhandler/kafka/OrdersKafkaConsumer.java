@@ -212,7 +212,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             String orderUri) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        LoggingUtils.getLogger().info("Order received message successfully processed", logMap);
+        LoggingUtils.getLogger().info("Order received message processing completed", logMap);
     }
 
     protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {
