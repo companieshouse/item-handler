@@ -42,9 +42,8 @@ public enum ItemType {
         this.topicName = topicName;
     }
 
-    // TODO GCI-1300 Make robust
-    public static ItemType getItemType(final OrderData order) {
-        return TYPES_BY_KIND.get(order.getItems().get(0).getKind());
+    public static ItemType getItemType(final String kind) {
+        return TYPES_BY_KIND.get(kind);
     }
 
     @Component

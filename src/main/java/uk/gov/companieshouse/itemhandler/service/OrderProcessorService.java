@@ -18,12 +18,10 @@ import java.util.Map;
 public class OrderProcessorService {
 
     private final OrdersApiClientService ordersApi;
-    private final EmailService emailer;
     private final OrderRouterService orderRouter;
 
-    public OrderProcessorService(final OrdersApiClientService ordersApi, final EmailService emailer, final OrderRouterService orderRouter) {
+    public OrderProcessorService(final OrdersApiClientService ordersApi, final OrderRouterService orderRouter) {
         this.ordersApi = ordersApi;
-        this.emailer = emailer;
         this.orderRouter = orderRouter;
     }
 

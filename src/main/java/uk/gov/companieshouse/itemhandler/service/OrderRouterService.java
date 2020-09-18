@@ -17,7 +17,12 @@ public class OrderRouterService {
     public void routeOrder(final OrderData order)
             throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException
     {
-        ItemType.getItemType(order).sendMessages(order);
+        getItemType(order).sendMessages(order);
+    }
+
+    // TODO GCI-1300 Make robust
+    ItemType getItemType(final OrderData order) {
+        return ItemType.getItemType(order.getItems().get(0).getKind());
     }
 
 }
