@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import com.google.api.client.http.HttpResponseException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
@@ -18,18 +18,21 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.when;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 /**
  * Unit tests the {@link OrderRouterService} class.
  */
 @RunWith(PowerMockRunner.class)
 @ExtendWith(MockitoExtension.class)
-// TODO GCI-1300 ? @PrepareForTest(HttpResponseException.class)
-public class OrderRouterServiceTest { // public required for JUnit 4 test
+@PrepareForTest(ItemType.class)
+@SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
+public class OrderRouterServiceTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
     private static final String CERTIFICATE_ITEM_ID = "CRT-052815-956034";
@@ -50,23 +53,28 @@ public class OrderRouterServiceTest { // public required for JUnit 4 test
 
     /**
      * This is a JUnit 4 test to take advantage of PowerMock.
+     * @throws Exception should something unexpected happen
      */
     @org.junit.Test
-    public void routeOrderDelegatesToItemTypeSendMessages() {
+    public void routeOrderDelegatesToItemTypeSendMessages() throws Exception {
 
         // Given
+        final ItemType type = mock(ItemType.class);
+        mockStatic(ItemType.class);
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getKind()).thenReturn(CERTIFICATE_KIND);
+        when(ItemType.getItemType(CERTIFICATE_KIND)).thenReturn(type);
 
         // When
-        serviceUnderTest.getItemType(order);
+        serviceUnderTest.routeOrder(order);
 
         // Then
-        // TODO GCI-1300 Make assertions
+        PowerMockito.verifyStatic(ItemType.class);
+        ItemType.getItemType(CERTIFICATE_KIND);
+        verify(type).sendMessages(order);
 
     }
-
 
     @Test
     @DisplayName("Propagates exception to client")
@@ -82,7 +90,6 @@ public class OrderRouterServiceTest { // public required for JUnit 4 test
                 .withNoCause();
 
     }
-
 
     @Test
     @DisplayName("Infers item type correctly from first item kind")
