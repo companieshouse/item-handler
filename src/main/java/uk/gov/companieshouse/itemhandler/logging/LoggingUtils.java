@@ -28,6 +28,8 @@ public class LoggingUtils {
     public static final String ORDER_REFERENCE_NUMBER = "order_reference_number";
     public static final String ORDER_URI = "order_uri";
     public static final String DESCRIPTION_LOG_KEY = "description_key";
+    public static final String ITEM_ID = "item_id";
+    public static final String EXCEPTION = "exception";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 

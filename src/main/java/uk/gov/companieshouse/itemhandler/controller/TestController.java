@@ -13,6 +13,9 @@ import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.itemhandler.service.OrderRouterService;
 import uk.gov.companieshouse.logging.Logger;
 
+import java.security.SecureRandom;
+import java.util.Calendar;
+
 import static java.util.Collections.singletonList;
 import static uk.gov.companieshouse.itemhandler.model.ItemType.SCAN_ON_DEMAND;
 
@@ -93,9 +96,25 @@ public class TestController {
         final OrderData scanUponDemandOrder = new OrderData();
         scanUponDemandOrder.setReference(order);
         final Item item = new Item();
+        item.setId(generateScanOnDemandItemId());
         item.setKind(SCAN_ON_DEMAND.getKind());
         scanUponDemandOrder.setItems(singletonList(item));
         return scanUponDemandOrder;
+    }
+
+    /**
+     * Uses the same code as the Scan Upon Demand API to generate a unique ID for each scan on demand item.
+     * @return a unique scan on demand item ID
+     */
+    private String generateScanOnDemandItemId() {
+        final SecureRandom random = new SecureRandom();
+        final byte[] values = new byte[4];
+        random.nextBytes(values);
+        final String rand = String.format("%04d", random.nextInt(9999));
+        final String time = String.format("%08d", Calendar.getInstance().getTimeInMillis() / 100000L);
+        final String rawId = rand + time;
+        final String[] tranId = rawId.split("(?<=\\G.{6})");
+        return "SCD-" + String.join("-", tranId);
     }
 
 }
