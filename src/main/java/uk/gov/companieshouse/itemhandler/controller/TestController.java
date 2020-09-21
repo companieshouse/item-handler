@@ -49,20 +49,46 @@ public class TestController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    /**
+     * Determines whether the kind represents a scan on demand item (<code>true</code>), or not (<code>false</code>).
+     * @param kind the partial kind string provided in the test (<code>certificate</code>, <code>certified-copy</code>
+     *             or <code>scan-on-demand</code>)
+     * @return whether the kind represents a scan on demand item (<code>true</code>), or not (<code>false</code>)
+     */
     private boolean isScanOnDemand(final String kind) {
         return ItemType.getItemType(ITEM_KIND_PREFIX + kind) == SCAN_ON_DEMAND;
     }
 
+    /**
+     * Tests the full processing of the order that Item Handler implements, equivalent to the processing it performs
+     * once it has consumed the order from the <code>order-received</code> topic. This assumes that the order identified
+     * has already been successfully paid for at this point.
+     * @param order the order reference identifying the order
+     */
     private void subjectOrderToFullProcessing(final String order) {
         orderProcessor.processOrderReceived(ORDERS_URI_PREFIX + order);
     }
 
+    /**
+     * Creates a dummy or stub {@link OrderData} instance intended to be a minimal, transient representation of a scan
+     * on demand order as would be retrieved by the Item Handler from the Orders API were it possible for the handler to
+     * do so at this point, then subjects the order to the same routing behaviour as the order would be subject to if
+     * it had been retrieved from the Orders API. This effectively by-passes the order processing behaviour that depends
+     * on successful retrieval of paid orders from the Orders API.
+     * @param order the order reference identifying the order
+     * @throws Exception should something unexpected happen
+     */
     @SuppressWarnings("squid:S112") // in this test code, exception thrown is not important
     private void stubScanOnDemandOrderAndRouteIt(final String order) throws Exception {
         final OrderData scanOnDemandOrder = stubScanOnDemandOrder(order);
         orderRouter.routeOrder(scanOnDemandOrder);
     }
 
+    /**
+     * Stubs out just enough of a scan on demand order to be able to test its routing by this Item Handler application.
+     * @param order the order reference identifying the order
+     * @return the stub {@link OrderData} instance
+     */
     private OrderData stubScanOnDemandOrder(final String order) {
         final OrderData scanUponDemandOrder = new OrderData();
         scanUponDemandOrder.setReference(order);
