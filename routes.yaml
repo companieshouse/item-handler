@@ -3,3 +3,4 @@ group: api
 weight: 991
 routes:
    1: ^/item-handler/healthcheck
+   2: ^/item-handler/test-processing/(.*)/(.*)
