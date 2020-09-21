@@ -13,6 +13,6 @@ public class ChdItemSenderService {
 
     // TODO GCI-1300 Implement this
     public void sendItemsToChd(final OrderData order) {
-        logWithOrderReference("Sending items for order", order.getReference());
+        logWithOrderReference("Sending items for order to CHD", order.getReference());
     }
 }
