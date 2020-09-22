@@ -16,10 +16,9 @@ import java.util.concurrent.ExecutionException;
 
 public enum ItemType {
     // TODO GCI-1300 Have we nailed down the SCUD naming conventions? Do they affect certs too?
-    // TODO GCI-1300 Do the topic names need to be configurable? Do they even need to be exposed at this level?
-    CERTIFICATE("item#certificate", "email-send"),
-    CERTIFIED_COPY("item#certified-copy", "email-send"),
-    SCAN_ON_DEMAND("item#scan-on-demand", "chd-item-ordered") {
+    CERTIFICATE("item#certificate"),
+    CERTIFIED_COPY("item#certified-copy"),
+    SCAN_ON_DEMAND("item#scan-on-demand") {
         @Override
         public void sendMessages(OrderData order)
                 throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
@@ -37,9 +36,8 @@ public enum ItemType {
         TYPES_BY_KIND = Collections.unmodifiableMap(map);
     }
 
-    ItemType(final String kind, final String topicName) {
+    ItemType(final String kind) {
         this.kind = kind;
-        this.topicName = topicName;
     }
 
     public static ItemType getItemType(final String kind) {
@@ -65,16 +63,11 @@ public enum ItemType {
     }
 
     private String kind;
-    private String topicName;
     private EmailService emailer;
     private ChdItemSenderService itemSender;
 
     public String getKind(){
         return this.kind;
-    }
-
-    public String getTopicName() {
-        return topicName;
     }
 
     /**

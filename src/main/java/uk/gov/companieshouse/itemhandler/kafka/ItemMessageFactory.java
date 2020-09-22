@@ -14,8 +14,9 @@ import java.util.Date;
 
 @Service
 public class ItemMessageFactory {
+
 	private static final Logger LOGGER = LoggingUtils.getLogger();
-	// TODO GCI-1427 Configurability?
+
 	private static final String CHD_ITEM_ORDERED_TOPIC = "chd-item-ordered";
 
 	private final SerializerFactory serializerFactory;
