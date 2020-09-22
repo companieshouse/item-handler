@@ -20,13 +20,18 @@ public class ChdItemSenderService {
     }
 
     /**
-     * TODO GCI-1428 Javadoc this
-     * @param order
+     * Sends each item on the order individually to CHD.
+     * This must be revisited post MVP as it currently is subject to the following limitations:
+     * <ol>
+     *     <li>it only sends the first (assumed only) item</li>
+     *     <li>it assumes that item is a scan upon demand item</li>
+     * </ol>
+     * @param order the {@link OrderData} instance retrieved from the Orders API
      */
     public void sendItemsToChd(final OrderData order) {
-        logWithOrderReference("Sending items for order to CHD", order.getReference());
-        for (final Item item: order.getItems()) {
-            itemMessageProducer.sendMessage(order.getReference(), item.getId(), item);
-        }
+        final String orderReference = order.getReference();
+        logWithOrderReference("Sending items for order to CHD", orderReference);
+        final Item firstItem = order.getItems().get(0);
+        itemMessageProducer.sendMessage(orderReference, firstItem.getId(), firstItem);
     }
 }
