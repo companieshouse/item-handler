@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.OFFSET;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
@@ -29,34 +30,34 @@ public class ItemMessageProducer {
 
     /**
      * TODO GCI-1428 Javadoc this
-     * @param orderUri
+     * @param orderReference
      * @param itemId
      * @param item
      */
-    public void sendMessage(final String orderUri,
+    public void sendMessage(final String orderReference,
                             final String itemId,
                             final Item item) {
 
         final Map<String, Object> logMap = LoggingUtils.createLogMap();
-        logIfNotNull(logMap, ORDER_URI, orderUri);
+        logIfNotNull(logMap, ORDER_URI, orderReference);
         logIfNotNull(logMap, ITEM_ID, itemId);
         LOGGER.info("Sending message to kafka producer", logMap);
 
         try {
             final Message message = itemMessageFactory.createMessage(item);
-            itemKafkaProducer.sendMessage(orderUri, itemId, message, recordMetadata -> {
+            itemKafkaProducer.sendMessage(orderReference, itemId, message, recordMetadata -> {
                 final long offset = recordMetadata.offset();
                 final String topic = message.getTopic();
                 final Map<String, Object> logMapCallback = new HashMap<>();
                 logMapCallback.put(LoggingUtils.TOPIC, topic);
-                logMapCallback.put(ORDER_URI, orderUri);
+                logMapCallback.put(ORDER_REFERENCE_NUMBER, orderReference);
                 logMapCallback.put(ITEM_ID, itemId);
                 logMapCallback.put(OFFSET, offset);
                 LOGGER.info("Message sent to Kafka topic", logMapCallback);
             });
         } catch (Exception e) {
             final String errorMessage = String.format(
-                    "Kafka item message could not be sent for order URI %s item ID %s", orderUri, itemId);
+                    "Kafka item message could not be sent for order URI %s item ID %s", orderReference, itemId);
             logMap.put(LoggingUtils.EXCEPTION, e);
             LOGGER.error(errorMessage, logMap);
             throw new KafkaMessagingException(errorMessage, e);
