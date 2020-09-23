@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
 public enum ItemType {
-    // TODO GCI-1300 Have we nailed down the SCUD naming conventions? Do they affect certs too?
     CERTIFICATE("item#certificate"),
     CERTIFIED_COPY("item#certified-copy"),
     SCAN_ON_DEMAND("item#scan-on-demand") {
