@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -7,13 +8,13 @@ import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.OFFSET;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
 @Service
@@ -45,16 +46,9 @@ public class ItemMessageProducer {
 
         try {
             final Message message = itemMessageFactory.createMessage(item);
-            itemKafkaProducer.sendMessage(orderReference, itemId, message, recordMetadata -> {
-                final long offset = recordMetadata.offset();
-                final String topic = message.getTopic();
-                final Map<String, Object> logMapCallback = new HashMap<>();
-                logMapCallback.put(LoggingUtils.TOPIC, topic);
-                logMapCallback.put(ORDER_REFERENCE_NUMBER, orderReference);
-                logMapCallback.put(ITEM_ID, itemId);
-                logMapCallback.put(OFFSET, offset);
-                LOGGER.info("Message sent to Kafka topic", logMapCallback);
-            });
+            itemKafkaProducer.sendMessage(orderReference, itemId, message,
+                    recordMetadata ->
+                            logOffsetFollowingSendIngOfMessage(orderReference, itemId, message, recordMetadata));
         } catch (Exception e) {
             final String errorMessage = String.format(
                     "Kafka item message could not be sent for order URI %s item ID %s", orderReference, itemId);
@@ -62,5 +56,26 @@ public class ItemMessageProducer {
             LOGGER.error(errorMessage, logMap);
             throw new KafkaMessagingException(errorMessage, e);
         }
+    }
+
+    /**
+     * Logs the order reference, item ID and offset for the item message produced to a Kafka topic.
+     * @param orderReference the order reference
+     * @param itemId the item ID
+     * @param message the item message
+     * @param recordMetadata the metadata for a record that has been acknowledged by the server
+     */
+    void logOffsetFollowingSendIngOfMessage(final String orderReference,
+                                            final String itemId,
+                                            final Message message,
+                                            final RecordMetadata recordMetadata) {
+        final long offset = recordMetadata.offset();
+        final String topic = message.getTopic();
+        final Map<String, Object> logMapCallback = LoggingUtils.createLogMap();
+        logIfNotNull(logMapCallback, TOPIC, topic);
+        logIfNotNull(logMapCallback, ORDER_REFERENCE_NUMBER, orderReference);
+        logIfNotNull(logMapCallback, ITEM_ID, itemId);
+        logIfNotNull(logMapCallback, OFFSET, offset);
+        LOGGER.info("Message sent to Kafka topic", logMapCallback);
     }
 }
