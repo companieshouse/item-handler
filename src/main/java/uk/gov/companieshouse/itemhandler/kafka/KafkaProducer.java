@@ -15,8 +15,7 @@ public abstract class KafkaProducer implements InitializingBean {
 
     private CHKafkaProducer chKafkaProducer;
 
-    // TODO GCI-1428 Does this property name need rationalising?
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String brokerAddresses;
 
     @Override

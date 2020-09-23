@@ -21,7 +21,7 @@ public abstract class TestMessageConsumer implements InitializingBean {
 
     private CHKafkaConsumerGroup consumerGroup;
 
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String kafkaBrokerAddresses;
 
     protected TestMessageConsumer(final String topic, final String group) {

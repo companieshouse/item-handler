@@ -41,7 +41,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private static long errorRecoveryOffset = 0L;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
     private boolean errorConsumerEnabled;
