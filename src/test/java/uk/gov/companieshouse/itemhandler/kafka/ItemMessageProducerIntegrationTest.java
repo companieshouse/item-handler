@@ -27,7 +27,7 @@ import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 class ItemMessageProducerIntegrationTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String SCAN_UPON_DEMAND_ITEM_ID = "SCD-242116-007650";
+    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
 
     @Configuration
     @ComponentScan(basePackageClasses = ItemMessageProducerIntegrationTest.class,
@@ -71,15 +71,15 @@ class ItemMessageProducerIntegrationTest {
 
         // Given an item is to be sent
         final Item item = new Item();
-        item.setId(SCAN_UPON_DEMAND_ITEM_ID);
+        item.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Given that for now the actual message produced to the topic is an OrderReceived object.
         // TODO GCI-1301 Replace hijacked OrderReceived kafka-models class with a class for chd-item-ordered.
         final OrderReceived orderReceived = new OrderReceived();
-        orderReceived.setOrderUri(SCAN_UPON_DEMAND_ITEM_ID);
+        orderReceived.setOrderUri(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When order-received message is sent to kafka topic
-        final List<Message> messages = sendAndConsumeMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, item);
+        final List<Message> messages = sendAndConsumeMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, item);
 
         // Then we have successfully consumed a message.
         assertThat(messages.isEmpty(), is(false));

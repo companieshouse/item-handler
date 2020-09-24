@@ -32,7 +32,7 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 public class ChdItemSenderServiceTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String SCAN_UPON_DEMAND_ITEM_ID = "SCD-242116-007650";
+    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
 
     @InjectMocks
     private ChdItemSenderService serviceUnderTest;
@@ -57,7 +57,7 @@ public class ChdItemSenderServiceTest {
         when(order.getReference()).thenReturn(ORDER_REFERENCE);
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
-        when(item.getId()).thenReturn(SCAN_UPON_DEMAND_ITEM_ID);
+        when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
         serviceUnderTest.sendItemsToChd(order);
@@ -65,7 +65,7 @@ public class ChdItemSenderServiceTest {
         // Then
         verify(order).getReference();
         verify(item).getId();
-        verify(itemMessageProducer).sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, item);
+        verify(itemMessageProducer).sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, item);
 
     }
 
@@ -81,7 +81,7 @@ public class ChdItemSenderServiceTest {
         when(order.getReference()).thenReturn(ORDER_REFERENCE);
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
-        when(item.getId()).thenReturn(SCAN_UPON_DEMAND_ITEM_ID);
+        when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
         serviceUnderTest.sendItemsToChd(order);

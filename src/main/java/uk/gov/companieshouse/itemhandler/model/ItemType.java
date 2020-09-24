@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 public enum ItemType {
     CERTIFICATE("item#certificate"),
     CERTIFIED_COPY("item#certified-copy"),
-    SCAN_ON_DEMAND("item#scan-on-demand") {
+    MISSING_IMAGE_DELIVERY("item#missing-image-delivery") {
         @Override
         public void sendMessages(OrderData order)
                 throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {

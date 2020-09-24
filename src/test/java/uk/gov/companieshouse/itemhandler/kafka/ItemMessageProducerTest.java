@@ -42,14 +42,14 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
 public class ItemMessageProducerTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String SCAN_UPON_DEMAND_ITEM_ID = "SCD-242116-007650";
+    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
     private static final Item ITEM;
 
     static {
         ITEM = new Item();
-        ITEM.setId(SCAN_UPON_DEMAND_ITEM_ID);
+        ITEM.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
     }
 
     @InjectMocks
@@ -75,7 +75,7 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageCreation() throws Exception {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
         verify(itemMessageFactory).createMessage(ITEM);
@@ -90,11 +90,11 @@ public class ItemMessageProducerTest {
         when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
         verify(itemKafkaProducer).sendMessage(
-                eq(ORDER_REFERENCE), eq(SCAN_UPON_DEMAND_ITEM_ID), eq(message), any(Consumer.class));
+                eq(ORDER_REFERENCE), eq(MISSING_IMAGE_DELIVERY_ITEM_ID), eq(message), any(Consumer.class));
 
     }
 
@@ -109,7 +109,7 @@ public class ItemMessageProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
@@ -131,7 +131,7 @@ public class ItemMessageProducerTest {
 
         // When
         messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(
-                ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, message, recordMetadata);
+                ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, recordMetadata);
 
         // Then
         verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();
@@ -147,7 +147,7 @@ public class ItemMessageProducerTest {
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_URI), eq(ORDER_REFERENCE)); // TODO GCI-1428 Check this
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(SCAN_UPON_DEMAND_ITEM_ID));
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
 
         verify(logger).info(eq("Sending message to kafka producer"), any(Map.class));
 
@@ -165,7 +165,7 @@ public class ItemMessageProducerTest {
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(SCAN_UPON_DEMAND_ITEM_ID));
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(OFFSET), eq(OFFSET_VALUE));

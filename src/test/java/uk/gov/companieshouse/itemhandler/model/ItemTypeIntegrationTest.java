@@ -17,7 +17,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.verify;
 import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFICATE;
 import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFIED_COPY;
-import static uk.gov.companieshouse.itemhandler.model.ItemType.SCAN_ON_DEMAND;
+import static uk.gov.companieshouse.itemhandler.model.ItemType.MISSING_IMAGE_DELIVERY;
 
 /**
  * Integration tests the {@link ItemType} enum.
@@ -78,11 +78,11 @@ class ItemTypeIntegrationTest {
     }
 
     @Test
-    @DisplayName("Scan upon demand order sent to CHD")
-    void scanUponDemandOrderSentToChd() throws Exception {
+    @DisplayName("Missing image delivery order sent to CHD")
+    void missingImageDeliveryOrderSentToChd() throws Exception {
 
         // When
-        SCAN_ON_DEMAND.sendMessages(order);
+        MISSING_IMAGE_DELIVERY.sendMessages(order);
 
         // Then
         verify(itemSender).sendItemsToChd(order);

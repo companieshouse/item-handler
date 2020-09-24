@@ -24,7 +24,7 @@ public class ChdItemSenderService {
      * This must be revisited post MVP as it currently is subject to the following limitations:
      * <ol>
      *     <li>it only sends the first (assumed only) item</li>
-     *     <li>it assumes that item is a scan upon demand item</li>
+     *     <li>it assumes that item is a missing image delivery item</li>
      * </ol>
      * @param order the {@link OrderData} instance retrieved from the Orders API
      */

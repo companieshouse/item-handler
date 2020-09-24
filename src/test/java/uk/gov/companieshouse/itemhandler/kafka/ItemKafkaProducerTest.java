@@ -42,7 +42,7 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
 public class ItemKafkaProducerTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String SCAN_UPON_DEMAND_ITEM_ID = "SCD-242116-007650";
+    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
 
     @InjectMocks
     private ItemKafkaProducer producerUnderTest;
@@ -74,7 +74,7 @@ public class ItemKafkaProducerTest {
         when(chKafkaProducer.sendAndReturnFuture(message)).thenReturn(recordMetadataFuture);
 
         // When
-        producerUnderTest.sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, message, consumer);
+        producerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
 
         // Then
         verify(chKafkaProducer).sendAndReturnFuture(message);
@@ -93,7 +93,7 @@ public class ItemKafkaProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        producerUnderTest.sendMessage(ORDER_REFERENCE, SCAN_UPON_DEMAND_ITEM_ID, message, consumer);
+        producerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
@@ -121,7 +121,7 @@ public class ItemKafkaProducerTest {
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_URI), eq(ORDER_REFERENCE)); // TODO GCI-1428 Check this
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(SCAN_UPON_DEMAND_ITEM_ID));
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
 
         verify(logger).info(eq("Sending message to kafka topic"), any(Map.class));
 

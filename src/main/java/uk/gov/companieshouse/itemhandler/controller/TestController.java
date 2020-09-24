@@ -17,7 +17,7 @@ import java.security.SecureRandom;
 import java.util.Calendar;
 
 import static java.util.Collections.singletonList;
-import static uk.gov.companieshouse.itemhandler.model.ItemType.SCAN_ON_DEMAND;
+import static uk.gov.companieshouse.itemhandler.model.ItemType.MISSING_IMAGE_DELIVERY;
 
 /**
  * Temporary controller introduced to facilitate testing.
@@ -44,8 +44,8 @@ public class TestController {
     public ResponseEntity<Void> testProcessing (final @PathVariable String kind,
                                                 final @PathVariable String order) throws Exception {
         LOGGER.info("testProcessing (" + kind + ", " + order + ")");
-        if (isScanOnDemand(kind)) {
-            stubScanOnDemandOrderAndRouteIt(order);
+        if (isMissingImageDelivery(kind)) {
+            stubMissingImageDeliveryOrderAndRouteIt(order);
         } else {
             subjectOrderToFullProcessing(order);
         }
@@ -53,13 +53,13 @@ public class TestController {
     }
 
     /**
-     * Determines whether the kind represents a scan on demand item (<code>true</code>), or not (<code>false</code>).
+     * Determines whether the kind represents a missing image delivery item (<code>true</code>), or not (<code>false</code>).
      * @param kind the partial kind string provided in the test (<code>certificate</code>, <code>certified-copy</code>
-     *             or <code>scan-on-demand</code>)
-     * @return whether the kind represents a scan on demand item (<code>true</code>), or not (<code>false</code>)
+     *             or <code>missing-image-delivery</code>)
+     * @return whether the kind represents a missing image delivery item (<code>true</code>), or not (<code>false</code>)
      */
-    private boolean isScanOnDemand(final String kind) {
-        return ItemType.getItemType(ITEM_KIND_PREFIX + kind) == SCAN_ON_DEMAND;
+    private boolean isMissingImageDelivery(final String kind) {
+        return ItemType.getItemType(ITEM_KIND_PREFIX + kind) == MISSING_IMAGE_DELIVERY;
     }
 
     /**
@@ -73,40 +73,41 @@ public class TestController {
     }
 
     /**
-     * Creates a dummy or stub {@link OrderData} instance intended to be a minimal, transient representation of a scan
-     * on demand order as would be retrieved by the Item Handler from the Orders API were it possible for the handler to
-     * do so at this point, then subjects the order to the same routing behaviour as the order would be subject to if
-     * it had been retrieved from the Orders API. This effectively by-passes the order processing behaviour that depends
-     * on successful retrieval of paid orders from the Orders API.
+     * Creates a dummy or stub {@link OrderData} instance intended to be a minimal, transient representation of a
+     * missing image delivery order as would be retrieved by the Item Handler from the Orders API were it possible for
+     * the handler to do so at this point, then subjects the order to the same routing behaviour as the order would be
+     * subject to if it had been retrieved from the Orders API. This effectively by-passes the order processing
+     * behaviour that depends on successful retrieval of paid orders from the Orders API.
      * @param order the order reference identifying the order
      * @throws Exception should something unexpected happen
      */
     @SuppressWarnings("squid:S112") // in this test code, exception thrown is not important
-    private void stubScanOnDemandOrderAndRouteIt(final String order) throws Exception {
-        final OrderData scanOnDemandOrder = stubScanOnDemandOrder(order);
-        orderRouter.routeOrder(scanOnDemandOrder);
+    private void stubMissingImageDeliveryOrderAndRouteIt(final String order) throws Exception {
+        final OrderData missingImageDeliveryOrder = stubMissingImageDeliveryOrder(order);
+        orderRouter.routeOrder(missingImageDeliveryOrder);
     }
 
     /**
-     * Stubs out just enough of a scan on demand order to be able to test its routing by this Item Handler application.
+     * Stubs out just enough of a missing image delivery order to be able to test its routing by this Item Handler
+     * application.
      * @param order the order reference identifying the order
      * @return the stub {@link OrderData} instance
      */
-    private OrderData stubScanOnDemandOrder(final String order) {
-        final OrderData scanUponDemandOrder = new OrderData();
-        scanUponDemandOrder.setReference(order);
+    private OrderData stubMissingImageDeliveryOrder(final String order) {
+        final OrderData missingImageDeliveryOrder = new OrderData();
+        missingImageDeliveryOrder.setReference(order);
         final Item item = new Item();
-        item.setId(generateScanOnDemandItemId());
-        item.setKind(SCAN_ON_DEMAND.getKind());
-        scanUponDemandOrder.setItems(singletonList(item));
-        return scanUponDemandOrder;
+        item.setId(generateMissingImageDeliveryItemId());
+        item.setKind(MISSING_IMAGE_DELIVERY.getKind());
+        missingImageDeliveryOrder.setItems(singletonList(item));
+        return missingImageDeliveryOrder;
     }
 
     /**
-     * Uses the same code as the Scan Upon Demand API to generate a unique ID for each scan on demand item.
-     * @return a unique scan on demand item ID
+     * Uses the same code as the Missing Image Delivery API to generate a unique ID for each missing image delivery item.
+     * @return a unique missing image delivery item ID
      */
-    private String generateScanOnDemandItemId() {
+    private String generateMissingImageDeliveryItemId() {
         final SecureRandom random = new SecureRandom();
         final byte[] values = new byte[4];
         random.nextBytes(values);
@@ -114,7 +115,7 @@ public class TestController {
         final String time = String.format("%08d", Calendar.getInstance().getTimeInMillis() / 100000L);
         final String rawId = rand + time;
         final String[] tranId = rawId.split("(?<=\\G.{6})");
-        return "SCD-" + String.join("-", tranId);
+        return "MID-" + String.join("-", tranId);
     }
 
 }

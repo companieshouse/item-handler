@@ -64,19 +64,19 @@
 			"response": []
 		},
 		{
-			"name": "Test scan on demand processing",
+			"name": "Test missing image delivery processing",
 			"request": {
 				"method": "PUT",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/item-handler/test-processing/scan-on-demand/ORD-000000-999999",
+					"raw": "{{base_url}}/item-handler/test-processing/missing-image-delivery/ORD-000000-999999",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"item-handler",
 						"test-processing",
-						"scan-on-demand",
+						"missing-image-delivery",
 						"ORD-000000-999999"
 					]
 				}
