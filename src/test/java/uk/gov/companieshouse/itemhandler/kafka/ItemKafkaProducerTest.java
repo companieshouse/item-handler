@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
@@ -13,6 +14,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
+import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.lang.reflect.Field;
@@ -60,8 +62,12 @@ public class ItemKafkaProducerTest {
     @Mock
     private Logger logger;
 
+    @Mock
+    private ProducerConfig producerConfig;
+
 
     @Test
+    @DisplayName("sendMessage() delegates message sending to ChKafkaProducer")
     void sendMessageDelegatesToChKafkaProducer() throws ExecutionException, InterruptedException {
 
         // Given
@@ -91,6 +97,18 @@ public class ItemKafkaProducerTest {
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
+
+    }
+
+    @Test
+    @DisplayName("modifyProducerConfig() modifies the producer config")
+    void modifyProducerConfigModifiesConfig() {
+
+        // When
+        producerUnderTest.modifyProducerConfig(producerConfig);
+
+        // Then
+        verify(producerConfig).setMaxBlockMilliseconds(10000);
 
     }
 
