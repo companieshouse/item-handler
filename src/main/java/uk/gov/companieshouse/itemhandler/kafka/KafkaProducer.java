@@ -21,20 +21,12 @@ public abstract class KafkaProducer implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         LOGGER.trace("Configuring CH Kafka producer");
-        final ProducerConfig config = new ProducerConfig();
-        if (brokerAddresses != null && !brokerAddresses.isEmpty()) {
-            config.setBrokerAddresses(brokerAddresses.split(","));
-        } else {
-            throw new ProducerConfigException("Broker addresses for kafka broker missing, check if environment variable KAFKA_BROKER_ADDR is configured. " +
-                    "[Hint: The property 'kafka.broker.addresses' uses the value of this environment variable in live environments " +
-                    "and that of 'spring.embedded.kafka.brokers' property in test.]");
-        }
-
+        final ProducerConfig config = createProducerConfig();
         config.setRoundRobinPartitioner(true);
         config.setAcks(Acks.WAIT_FOR_ALL);
         config.setRetries(10);
         modifyProducerConfig(config);
-        chKafkaProducer = new CHKafkaProducer(config);
+        chKafkaProducer = createChKafkaProducer(config);
     }
 
     /**
@@ -47,5 +39,21 @@ public abstract class KafkaProducer implements InitializingBean {
 
     protected CHKafkaProducer getChKafkaProducer() {
         return chKafkaProducer;
+    }
+
+    protected ProducerConfig createProducerConfig() {
+        final ProducerConfig config = new ProducerConfig();
+        if (brokerAddresses != null && !brokerAddresses.isEmpty()) {
+            config.setBrokerAddresses(brokerAddresses.split(","));
+        } else {
+            throw new ProducerConfigException("Broker addresses for kafka broker missing, check if environment variable KAFKA_BROKER_ADDR is configured. " +
+                    "[Hint: The property 'kafka.broker.addresses' uses the value of this environment variable in live environments " +
+                    "and that of 'spring.embedded.kafka.brokers' property in test.]");
+        }
+        return config;
+    }
+
+    protected CHKafkaProducer createChKafkaProducer(final ProducerConfig config) {
+        return new CHKafkaProducer(config);
     }
 }
