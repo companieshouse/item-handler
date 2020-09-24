@@ -125,7 +125,6 @@ public class ItemMessageProducerTest {
         // Given
         setFinalStaticField(ItemMessageProducer.class, "LOGGER", logger);
         mockStatic(LoggingUtils.class);
-        //final RecordMetadata recordMetadata = mock(RecordMetadata.class);
 
         when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
         when(message.getTopic()).thenReturn(TOPIC_NAME);
