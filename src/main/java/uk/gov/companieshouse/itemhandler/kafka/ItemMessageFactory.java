@@ -21,7 +21,7 @@ public class ItemMessageFactory {
 
 	private final SerializerFactory serializerFactory;
 
-	public ItemMessageFactory(SerializerFactory serializer) {
+	public ItemMessageFactory(final SerializerFactory serializer) {
 		serializerFactory = serializer;
 	}
 
