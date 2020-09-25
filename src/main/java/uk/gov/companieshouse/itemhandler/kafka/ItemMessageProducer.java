@@ -29,10 +29,11 @@ public class ItemMessageProducer {
     }
 
     /**
-     * TODO GCI-1428 Javadoc this
-     * @param orderReference
-     * @param itemId
-     * @param item
+     * Sends (produces) a message to the Kafka <code>chd-item-ordered</code> topic representing the missing image
+     * delivery item provided.
+     * @param orderReference the reference of the order to which the item belongs
+     * @param itemId the ID of the item that the message to be sent represents
+     * @param item the missing image delivery item
      */
     public void sendMessage(final String orderReference,
                             final String itemId,

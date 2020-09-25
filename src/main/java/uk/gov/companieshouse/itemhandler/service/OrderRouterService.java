@@ -23,11 +23,12 @@ public class OrderRouterService {
     /**
      * Routes the order onwards for further processing.
      * @param order the incoming order
-     * TODO GCI-1300 Document exceptions
-     * @throws JsonProcessingException
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
+     * @throws JsonProcessingException should there be a failure to serialize order content for production to a Kafka
+     * topic
+     * @throws InterruptedException should the execution thread be interrupted
+     * @throws ExecutionException should the production of the message to the topic error for some reason
+     * @throws SerializationException should there be a failure to serialize order content for production to a Kafka
+     * topic
      */
     public void routeOrder(final OrderData order)
             throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException
