@@ -9,6 +9,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -27,9 +28,7 @@ import static org.junit.Assert.assertEquals;
 @EmbeddedKafka
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
         "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
-public class EmailSendMessageProducerIntegrationTest {
-
-    private static final String ORDER_REFERENCE = "ORD-432118-793830";
+class EmailSendMessageProducerIntegrationTest {
 
     private static final DateTimeFormatter TIME_OF_PAYMENT_FORMATTER =
             DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm");
@@ -62,7 +61,7 @@ public class EmailSendMessageProducerIntegrationTest {
         confirmation.setHouseNumberStreetName("152-160 City Road");
         confirmation.setCity("London");
         confirmation.setPostCode("EC1V 2NX");
-        confirmation.setOrderReferenceNumber(ORDER_REFERENCE);
+        confirmation.setOrderReferenceNumber(TestConstants.ORDER_REFERENCE);
         confirmation.setEmailAddress("mail@globaloffshore.com");
         confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setFeeAmount("15");
@@ -109,7 +108,7 @@ public class EmailSendMessageProducerIntegrationTest {
         int count = 0;
         do {
             messages = testEmailSendMessageConsumer.pollConsumerGroup();
-            emailSendMessageProducerUnderTest.sendMessage(email, ORDER_REFERENCE);
+            emailSendMessageProducerUnderTest.sendMessage(email, TestConstants.ORDER_REFERENCE);
             count++;
         } while (messages.isEmpty() && count < 15);
 

@@ -12,6 +12,7 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 /**
  * Unit tests the {@link ItemKafkaProducer} class.
@@ -41,9 +42,6 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
 @PrepareForTest({LoggingUtils.class, Logger.class})
 @SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
 public class ItemKafkaProducerTest {
-
-    private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
 
     @InjectMocks
     private ItemKafkaProducer producerUnderTest;
@@ -75,7 +73,7 @@ public class ItemKafkaProducerTest {
         when(chKafkaProducer.sendAndReturnFuture(message)).thenReturn(recordMetadataFuture);
 
         // When
-        producerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
+        producerUnderTest.sendMessage(ORDER_REFERENCE, TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
 
         // Then
         verify(chKafkaProducer).sendAndReturnFuture(message);
@@ -94,7 +92,7 @@ public class ItemKafkaProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        producerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
+        producerUnderTest.sendMessage(ORDER_REFERENCE, TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID, message, consumer);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
@@ -122,7 +120,7 @@ public class ItemKafkaProducerTest {
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID));
 
         verify(logger).info(eq("Sending message to kafka topic"), any(Map.class));
 

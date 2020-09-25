@@ -17,12 +17,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 
 /** Unit tests the {@link OrderProcessorService} class. */
 @ExtendWith(MockitoExtension.class)
 class OrderProcessorServiceTest {
 
-    private static final String ORDER_REFERENCE_NUMBER = "ORD-469415-911973";
     private static final String ORDER_URI = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static final String TEST_EXCEPTION_MESSAGE = "Test message!";
 

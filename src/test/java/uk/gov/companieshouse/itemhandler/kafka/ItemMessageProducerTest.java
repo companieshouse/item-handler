@@ -28,6 +28,8 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 /**
  * Unit tests the {@link ItemMessageProducer} class.
@@ -38,8 +40,6 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFER
 @SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
 public class ItemMessageProducerTest {
 
-    private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
     private static final int PARTITION_VALUE = 0;

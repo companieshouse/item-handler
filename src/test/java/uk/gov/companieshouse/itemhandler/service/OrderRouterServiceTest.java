@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 /**
  * Unit tests the {@link OrderRouterService} class.
@@ -34,7 +35,6 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 @SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
 public class OrderRouterServiceTest {
 
-    private static final String ORDER_REFERENCE = "ORD-432118-793830";
     private static final String CERTIFICATE_ITEM_ID = "CRT-052815-956034";
     private static final String CERTIFICATE_KIND = ItemType.CERTIFICATE.getKind();
     private static final String UNKNOWN_KIND = "item#unknown";

@@ -20,14 +20,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
 class ItemMessageProducerIntegrationTest {
-
-    private static final String ORDER_REFERENCE = "ORD-432118-793830";
-    private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
 
     @Configuration
     @ComponentScan(basePackageClasses = ItemMessageProducerIntegrationTest.class,
