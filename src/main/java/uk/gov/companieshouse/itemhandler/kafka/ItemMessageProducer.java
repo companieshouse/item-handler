@@ -13,7 +13,6 @@ import java.util.Map;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.OFFSET;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
@@ -40,7 +39,7 @@ public class ItemMessageProducer {
                             final Item item) {
 
         final Map<String, Object> logMap = LoggingUtils.createLogMap();
-        logIfNotNull(logMap, ORDER_URI, orderReference);
+        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
         logIfNotNull(logMap, ITEM_ID, itemId);
         LOGGER.info("Sending message to kafka producer", logMap);
 
@@ -51,7 +50,7 @@ public class ItemMessageProducer {
                             logOffsetFollowingSendIngOfMessage(orderReference, itemId, message, recordMetadata));
         } catch (Exception e) {
             final String errorMessage = String.format(
-                    "Kafka item message could not be sent for order URI %s item ID %s", orderReference, itemId);
+                    "Kafka item message could not be sent for order reference %s item ID %s", orderReference, itemId);
             logMap.put(LoggingUtils.EXCEPTION, e);
             LOGGER.error(errorMessage, logMap);
             throw new KafkaMessagingException(errorMessage, e);

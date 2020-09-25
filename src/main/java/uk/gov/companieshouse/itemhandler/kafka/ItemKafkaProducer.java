@@ -13,6 +13,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMap;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
 @Service
@@ -23,7 +26,7 @@ public class ItemKafkaProducer extends KafkaProducer {
     /**
      * TODO GCI-1428 Javadoc this
      * Sends message to Kafka topic
-     * @param orderUri
+     * @param orderReference
      * @param itemId
      * @param message
      * @param asyncResponseLogger
@@ -31,15 +34,15 @@ public class ItemKafkaProducer extends KafkaProducer {
      * @throws InterruptedException
      */
     @Async
-    public void sendMessage(final String orderUri,
+    public void sendMessage(final String orderReference,
                             final String itemId,
                             final Message message,
                             final Consumer<RecordMetadata> asyncResponseLogger)
             throws ExecutionException, InterruptedException {
 
-        final Map<String, Object> logMap = LoggingUtils.createLogMap();
-        logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        logIfNotNull(logMap, LoggingUtils.ITEM_ID, itemId);
+        final Map<String, Object> logMap = createLogMap();
+        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
+        logIfNotNull(logMap, ITEM_ID, itemId);
         LOGGER.info("Sending message to kafka topic", logMap);
 
         final Future<RecordMetadata> recordMetadataFuture = getChKafkaProducer().sendAndReturnFuture(message);

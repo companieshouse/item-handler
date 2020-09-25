@@ -30,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
 
 /**
@@ -118,7 +119,7 @@ public class ItemKafkaProducerTest {
         LoggingUtils.createLogMap();
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_URI), eq(ORDER_REFERENCE)); // TODO GCI-1428 Check this
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));

@@ -144,7 +144,7 @@ public class ItemMessageProducerTest {
         LoggingUtils.createLogMap();
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_URI), eq(ORDER_REFERENCE)); // TODO GCI-1428 Check this
+        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
