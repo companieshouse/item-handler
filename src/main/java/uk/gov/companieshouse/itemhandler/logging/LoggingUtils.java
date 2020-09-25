@@ -2,6 +2,8 @@ package uk.gov.companieshouse.itemhandler.logging;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -42,6 +44,21 @@ public class LoggingUtils {
         logIfNotNull(logMap, TOPIC, message.getTopic());
         logIfNotNull(logMap, PARTITION, message.getPartition());
         logIfNotNull(logMap, OFFSET, message.getOffset());
+        return logMap;
+    }
+
+    /**
+     * Creates a log map containing the required details to track the production of a message to a Kafka topic.
+     * @param acknowledgedMessage the {@link RecordMetadata} the metadata for a record that has been acknowledged by
+     *                            the server when a message has been produced to a Kafka topic.
+     * @return the log map populated with Kafka message production details
+     */
+    public static Map<String, Object>
+    createLogMapWithAcknowledgedKafkaMessage(final RecordMetadata acknowledgedMessage) {
+        final Map<String, Object> logMap = createLogMap();
+        logIfNotNull(logMap, TOPIC, acknowledgedMessage.topic());
+        logIfNotNull(logMap, PARTITION, acknowledgedMessage.partition());
+        logIfNotNull(logMap, OFFSET, acknowledgedMessage.offset());
         return logMap;
     }
 

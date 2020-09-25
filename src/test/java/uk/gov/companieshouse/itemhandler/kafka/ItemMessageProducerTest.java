@@ -27,10 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.OFFSET;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_URI;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
 
 /**
  * Unit tests the {@link ItemMessageProducer} class.
@@ -45,6 +42,7 @@ public class ItemMessageProducerTest {
     private static final String MISSING_IMAGE_DELIVERY_ITEM_ID = "MID-242116-007650";
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
+    private static final int PARTITION_VALUE = 0;
     private static final Item ITEM;
 
     static {
@@ -126,12 +124,13 @@ public class ItemMessageProducerTest {
         setFinalStaticField(ItemMessageProducer.class, "LOGGER", logger);
         mockStatic(LoggingUtils.class);
 
+        when(recordMetadata.topic()).thenReturn(TOPIC_NAME);
+        when(recordMetadata.partition()).thenReturn(PARTITION_VALUE);
         when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
-        when(message.getTopic()).thenReturn(TOPIC_NAME);
 
         // When
         messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(
-                ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, message, recordMetadata);
+                ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, recordMetadata);
 
         // Then
         verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();
@@ -156,19 +155,13 @@ public class ItemMessageProducerTest {
     private void verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate() {
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.createLogMap();
-
-        PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(TOPIC), eq(TOPIC_NAME));
+        LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(recordMetadata);
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
-
-        PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logIfNotNull(any(Map.class), eq(OFFSET), eq(OFFSET_VALUE));
 
         verify(logger).info(eq("Message sent to Kafka topic"), any(Map.class));
 

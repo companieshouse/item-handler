@@ -11,9 +11,8 @@ import uk.gov.companieshouse.logging.Logger;
 import java.util.Map;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.OFFSET;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMapWithAcknowledgedKafkaMessage;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
 @Service
@@ -48,7 +47,7 @@ public class ItemMessageProducer {
             final Message message = itemMessageFactory.createMessage(item);
             itemKafkaProducer.sendMessage(orderReference, itemId, message,
                     recordMetadata ->
-                            logOffsetFollowingSendIngOfMessage(orderReference, itemId, message, recordMetadata));
+                            logOffsetFollowingSendIngOfMessage(orderReference, itemId, recordMetadata));
         } catch (Exception e) {
             final String errorMessage = String.format(
                     "Kafka item message could not be sent for order reference %s item ID %s", orderReference, itemId);
@@ -59,23 +58,17 @@ public class ItemMessageProducer {
     }
 
     /**
-     * Logs the order reference, item ID and offset for the item message produced to a Kafka topic.
+     * Logs the order reference, item ID, topic, partition and offset for the item message produced to a Kafka topic.
      * @param orderReference the order reference
      * @param itemId the item ID
-     * @param message the item message
-     * @param recordMetadata the metadata for a record that has been acknowledged by the server
+     * @param recordMetadata the metadata for a record that has been acknowledged by the server for the message produced
      */
     void logOffsetFollowingSendIngOfMessage(final String orderReference,
                                             final String itemId,
-                                            final Message message,
                                             final RecordMetadata recordMetadata) {
-        final long offset = recordMetadata.offset();
-        final String topic = message.getTopic();
-        final Map<String, Object> logMapCallback = LoggingUtils.createLogMap();
-        logIfNotNull(logMapCallback, TOPIC, topic);
+        final Map<String, Object> logMapCallback =  createLogMapWithAcknowledgedKafkaMessage(recordMetadata);
         logIfNotNull(logMapCallback, ORDER_REFERENCE_NUMBER, orderReference);
         logIfNotNull(logMapCallback, ITEM_ID, itemId);
-        logIfNotNull(logMapCallback, OFFSET, offset);
         LOGGER.info("Message sent to Kafka topic", logMapCallback);
     }
 }
