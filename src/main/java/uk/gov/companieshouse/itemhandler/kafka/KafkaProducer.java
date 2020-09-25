@@ -30,7 +30,7 @@ public abstract class KafkaProducer implements InitializingBean {
     }
 
     /**
-     * Extending classes implement this to provide any specific producer configuration modifications required.
+     * Extending classes may implement this to provide any specific producer configuration modifications required.
      * @param producerConfig the producer configuration to be modified
      */
     protected void modifyProducerConfig(final ProducerConfig producerConfig) {
@@ -41,6 +41,10 @@ public abstract class KafkaProducer implements InitializingBean {
         return chKafkaProducer;
     }
 
+    /**
+     * Extending classes may implement this to facilitate testing for example.
+     * @return the {@link ProducerConfig} created
+     */
     protected ProducerConfig createProducerConfig() {
         final ProducerConfig config = new ProducerConfig();
         if (brokerAddresses != null && !brokerAddresses.isEmpty()) {
@@ -53,6 +57,11 @@ public abstract class KafkaProducer implements InitializingBean {
         return config;
     }
 
+    /**
+     * Extending classes may implement this to facilitate testing for example.
+     * @param config the {@link ProducerConfig} used to configure the producer
+     * @return the {@link CHKafkaProducer} created
+     */
     protected CHKafkaProducer createChKafkaProducer(final ProducerConfig config) {
         return new CHKafkaProducer(config);
     }

@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,11 +8,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.kafka.exceptions.ProducerConfigException;
+import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.verify;
 
 /**
  * Unit tests the {@link KafkaProducer} class.
@@ -33,13 +34,33 @@ class KafkaProducerTest {
     @Mock
     private CHKafkaProducer chKafkaProducer;
 
+    @Mock
+    private ProducerConfig producerConfig;
+
+    /**
+     * Extends {@link KafkaProducer} to provide a concrete implementation for testing.
+     */
     private static class TestKafkaProducer extends KafkaProducer {}
 
+    /**
+     * Extends {@link KafkaProducer} to provide a concrete implementation for testing that allows us to stub out
+     * unwanted behaviour and verify the behaviour of interest.
+     */
     private class TestKafkaProducer2 extends KafkaProducer {
         private boolean modifyProducerConfigCalled;
+        private boolean createProducerConfigCalled;
+        private boolean createChKafkaProducerCalled;
 
         public boolean isModifyProducerConfigCalled() {
             return modifyProducerConfigCalled;
+        }
+
+        public boolean isCreateProducerConfigCalled() {
+            return createProducerConfigCalled;
+        }
+
+        public boolean isCreateChKafkaProducerCalled() {
+            return createChKafkaProducerCalled;
         }
 
         @Override
@@ -49,13 +70,13 @@ class KafkaProducerTest {
 
         @Override
         protected ProducerConfig createProducerConfig() {
-            final ProducerConfig config = new ProducerConfig();
-            config.setBrokerAddresses(new String[]{"http://non-null-url.com"});
-            return config;
+            createProducerConfigCalled = true;
+            return producerConfig;
         }
 
         @Override
         protected CHKafkaProducer createChKafkaProducer(final ProducerConfig config) {
+            createChKafkaProducerCalled = true;
             return chKafkaProducer;
         }
     }
@@ -69,14 +90,15 @@ class KafkaProducerTest {
                 kafkaProducerUnderTest.afterPropertiesSet());
         // Then
         final String actualMessage = exception.getMessage();
-        Assert.assertThat(actualMessage, Matchers.is(EXPECTED_CONFIG_ERROR_MESSAGE));
+        assertThat(actualMessage, is(EXPECTED_CONFIG_ERROR_MESSAGE));
 
     }
 
     @Test
-    @DisplayName("afterPropertiesSet() calls modifyProducerConfig")
-    void afterPropertiesSetCallsModifyProducerConfig() {
+    @DisplayName("afterPropertiesSet() calls template methods")
+    void afterPropertiesSetCallsTemplateMethods() {
 
+        // Given
         final TestKafkaProducer2 kafkaProducerUnderTest = new TestKafkaProducer2();
 
         // When
@@ -84,6 +106,40 @@ class KafkaProducerTest {
 
         // Then
         assertThat(kafkaProducerUnderTest.isModifyProducerConfigCalled(), is(true));
+        assertThat(kafkaProducerUnderTest.isCreateProducerConfigCalled(), is(true));
+        assertThat(kafkaProducerUnderTest.isCreateChKafkaProducerCalled(), is(true));
+
+    }
+
+    @Test
+    @DisplayName("afterPropertiesSet() sets the producer's kafka producer member")
+    void afterPropertiesSetSetsProducerMember() {
+
+        // Given
+        final TestKafkaProducer2 kafkaProducerUnderTest = new TestKafkaProducer2();
+
+        // When
+        kafkaProducerUnderTest.afterPropertiesSet();
+
+        // Then
+        assertThat(kafkaProducerUnderTest.getChKafkaProducer(), is(notNullValue()));
+
+    }
+
+    @Test
+    @DisplayName("afterPropertiesSet() sets producer config properties")
+    void afterPropertiesSetSetsProducerConfigProperties() {
+
+        // Given
+        final TestKafkaProducer2 kafkaProducerUnderTest = new TestKafkaProducer2();
+
+        // When
+        kafkaProducerUnderTest.afterPropertiesSet();
+
+        // Then
+        verify(producerConfig).setRoundRobinPartitioner(true);
+        verify(producerConfig).setAcks(Acks.WAIT_FOR_ALL);
+        verify(producerConfig).setRetries(10);
 
     }
 
