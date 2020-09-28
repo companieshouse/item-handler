@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -21,8 +22,10 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -44,6 +47,7 @@ public class ItemMessageProducerTest {
     private static final String TOPIC_NAME = "topic";
     private static final int PARTITION_VALUE = 0;
     private static final Item ITEM;
+    private static final RuntimeException KAFKA_EXCEPTION = new RuntimeException("Test exception");
 
     static {
         ITEM = new Item();
@@ -93,6 +97,29 @@ public class ItemMessageProducerTest {
         // Then
         verify(itemKafkaProducer).sendMessage(
                 eq(ORDER_REFERENCE), eq(MISSING_IMAGE_DELIVERY_ITEM_ID), eq(message), any(Consumer.class));
+
+    }
+
+    @Test
+    @DisplayName("sendMessage propagates ItemKafkaProducer exception as a KafkaMessagingException")
+    void sendMessagePropagatesProductionExceptionAsKafkaMessagingException() throws Exception {
+
+        // Given
+        when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
+
+        doThrow(KAFKA_EXCEPTION).
+        when(itemKafkaProducer).sendMessage(
+                eq(ORDER_REFERENCE),
+                eq(MISSING_IMAGE_DELIVERY_ITEM_ID),
+                eq(message),
+                any(Consumer.class));
+
+        // When and then
+        assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
+                messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM))
+                .withMessage("Kafka item message could not be sent for order reference ORD-432118-793830 item " +
+                        "ID MID-242116-007650")
+                .withCause(KAFKA_EXCEPTION);
 
     }
 
