@@ -43,7 +43,7 @@ public class OrderRouterService {
      * @return the item type inferred for the order
      * @throws ServiceException should it be impossible to determine the item type from the order
      */
-    ItemType getItemType(final OrderData order) throws ServiceException {
+    ItemType getItemType(final OrderData order) {
         final String kind = getKind(order);
         final ItemType type = ItemType.getItemType(kind);
         if (type == null) {
@@ -53,7 +53,7 @@ public class OrderRouterService {
         return type;
     }
 
-    private String getKind(final OrderData order) throws ServiceException {
+    private String getKind(final OrderData order) {
         final List<Item> items = order.getItems();
         if (isEmpty(items)) {
             throw new ServiceException("Order " + order.getReference() + " contains no items.");
