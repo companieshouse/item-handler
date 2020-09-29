@@ -18,7 +18,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Communicates with <code>chs-email-sender</code> via the ` <code>send-email</code> Kafka topic to
+ * Communicates with <code>chs-email-sender</code> via the <code>send-email</code> Kafka topic to
  * trigger the sending of emails.
  */
 @Service
@@ -60,7 +60,7 @@ public class EmailService {
     }
 
     /**
-     * Sends out a certificate order confirmation email.
+     * Sends out a certificate or certified copy order confirmation email.
      *
      * @param order the order information used to compose the order confirmation email.
      * @throws JsonProcessingException

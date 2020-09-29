@@ -17,12 +17,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 
 /** Unit tests the {@link OrderProcessorService} class. */
 @ExtendWith(MockitoExtension.class)
-public class OrderProcessorServiceTest {
+class OrderProcessorServiceTest {
 
-    private static final String ORDER_REFERENCE_NUMBER = "ORD-469415-911973";
     private static final String ORDER_URI = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static final String TEST_EXCEPTION_MESSAGE = "Test message!";
 
@@ -33,7 +33,7 @@ public class OrderProcessorServiceTest {
     private OrdersApiClientService ordersApi;
 
     @Mock
-    private EmailService emailer;
+    private OrderRouterService orderRouter;
 
     @Mock
     private OrderData order;
@@ -66,7 +66,7 @@ public class OrderProcessorServiceTest {
 
         // Then
         verify(ordersApi).getOrderData(ORDER_URI);
-        verify(emailer).sendOrderConfirmation(any(OrderData.class));
+        verify(orderRouter).routeOrder(any(OrderData.class));
     }
 
     @Test
@@ -101,14 +101,14 @@ public class OrderProcessorServiceTest {
 
     /**
      * Sets up mocks to throw the exception for which the constructor is provided when the service calls
-     * {@link EmailService#sendOrderConfirmation(OrderData)}.
+     * {@link OrderRouterService#routeOrder(OrderData)}.
      * @param constructor the Exception constructor to use
      * @throws Exception should something unexpected happen
      */
     private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor) throws Exception {
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
         when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(emailer).sendOrderConfirmation(any(OrderData.class));
+        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(orderRouter).routeOrder(any(OrderData.class));
     }
 
 
