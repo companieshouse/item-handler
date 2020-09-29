@@ -33,7 +33,6 @@ public class ItemMessageFactory {
 	 */
 	public Message createMessage(final Item item) throws SerializationException {
 		LOGGER.trace("Creating item message");
-		// TODO GCI-1301 Replace hijacked OrderReceived kafka-models class with a class for chd-item-ordered.
 		final OrderReceived outgoing = new OrderReceived();
 		outgoing.setOrderUri(item.getId());
 		final AvroSerializer<OrderReceived> serializer =

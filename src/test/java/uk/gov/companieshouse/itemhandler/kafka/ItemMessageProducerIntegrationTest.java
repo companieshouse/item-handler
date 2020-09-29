@@ -73,7 +73,6 @@ class ItemMessageProducerIntegrationTest {
         item.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Given that for now the actual message produced to the topic is an OrderReceived object.
-        // TODO GCI-1301 Replace hijacked OrderReceived kafka-models class with a class for chd-item-ordered.
         final OrderReceived orderReceived = new OrderReceived();
         orderReceived.setOrderUri(MISSING_IMAGE_DELIVERY_ITEM_ID);
 

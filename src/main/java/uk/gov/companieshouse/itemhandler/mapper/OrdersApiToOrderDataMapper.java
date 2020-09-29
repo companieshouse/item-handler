@@ -27,7 +27,6 @@ public interface OrdersApiToOrderDataMapper {
     @Mapping(target = "status", ignore = true)
     Item apiToItem(BaseItemApi baseItemApi);
 
-    // TODO GCI-1373 Remove this special case mapping when private SDK is updated for missing image delivery.
     @ValueMapping(source = "SCAN_UPON_DEMAND", target = "MISSING_IMAGE_DELIVERY")
     ProductType apiToProductType(ProductTypeApi productTypeApi);
 
