@@ -32,6 +32,10 @@ public class EmailService {
             "item-handler.certified-copy-order-confirmation";
     private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
+    private static final String MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID =
+            "item-handler.missing-image-delivery-order-confirmation";
+    private static final String MISSING_IMAGE_DELIVERY_NOTIFICATION_API_MESSAGE_TYPE =
+            "missing_image_delivery_confirmation_email";
     private static final String ITEM_TYPE_CERTIFICATE = "certificate";
     private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     /**
@@ -83,6 +87,9 @@ public class EmailService {
             confirmation.setTo(certifiedCopyOrderRecipient);
             email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
             email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+        } else {
+            email.setAppId(MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID);
+            email.setMessageType(MISSING_IMAGE_DELIVERY_NOTIFICATION_API_MESSAGE_TYPE);
         }
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -100,8 +107,10 @@ public class EmailService {
         if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
             return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
         }
-        else {
+        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)){
             return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
+        } else {
+            ;
         }
     }
 }
