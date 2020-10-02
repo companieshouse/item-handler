@@ -9,6 +9,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.MissingImage;
+import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -24,10 +26,10 @@ import static org.junit.Assert.assertEquals;
 
 @SpringBootTest
 @DirtiesContext
-@EmbeddedKafka
+// TODO GCI-1072 Revert to embedded kafka @EmbeddedKafka
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
         "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
-public class EmailSendMessageProducerIntegrationTest {
+class EmailSendMessageProducerIntegrationTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";
 
@@ -47,7 +49,7 @@ public class EmailSendMessageProducerIntegrationTest {
     ObjectMapper objectMapper;
 
     @Test
-    void testSendOrderReceivedMessageToKafkaTopic() throws Exception {
+    void testCertificateOrderConfirmationMessageToKafkaTopic() throws Exception {
 
         // Given an EmailSend object is created
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
@@ -84,6 +86,62 @@ public class EmailSendMessageProducerIntegrationTest {
         email.setEmailAddress("test@test.com");
         email.setMessageId(UUID.randomUUID().toString());
         email.setMessageType("certificate_order_confirmation_email");
+        email.setData(objectMapper.writeValueAsString(confirmation));
+        email.setCreatedAt(LocalDateTime.now().toString());
+
+        // When email-send message is sent to kafka topic
+        final List<Message> messages = sendAndConsumeMessage(email);
+
+        // Then we can successfully consume the message.
+        assertThat(messages.isEmpty(), is(false));
+        byte[] consumedMessageSerialized = messages.get(0).getValue();
+        final String deserializedConsumedMessage = new String(consumedMessageSerialized);
+
+        // and it matches the serialized email-send object sent
+        final AvroSerializer<EmailSend> serializer = serializerFactory.getGenericRecordSerializer(EmailSend.class);
+        final byte[] serializedEmail = serializer.toBinary(email);
+        final String deserializedEmail = new String(serializedEmail);
+
+        assertEquals(deserializedConsumedMessage, deserializedEmail);
+    }
+
+    @Test
+    void testSendMissingItemDeliveryOrderConfirmationMessageToKafkaTopic() throws Exception {
+
+        // Given an EmailSend object is created
+        final MissingImageDeliveryOrderConfirmation confirmation = new MissingImageDeliveryOrderConfirmation();
+        confirmation.setTo("nobody@nowhere.com");
+
+        confirmation.setForename("Jenny");
+        confirmation.setSurname("Wilson");
+
+        confirmation.setAddressLine1("Kemp House Capital Office");
+        confirmation.setAddressLine2("LTD");
+        confirmation.setHouseName("Kemp House");
+        confirmation.setHouseNumberStreetName("152-160 City Road");
+        confirmation.setCity("London");
+        confirmation.setPostCode("EC1V 2NX");
+        confirmation.setOrderReferenceNumber(ORDER_REFERENCE);
+        confirmation.setEmailAddress("mail@globaloffshore.com");
+        // TODO GCI-1072 This should not be part of a MID confirmation confirmation.setDeliveryMethod("Standard delivery");
+        confirmation.setTimeOfPayment(TIME_OF_PAYMENT_FORMATTER.format(LocalDateTime.now()));
+        confirmation.setPaymentReference("RS5VSNDRE");
+        confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
+        confirmation.setCompanyNumber("11260147");
+        final MissingImage missingImage = new MissingImage();
+        // TODO GCI-1072 Date format?
+        missingImage.setDateFiled("15 Feb 2018");
+        missingImage.setDescription("Appointment of Ms Sharon Michelle White as a director on 4 February 2020");
+        // TODO GCI-1072 Make sure this is the right fee
+        missingImage.setFee("3");
+        missingImage.setType("AP01");
+
+
+        final EmailSend email = new EmailSend();
+        email.setAppId("item-handler.missing-image-delivery-order-confirmation");
+        email.setEmailAddress("test@test.com");
+        email.setMessageId(UUID.randomUUID().toString());
+        email.setMessageType("missing_image_delivery_order_confirmation_email");
         email.setData(objectMapper.writeValueAsString(confirmation));
         email.setCreatedAt(LocalDateTime.now().toString());
 
