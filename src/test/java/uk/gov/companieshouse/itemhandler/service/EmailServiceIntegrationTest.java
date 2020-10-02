@@ -9,10 +9,10 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -38,7 +38,7 @@ public class EmailServiceIntegrationTest {
     private OrderDataToCertificateOrderConfirmationMapper orderToCertificateConfirmationMapper;
 
     @MockBean
-    private OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyConfirmationMapper;
+    private OrderDataToItemOrderConfirmationMapper orderToCertifiedCopyConfirmationMapper;
 
     @MockBean
     private ObjectMapper objectMapper;
@@ -59,7 +59,7 @@ public class EmailServiceIntegrationTest {
     private CertificateOrderConfirmation certificateOrderConfirmation;
 
     @MockBean
-    private CertifiedCopyOrderConfirmation certifiedCopyOrderConfirmation;
+    private ItemOrderConfirmation itemOrderConfirmation;
 
     @Test
     @DisplayName("EmailService sets the to line on the confirmation to the configured " +
@@ -85,7 +85,7 @@ public class EmailServiceIntegrationTest {
     void usesConfiguredRecipientValueForCertifiedCopy() throws Exception {
 
         // Given
-        when(orderToCertifiedCopyConfirmationMapper.orderToConfirmation(order)).thenReturn(certifiedCopyOrderConfirmation);
+        when(orderToCertifiedCopyConfirmationMapper.orderToConfirmation(order)).thenReturn(itemOrderConfirmation);
 
         // When
         when(order.getItems()).thenReturn(items);
@@ -94,6 +94,6 @@ public class EmailServiceIntegrationTest {
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
-        verify(certifiedCopyOrderConfirmation).setTo("certified-copy-handler@nowhere.com");
+        verify(itemOrderConfirmation).setTo("certified-copy-handler@nowhere.com");
     }
 }
