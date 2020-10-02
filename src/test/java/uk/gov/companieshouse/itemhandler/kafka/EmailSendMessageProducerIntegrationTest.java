@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 
 @SpringBootTest
 @DirtiesContext
-// TODO GCI-1072 Revert to embedded kafka @EmbeddedKafka
+@EmbeddedKafka
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
         "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
 class EmailSendMessageProducerIntegrationTest {
