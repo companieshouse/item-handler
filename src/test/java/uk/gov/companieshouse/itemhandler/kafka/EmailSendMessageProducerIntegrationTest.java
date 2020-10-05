@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +50,8 @@ class EmailSendMessageProducerIntegrationTest {
     ObjectMapper objectMapper;
 
     @Test
-    void testCertificateOrderConfirmationMessageToKafkaTopic() throws Exception {
+    @DisplayName("Can send certificate order confirmation to email-send")
+    void testSendCertificateOrderConfirmationMessageToKafkaTopic() throws Exception {
 
         // Given an EmailSend object is created
         final CertificateOrderConfirmation confirmation = new CertificateOrderConfirmation();
@@ -106,7 +108,8 @@ class EmailSendMessageProducerIntegrationTest {
     }
 
     @Test
-    void testSendMissingItemDeliveryOrderConfirmationMessageToKafkaTopic() throws Exception {
+    @DisplayName("Can send missing image delivery order confirmation to email-send")
+    void testSendMissingImageDeliveryOrderConfirmationMessageToKafkaTopic() throws Exception {
 
         // Given an EmailSend object is created
         final MissingImageDeliveryOrderConfirmation confirmation = new MissingImageDeliveryOrderConfirmation();
