@@ -10,6 +10,7 @@ import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 
@@ -18,7 +19,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 /**
- * Communicates with <code>chs-email-sender</code> via the ` <code>send-email</code> Kafka topic to
+ * Communicates with <code>chs-email-sender</code> via the <code>send-email</code> Kafka topic to
  * trigger the sending of emails.
  */
 @Service
@@ -32,8 +33,14 @@ public class EmailService {
             "item-handler.certified-copy-order-confirmation";
     private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
+    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
+            "item-handler.missing-image-delivery-order-confirmation";
+    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+            "missing_image_delivery_order_confirmation_email";
     private static final String ITEM_TYPE_CERTIFICATE = "certificate";
     private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
+    private static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+
     /**
      * This email address is supplied only to satisfy Avro contract.
      */
@@ -41,6 +48,7 @@ public class EmailService {
 
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
     private final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
+    private final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
 
@@ -48,13 +56,18 @@ public class EmailService {
     private String certificateOrderRecipient;
     @Value("${certified-copy.order.confirmation.recipient}")
     private String certifiedCopyOrderRecipient;
+    @Value("${missing-image-delivery.order.confirmation.recipient}")
+    private String missingImageDeliveryOrderRecipient;
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,
+            final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
+        this.orderDataToMissingImageDeliveryOrderConfirmationMapper
+                 = orderDataToMissingImageDeliveryOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
     }
@@ -74,15 +87,23 @@ public class EmailService {
         OrderConfirmation confirmation = getOrderConfirmation(order);
         final EmailSend email = new EmailSend();
 
-        if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
-            confirmation.setTo(certificateOrderRecipient);
-            email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
-            email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-        }
-        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
-            confirmation.setTo(certifiedCopyOrderRecipient);
-            email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
-            email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+        // TODO GCI-1072 Handle unknown type
+        switch (descriptionId) {
+            case ITEM_TYPE_CERTIFICATE:
+                confirmation.setTo(certificateOrderRecipient);
+                email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                break;
+            case ITEM_TYPE_CERTIFIED_COPY:
+                confirmation.setTo(certifiedCopyOrderRecipient);
+                email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                break;
+            case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
+                confirmation.setTo(missingImageDeliveryOrderRecipient);
+                email.setAppId(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                break;
         }
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -100,8 +121,10 @@ public class EmailService {
         if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
             return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
         }
-        else {
+        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
             return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
+        } else {
+            return orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(orderData);
         }
     }
 }

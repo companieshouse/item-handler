@@ -16,9 +16,7 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
-public class EmailSendMessageFactoryTest {
+class EmailSendMessageFactoryTest {
     @Autowired
     private SerializerFactory serializerFactory;
     @Autowired

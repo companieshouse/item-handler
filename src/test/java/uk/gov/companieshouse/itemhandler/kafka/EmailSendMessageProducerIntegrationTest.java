@@ -28,8 +28,6 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
 class EmailSendMessageProducerIntegrationTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";

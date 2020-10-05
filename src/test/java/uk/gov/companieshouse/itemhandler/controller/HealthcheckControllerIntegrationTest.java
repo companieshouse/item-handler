@@ -15,15 +15,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @SpringBootTest
 @EmbeddedKafka
-@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
 class HealthcheckControllerIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     @DisplayName("Successfully returns health status")
-    public void returnHealthStatusSuccessfully() throws Exception {
+    void returnHealthStatusSuccessfully() throws Exception {
         mockMvc.perform(get("/healthcheck"))
                 .andExpect(status().isOk());
     }
