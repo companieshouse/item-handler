@@ -8,13 +8,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
+// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
+// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -120,22 +120,23 @@ class EmailServiceIntegrationTest {
         verify(itemOrderConfirmation).setTo("missing-image-delivery-handlder@nowhere.com");
     }
 
-    @Test
-    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
-            "missing-image-delivery.order.confirmation.recipient value")
-    void usesConfiguredRecipientValueForMissingImageDelivery() throws Exception {
-
-        // Given
-        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order))
-                .thenReturn(missingImageDeliveryOrderConfirmation);
-
-        // When
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
-        emailServiceUnderTest.sendOrderConfirmation(order);
-
-        // Then
-        verify(missingImageDeliveryOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
-    }
+// TODO GCI-1072 Do we need this?
+//    @Test
+//    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
+//            "missing-image-delivery.order.confirmation.recipient value")
+//    void usesConfiguredRecipientValueForMissingImageDelivery() throws Exception {
+//
+//        // Given
+//        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order))
+//                .thenReturn(missingImageDeliveryOrderConfirmation);
+//
+//        // When
+//        when(order.getItems()).thenReturn(items);
+//        when(items.get(0)).thenReturn(item);
+//        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
+//        emailServiceUnderTest.sendOrderConfirmation(order);
+//
+//        // Then
+//        verify(missingImageDeliveryOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
+//    }
 }
