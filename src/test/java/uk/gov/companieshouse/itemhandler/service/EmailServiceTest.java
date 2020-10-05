@@ -15,6 +15,7 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
@@ -47,6 +48,7 @@ class EmailServiceTest {
     private final static String ITEM_TYPE_CERTIFICATE = "certificate";
     private final static String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     private final static String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+    private final static String ITEM_TYPE_UNKNOWN = "unknown";
 
     @InjectMocks
     private EmailService emailServiceUnderTest;
@@ -187,6 +189,24 @@ class EmailServiceTest {
         assertThat(emailSent.getData(), is(EMAIL_CONTENT));
         assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+    }
+
+    @Test
+    @DisplayName("Errors clearly for unknown description ID value (item type)")
+    void errorsClearlyForUnknownItemType() {
+
+        // Given
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_UNKNOWN);
+        when(order.getReference()).thenReturn("456");
+
+        // When and then
+        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+                emailServiceUnderTest.sendOrderConfirmation(order))
+                .withMessage("Unable to determine order confirmation type from description ID unknown!")
+                .withNoCause();
+
     }
 
     @Test

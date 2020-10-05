@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -13,8 +14,10 @@ import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderCon
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
+import uk.gov.companieshouse.logging.Logger;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -24,6 +27,8 @@ import java.util.concurrent.ExecutionException;
  */
 @Service
 public class EmailService {
+
+    private static final Logger LOGGER = LoggingUtils.getLogger();
 
     private static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certificate-order-confirmation";
@@ -87,7 +92,6 @@ public class EmailService {
         OrderConfirmation confirmation = getOrderConfirmation(order);
         final EmailSend email = new EmailSend();
 
-        // TODO GCI-1072 Handle unknown type
         switch (descriptionId) {
             case ITEM_TYPE_CERTIFICATE:
                 confirmation.setTo(certificateOrderRecipient);
@@ -104,6 +108,12 @@ public class EmailService {
                 email.setAppId(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID);
                 email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 break;
+            default:
+                final Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(order.getReference());
+                final String error = "Unable to determine order confirmation type from description ID " +
+                        descriptionId + "!";
+                LOGGER.error(error, logMap);
+                throw new ServiceException(error);
         }
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -116,15 +126,22 @@ public class EmailService {
         producer.sendMessage(email, orderReference);
     }
 
-    private OrderConfirmation getOrderConfirmation(OrderData orderData) {
-        String descriptionId = orderData.getItems().get(0).getDescriptionIdentifier();
-        if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
-            return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
+    private OrderConfirmation getOrderConfirmation(final OrderData order) {
+        String descriptionId = order.getItems().get(0).getDescriptionIdentifier();
+        switch (descriptionId) {
+            case ITEM_TYPE_CERTIFICATE:
+                return orderToCertificateOrderConfirmationMapper.orderToConfirmation(order);
+            case ITEM_TYPE_CERTIFIED_COPY:
+                return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(order);
+            case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
+                return orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order);
+            default:
+                final Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(order.getReference());
+                final String error = "Unable to determine order confirmation type from description ID " +
+                        descriptionId + "!";
+                LOGGER.error(error, logMap);
+                throw new ServiceException(error);
         }
-        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
-            return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
-        } else {
-            return orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(orderData);
-        }
+
     }
 }
