@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.MissingImage;
@@ -124,7 +123,6 @@ class EmailSendMessageProducerIntegrationTest {
         confirmation.setPostCode("EC1V 2NX");
         confirmation.setOrderReferenceNumber(ORDER_REFERENCE);
         confirmation.setEmailAddress("mail@globaloffshore.com");
-        // TODO GCI-1072 This should not be part of a MID confirmation confirmation.setDeliveryMethod("Standard delivery");
         confirmation.setTimeOfPayment(TIME_OF_PAYMENT_FORMATTER.format(LocalDateTime.now()));
         confirmation.setPaymentReference("RS5VSNDRE");
         confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
@@ -136,7 +134,6 @@ class EmailSendMessageProducerIntegrationTest {
         // TODO GCI-1072 Make sure this is the right fee
         missingImage.setFee("3");
         missingImage.setType("AP01");
-
 
         final EmailSend email = new EmailSend();
         email.setAppId("item-handler.missing-image-delivery-order-confirmation");

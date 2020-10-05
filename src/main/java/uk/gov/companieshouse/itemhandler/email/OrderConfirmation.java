@@ -17,7 +17,6 @@ public abstract class OrderConfirmation {
     private String country;
     private String orderReferenceNumber;
     private String emailAddress;
-    private String deliveryMethod;
     private String timeOfPayment;
     private String paymentReference;
     private String companyName;
@@ -117,14 +116,6 @@ public abstract class OrderConfirmation {
 
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
-    }
-
-    public String getDeliveryMethod() {
-        return deliveryMethod;
-    }
-
-    public void setDeliveryMethod(String deliveryMethod) {
-        this.deliveryMethod = deliveryMethod;
     }
 
     public String getTimeOfPayment() {
