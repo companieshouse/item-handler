@@ -170,10 +170,17 @@ class EmailSendMessageProducerIntegrationTest {
         int count = 0;
         do {
             messages = testEmailSendMessageConsumer.pollConsumerGroup();
-            emailSendMessageProducerUnderTest.sendMessage(email, ORDER_REFERENCE);
+            sendMessageOnce(email, count);
             count++;
         } while (messages.isEmpty() && count < 15);
 
         return messages;
     }
+
+    private void sendMessageOnce(final EmailSend email, final int count) throws Exception {
+        if (count == 0) {
+            emailSendMessageProducerUnderTest.sendMessage(email, ORDER_REFERENCE);
+        }
+    }
+
 }
