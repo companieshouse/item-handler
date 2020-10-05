@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.itemhandler;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import org.junit.Rule;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.Test;
@@ -9,10 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.TestPropertySource;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
+        "certified-copy.order.confirmation.recipient = nobody@nowhere.com",
+        "missing-image-delivery.order.confirmation.recipient = nobody@nowhere.com"})
 class ItemHandlerApplicationTests {
 
     @Rule
@@ -24,6 +26,8 @@ class ItemHandlerApplicationTests {
             "CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT";
     private final String CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT =
             "CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT";
+    private final String MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT =
+            "MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT";
 
     @Test
     public void checkEnvironmentVariablesAllPresentReturnsTrue() {
@@ -31,11 +35,12 @@ class ItemHandlerApplicationTests {
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
         environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT, CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT, MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
 
         boolean present = ItemHandlerApplication.checkEnvironmentVariables();
         assertTrue(present);
         environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
-                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT, MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
     }
 
     @Test

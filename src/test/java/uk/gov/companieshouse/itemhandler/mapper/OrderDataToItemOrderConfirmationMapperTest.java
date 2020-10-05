@@ -16,6 +16,7 @@ import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
@@ -80,7 +81,7 @@ class OrderDataToItemOrderConfirmationMapperTest {
     }
 
     @Test
-    void orderToConfirmationBehavesAsExpected() {
+    void orderToConfirmationBehavesAsExpectedForCertifiedCopy() {
 
         // Given
         final OrderData order = new OrderData();
@@ -166,6 +167,67 @@ class OrderDataToItemOrderConfirmationMapperTest {
         assertThat(confirmation.getItemDetails().get(0).getDescription(),
                 is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
         assertThat(confirmation.getItemDetails().get(0).getFee(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedForMissingImageDelivery() {
+
+        // Given
+        final OrderData order = new OrderData();
+        order.setReference("ORD-108815-904831");
+        order.setPaymentReference("orderable_item_ORD-108815-904831");
+
+        final ActionedBy orderedBy = new ActionedBy();
+        orderedBy.setEmail("demo@ch.gov.uk");
+        order.setOrderedBy(orderedBy);
+
+        final Item item = new Item();
+        item.setCompanyName("THE COMPANY");
+        item.setCompanyNumber("00000001");
+        item.setKind("item#missing-image-delivery");
+        final MissingImageDeliveryItemOptions options = new MissingImageDeliveryItemOptions();
+        options.setFilingHistoryDate("2018-02-15");
+        options.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
+        options.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
+        options.setFilingHistoryId("MDA0NTE1MTk2MmFkaXF6a2N4");
+        options.setFilingHistoryType("AP01");
+
+        List<ItemCosts> itemCosts = new ArrayList<>();
+        ItemCosts itemCost = new ItemCosts();
+        itemCost.setItemCost("3");
+        itemCost.setDiscountApplied("0");
+        itemCost.setCalculatedCost("3");
+        itemCosts.add(itemCost);
+
+        item.setItemOptions(options);
+        item.setItemCosts(itemCosts);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("3");
+
+        // When
+        when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
+            .thenReturn("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
+        final ItemOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertThat(confirmation.getTo(), is(nullValue()));
+
+        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
+        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+
+        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+
+        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
+        assertThat(confirmation.getCompanyNumber(), is("00000001"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getTotalFee(), is("3"));
+
+        assertThat(confirmation.getItemDetails().get(0).getDateFiled(), is("15 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getType(), is("AP01"));
+        assertThat(confirmation.getItemDetails().get(0).getDescription(),
+            is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getFee(), is("3"));
     }
 
     @Test

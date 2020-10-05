@@ -72,8 +72,11 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
         List<ItemCosts> itemCosts = item.getItemCosts();
         List<ItemDetails> itemDetails = new ArrayList<>();
         ItemDetails details = new ItemDetails();
-        details.setDateFiled(midItemOptions.getFilingHistoryDate());
-        details.setDescription(midItemOptions.getFilingHistoryDescription());
+        details.setDateFiled(reformatDateFiled(midItemOptions.getFilingHistoryDate()));
+        details.setDescription(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(
+            midItemOptions.getFilingHistoryDescription(),
+            midItemOptions.getFilingHistoryDescriptionValues()
+        ));
         details.setType(midItemOptions.getFilingHistoryType());
         details.setFee(itemCosts.get(0).getCalculatedCost());
         itemDetails.add(details);

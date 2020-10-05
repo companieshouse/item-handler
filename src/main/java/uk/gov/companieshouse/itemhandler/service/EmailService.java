@@ -34,8 +34,8 @@ public class EmailService {
             "certified_copy_order_confirmation_email";
     private static final String MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID =
             "item-handler.missing-image-delivery-order-confirmation";
-    private static final String MISSING_IMAGE_DELIVERY_NOTIFICATION_API_MESSAGE_TYPE =
-            "missing_image_delivery_confirmation_email";
+    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+            "missing_image_delivery_order_confirmation_email";
     private static final String ITEM_TYPE_CERTIFICATE = "certificate";
     private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     /**
@@ -44,7 +44,7 @@ public class EmailService {
     private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
-    private final OrderDataToItemOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
+    private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
 
@@ -57,10 +57,10 @@ public class EmailService {
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
-            final OrderDataToItemOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,
+            final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
-        this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
+        this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
     }
@@ -92,7 +92,7 @@ public class EmailService {
         } else {
             confirmation.setTo(missingImageDeliveryOrderRecipient);
             email.setAppId(MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID);
-            email.setMessageType(MISSING_IMAGE_DELIVERY_NOTIFICATION_API_MESSAGE_TYPE);
+            email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
         }
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -110,11 +110,8 @@ public class EmailService {
         if (descriptionId.equals(ITEM_TYPE_CERTIFICATE)) {
             return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
         }
-        else if (descriptionId.equals(ITEM_TYPE_CERTIFIED_COPY)) {
-            return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
-        }
         else {
-            return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
+            return orderToItemOrderConfirmationMapper.orderToConfirmation(orderData);
         }
     }
 }
