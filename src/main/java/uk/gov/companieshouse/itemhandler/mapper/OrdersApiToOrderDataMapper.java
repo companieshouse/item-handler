@@ -9,10 +9,12 @@ import uk.gov.companieshouse.api.model.order.item.BaseItemApi;
 import uk.gov.companieshouse.api.model.order.item.BaseItemOptionsApi;
 import uk.gov.companieshouse.api.model.order.item.CertificateItemOptionsApi;
 import uk.gov.companieshouse.api.model.order.item.CertifiedCopyItemOptionsApi;
+import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryItemOptionsApi;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 @Mapper(componentModel = "spring")
@@ -37,11 +39,14 @@ public interface OrdersApiToOrderDataMapper {
         if (itemKind.equals(ItemType.CERTIFICATE.getKind())) {
             item.setItemOptions(apiToCertificateItemOptions((CertificateItemOptionsApi) baseItemOptionsApi));
         }
-        else {
+        else if (itemKind.equals(ItemType.CERTIFIED_COPY.getKind())){
             item.setItemOptions(apiToCertifiedCopyItemOptions((CertifiedCopyItemOptionsApi) baseItemOptionsApi));
+        } else {
+            item.setItemOptions(apiToMissingImageDeliveryOptions((MissingImageDeliveryItemOptionsApi) baseItemOptionsApi));
         }
     }
 
     CertificateItemOptions apiToCertificateItemOptions(CertificateItemOptionsApi certificateItemOptionsApi);
     CertifiedCopyItemOptions apiToCertifiedCopyItemOptions(CertifiedCopyItemOptionsApi certifiedCopyItemOptionsApi);
+    MissingImageDeliveryItemOptions apiToMissingImageDeliveryOptions(MissingImageDeliveryItemOptionsApi missingImageDeliveryItemOptionsApi);
 }

@@ -12,6 +12,7 @@ import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.logging.Logger;
@@ -65,6 +66,7 @@ public class EmailService {
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
     private final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
     private final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper;
+    private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
 
@@ -79,11 +81,13 @@ public class EmailService {
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,
             final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper,
+            final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
         this.orderDataToMissingImageDeliveryOrderConfirmationMapper
                  = orderDataToMissingImageDeliveryOrderConfirmationMapper;
+        this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
     }
