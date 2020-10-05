@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka
+
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
         "certified-copy.order.confirmation.recipient = nobody@nowhere.com",
         "missing-image-delivery.order.confirmation.recipient = nobody@nowhere.com"})
@@ -33,40 +34,98 @@ class ItemHandlerApplicationTests {
     public void checkEnvironmentVariablesAllPresentReturnsTrue() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
-        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
-        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT, CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
-        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT, MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
 
         boolean present = ItemHandlerApplication.checkEnvironmentVariables();
         assertTrue(present);
-        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
-                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT, MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
     }
 
     @Test
     public void checkEnvironmentVariablesChsApiKeyMissingReturnsFalse() {
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
-        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+
         boolean present = ItemHandlerApplication.checkEnvironmentVariables();
         assertFalse(present);
-        environmentVariables.clear(IS_ERROR_QUEUE_CONSUMER, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.clear(IS_ERROR_QUEUE_CONSUMER,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
     }
 
     @Test
     public void checkEnvironmentVariablesIsErrorQueueConsumerMissingReturnsFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
-        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+
         boolean present = ItemHandlerApplication.checkEnvironmentVariables();
         assertFalse(present);
-        environmentVariables.clear(CHS_API_KEY, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.clear(CHS_API_KEY, CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
     }
 
     @Test
     public void checkEnvironmentVariablesCertificateOrderConfirmationRecipientMissingReturnFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
+        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
         boolean present = ItemHandlerApplication.checkEnvironmentVariables();
         assertFalse(present);
-        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER);
+        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+    }
+
+    @Test
+    public void checkEnvironmentVariablesCertifiedCopyOrderConfirmationRecipientMissingReturnsFalse() {
+        environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
+        environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
+        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+        boolean present = ItemHandlerApplication.checkEnvironmentVariables();
+        assertFalse(present);
+        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT);
+    }
+
+    @Test
+    public void checkEnvironmentVariablesMissingImageDeliveryOrderConfirmationRecipientMissingReturnsFalse() {
+        environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
+        environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
+        environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
+        environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
+        boolean present = ItemHandlerApplication.checkEnvironmentVariables();
+        assertFalse(present);
+        environmentVariables.clear(CHS_API_KEY, IS_ERROR_QUEUE_CONSUMER,
+                CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
+                CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT);
     }
 }
