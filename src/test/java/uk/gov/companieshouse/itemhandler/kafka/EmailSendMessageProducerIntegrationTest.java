@@ -26,7 +26,8 @@ import static org.junit.Assert.assertEquals;
 @DirtiesContext
 @EmbeddedKafka
 @TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
+    "certified-copy.order.confirmation.recipient = nobody@nowhere.com",
+    "missing-image-delivery.order.confirmation.recipient = nobody@nowhere.com"})
 public class EmailSendMessageProducerIntegrationTest {
 
     private static final String ORDER_REFERENCE = "ORD-432118-793830";

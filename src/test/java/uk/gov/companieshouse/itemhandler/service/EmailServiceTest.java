@@ -12,10 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -30,7 +30,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +42,7 @@ class EmailServiceTest {
     private static final String TEST_EXCEPTION_MESSAGE = "Test message!";
     private final static String ITEM_TYPE_CERTIFICATE = "certificate";
     private final static String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
+    private final static String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
 
     @InjectMocks
     private EmailService emailServiceUnderTest;
@@ -51,7 +51,7 @@ class EmailServiceTest {
     private OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
 
     @Mock
-    private OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
+    private OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -72,7 +72,7 @@ class EmailServiceTest {
     private CertificateOrderConfirmation certificateOrderConfirmation;
 
     @Mock
-    private CertifiedCopyOrderConfirmation certifiedCopyOrderConfirmation;
+    private ItemOrderConfirmation itemOrderConfirmation;
 
     @Captor
     ArgumentCaptor<EmailSend> emailCaptor;
@@ -125,10 +125,10 @@ class EmailServiceTest {
 
         // Given
         final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(order))
-                .thenReturn(certifiedCopyOrderConfirmation);
-        when(objectMapper.writeValueAsString(certifiedCopyOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certifiedCopyOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
+        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order))
+                .thenReturn(itemOrderConfirmation);
+        when(objectMapper.writeValueAsString(itemOrderConfirmation)).thenReturn(EMAIL_CONTENT);
+        when(itemOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
@@ -146,6 +146,34 @@ class EmailServiceTest {
         assertThat(emailSent.getData(), is(EMAIL_CONTENT));
         assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+    }
+
+    @Test void sendMissingImageDeliveryOrderConfirmation() throws Exception {
+
+        // Given
+        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order))
+            .thenReturn(itemOrderConfirmation);
+        when(objectMapper.writeValueAsString(itemOrderConfirmation)).thenReturn(EMAIL_CONTENT);
+        when(itemOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
+
+        // When
+        emailServiceUnderTest.sendOrderConfirmation(order);
+        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
+
+        // Then
+        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
+        final EmailSend emailSent = emailCaptor.getValue();
+        assertThat(emailSent.getAppId(), is("item-handler.missing-image-delivery-order-confirmation"));
+        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
+        assertThat(emailSent.getMessageType(), is("missing_image_delivery_order_confirmation_email"));
+        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
+        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
+        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+
     }
 
     @Test

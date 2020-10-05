@@ -9,7 +9,7 @@ import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 
@@ -32,6 +32,10 @@ public class EmailService {
             "item-handler.certified-copy-order-confirmation";
     private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
+    private static final String MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID =
+            "item-handler.missing-image-delivery-order-confirmation";
+    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+            "missing_image_delivery_order_confirmation_email";
     private static final String ITEM_TYPE_CERTIFICATE = "certificate";
     private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     /**
@@ -40,7 +44,7 @@ public class EmailService {
     private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
-    private final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
+    private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
 
@@ -48,13 +52,15 @@ public class EmailService {
     private String certificateOrderRecipient;
     @Value("${certified-copy.order.confirmation.recipient}")
     private String certifiedCopyOrderRecipient;
+    @Value("${missing-image-delivery.order.confirmation.recipient}")
+    private String missingImageDeliveryOrderRecipient;
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
-            final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,
+            final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
-        this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
+        this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
     }
@@ -83,6 +89,10 @@ public class EmailService {
             confirmation.setTo(certifiedCopyOrderRecipient);
             email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
             email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+        } else {
+            confirmation.setTo(missingImageDeliveryOrderRecipient);
+            email.setAppId(MISSING_IMAGE_DELIVERY_NOTIFICATION_API_APP_ID);
+            email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
         }
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -101,7 +111,7 @@ public class EmailService {
             return orderToCertificateOrderConfirmationMapper.orderToConfirmation(orderData);
         }
         else {
-            return orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(orderData);
+            return orderToItemOrderConfirmationMapper.orderToConfirmation(orderData);
         }
     }
 }
