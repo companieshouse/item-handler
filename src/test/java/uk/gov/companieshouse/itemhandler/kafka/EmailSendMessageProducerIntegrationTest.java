@@ -134,6 +134,7 @@ class EmailSendMessageProducerIntegrationTest {
         // TODO GCI-1072 Make sure this is the right fee
         missingImage.setFee("3");
         missingImage.setType("AP01");
+        confirmation.setMissingImage(missingImage);
 
         final EmailSend email = new EmailSend();
         email.setAppId("item-handler.missing-image-delivery-order-confirmation");
