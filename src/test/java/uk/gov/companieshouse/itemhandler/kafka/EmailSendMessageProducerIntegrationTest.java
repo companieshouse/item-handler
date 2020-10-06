@@ -129,10 +129,8 @@ class EmailSendMessageProducerIntegrationTest {
         confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
         confirmation.setCompanyNumber("11260147");
         final ItemDetails missingImage = new ItemDetails();
-        // TODO GCI-1072 Date format?
         missingImage.setDateFiled("15 Feb 2018");
         missingImage.setDescription("Appointment of Ms Sharon Michelle White as a director on 4 February 2020");
-        // TODO GCI-1072 Make sure this is the right fee
         missingImage.setFee("3");
         missingImage.setType("AP01");
         confirmation.setItemDetails(singletonList(missingImage));
