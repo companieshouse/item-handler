@@ -13,10 +13,7 @@ import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirma
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
-// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -42,10 +39,6 @@ class EmailServiceIntegrationTest {
 
     @MockBean
     private OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
-
-    @MockBean
-    private OrderDataToMissingImageDeliveryOrderConfirmationMapper
-            orderDataToMissingImageDeliveryOrderConfirmationMapper;
 
     @MockBean
     private ObjectMapper objectMapper;

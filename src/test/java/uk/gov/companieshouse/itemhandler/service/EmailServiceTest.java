@@ -19,8 +19,6 @@ import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -60,9 +58,6 @@ class EmailServiceTest {
 
     @Mock
     private OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
-
-    @Mock
-    private OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -193,36 +188,6 @@ class EmailServiceTest {
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
 
     }
-
-// TODO GCI-1072 Do we need this?
-//    @Test
-//    @DisplayName("Sends missing image delivery order confirmation successfully")
-//    void sendsMissingImageDeliveryOrderConfirmation() throws Exception {
-//
-//        // Given
-//        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-//        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order))
-//                .thenReturn(missingImageDeliveryOrderConfirmation);
-//        when(objectMapper.writeValueAsString(missingImageDeliveryOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-//        when(missingImageDeliveryOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
-//        when(order.getItems()).thenReturn(items);
-//        when(items.get(0)).thenReturn(item);
-//        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
-//
-//        // When
-//        emailServiceUnderTest.sendOrderConfirmation(order);
-//        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
-//
-//        // Then
-//        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-//        final EmailSend emailSent = emailCaptor.getValue();
-//        assertThat(emailSent.getAppId(), is("item-handler.missing-image-delivery-order-confirmation"));
-//        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-//        assertThat(emailSent.getMessageType(), is("missing_image_delivery_order_confirmation_email"));
-//        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-//        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-//        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
-//    }
 
     @Test
     @DisplayName("Errors clearly for unknown description ID value (item type)")
