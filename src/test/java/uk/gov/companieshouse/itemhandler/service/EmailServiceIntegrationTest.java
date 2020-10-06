@@ -114,23 +114,4 @@ class EmailServiceIntegrationTest {
         verify(itemOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
     }
 
-// TODO GCI-1072 Do we need this?
-//    @Test
-//    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
-//            "missing-image-delivery.order.confirmation.recipient value")
-//    void usesConfiguredRecipientValueForMissingImageDelivery() throws Exception {
-//
-//        // Given
-//        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order))
-//                .thenReturn(missingImageDeliveryOrderConfirmation);
-//
-//        // When
-//        when(order.getItems()).thenReturn(items);
-//        when(items.get(0)).thenReturn(item);
-//        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
-//        emailServiceUnderTest.sendOrderConfirmation(order);
-//
-//        // Then
-//        verify(missingImageDeliveryOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
-//    }
 }
