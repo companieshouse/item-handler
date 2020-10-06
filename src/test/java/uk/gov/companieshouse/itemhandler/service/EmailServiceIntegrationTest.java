@@ -16,6 +16,7 @@ import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfi
 // TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
 // TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -41,6 +42,10 @@ class EmailServiceIntegrationTest {
 
     @MockBean
     private OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
+
+    @MockBean
+    private OrderDataToMissingImageDeliveryOrderConfirmationMapper
+            orderDataToMissingImageDeliveryOrderConfirmationMapper;
 
     @MockBean
     private ObjectMapper objectMapper;
@@ -108,7 +113,8 @@ class EmailServiceIntegrationTest {
     void usesConfiguredRecipientValueForMissingImageDelivery() throws Exception {
 
         // Given
-        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order)).thenReturn(itemOrderConfirmation);
+        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order)).
+                thenReturn(missingImageDeliveryOrderConfirmation);
 
         // When
         when(order.getItems()).thenReturn(items);
@@ -117,7 +123,7 @@ class EmailServiceIntegrationTest {
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
-        verify(itemOrderConfirmation).setTo("missing-image-delivery-handlder@nowhere.com");
+        verify(missingImageDeliveryOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
     }
 
 // TODO GCI-1072 Do we need this?
