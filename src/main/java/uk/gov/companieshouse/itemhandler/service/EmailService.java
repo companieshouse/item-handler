@@ -141,7 +141,7 @@ public class EmailService {
                 email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
-                confirmation = orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order);
+                confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
                 confirmation.setTo(missingImageDeliveryOrderRecipient);
                 email.setAppId(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID);
                 email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);

@@ -113,8 +113,8 @@ class EmailServiceIntegrationTest {
     void usesConfiguredRecipientValueForMissingImageDelivery() throws Exception {
 
         // Given
-        when(orderDataToMissingImageDeliveryOrderConfirmationMapper.orderToConfirmation(order)).
-                thenReturn(missingImageDeliveryOrderConfirmation);
+        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order)).
+                thenReturn(itemOrderConfirmation);
 
         // When
         when(order.getItems()).thenReturn(items);
@@ -123,7 +123,7 @@ class EmailServiceIntegrationTest {
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
-        verify(missingImageDeliveryOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
+        verify(itemOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");
     }
 
 // TODO GCI-1072 Do we need this?
