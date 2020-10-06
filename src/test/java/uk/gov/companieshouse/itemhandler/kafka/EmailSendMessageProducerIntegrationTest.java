@@ -9,8 +9,8 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.MissingImage;
-import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.ItemDetails;
+import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -109,7 +110,7 @@ class EmailSendMessageProducerIntegrationTest {
     void testSendMissingImageDeliveryOrderConfirmationMessageToKafkaTopic() throws Exception {
 
         // Given an EmailSend object is created
-        final MissingImageDeliveryOrderConfirmation confirmation = new MissingImageDeliveryOrderConfirmation();
+        final ItemOrderConfirmation confirmation = new ItemOrderConfirmation();
         confirmation.setTo("nobody@nowhere.com");
 
         confirmation.setForename("Jenny");
@@ -127,14 +128,14 @@ class EmailSendMessageProducerIntegrationTest {
         confirmation.setPaymentReference("RS5VSNDRE");
         confirmation.setCompanyName("GLOBAL OFFSHORE HOST LIMITED");
         confirmation.setCompanyNumber("11260147");
-        final MissingImage missingImage = new MissingImage();
+        final ItemDetails missingImage = new ItemDetails();
         // TODO GCI-1072 Date format?
         missingImage.setDateFiled("15 Feb 2018");
         missingImage.setDescription("Appointment of Ms Sharon Michelle White as a director on 4 February 2020");
         // TODO GCI-1072 Make sure this is the right fee
         missingImage.setFee("3");
         missingImage.setType("AP01");
-        confirmation.setMissingImage(missingImage);
+        confirmation.setItemDetails(singletonList(missingImage));
 
         final EmailSend email = new EmailSend();
         email.setAppId("item-handler.missing-image-delivery-order-confirmation");

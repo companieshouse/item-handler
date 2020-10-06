@@ -8,8 +8,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -60,9 +58,6 @@ class EmailServiceIntegrationTest {
 
     @MockBean
     private ItemOrderConfirmation itemOrderConfirmation;
-
-    @MockBean
-    private MissingImageDeliveryOrderConfirmation missingImageDeliveryOrderConfirmation;
 
     @Test
     @DisplayName("EmailService sets the to line on the confirmation to the configured " +

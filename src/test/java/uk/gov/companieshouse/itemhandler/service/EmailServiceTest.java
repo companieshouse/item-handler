@@ -13,10 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-// TODO GCI-1072 Do we need this? import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.MissingImageDeliveryOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
@@ -34,7 +32,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,9 +76,6 @@ class EmailServiceTest {
 
     @Mock
     private ItemOrderConfirmation itemOrderConfirmation;
-
-    @Mock
-    private MissingImageDeliveryOrderConfirmation missingImageDeliveryOrderConfirmation;
 
     @Captor
     ArgumentCaptor<EmailSend> emailCaptor;
