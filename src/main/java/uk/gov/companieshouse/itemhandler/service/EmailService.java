@@ -10,7 +10,7 @@ import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
-// TODO Remove? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
+// TODO GCI-1072 Remove? import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertifiedCopyOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToMissingImageDeliveryOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -64,7 +64,7 @@ public class EmailService {
     }
 
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
-    // TODO Remove? private final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
+    // TODO GCI-1072 Remove? private final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper;
     private final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper;
     private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
@@ -79,12 +79,12 @@ public class EmailService {
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
-            /* TODO Remove? final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,*/
+            /* TODO GCI-1072 Remove? final OrderDataToCertifiedCopyOrderConfirmationMapper orderToCertifiedCopyOrderConfirmationMapper,*/
             final OrderDataToMissingImageDeliveryOrderConfirmationMapper orderDataToMissingImageDeliveryOrderConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
-        // TODO Remove? this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
+        // TODO GCI-1072 Remove? this.orderToCertifiedCopyOrderConfirmationMapper = orderToCertifiedCopyOrderConfirmationMapper;
         this.orderDataToMissingImageDeliveryOrderConfirmationMapper
                  = orderDataToMissingImageDeliveryOrderConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
@@ -134,7 +134,7 @@ public class EmailService {
                 email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
-                //confirmation = orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(order);
+                // TODO GCI-1072 Which? confirmation = orderToCertifiedCopyOrderConfirmationMapper.orderToConfirmation(order);
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
                 confirmation.setTo(certifiedCopyOrderRecipient);
                 email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
