@@ -5,17 +5,12 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.TestPropertySource;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @EmbeddedKafka
-
-@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com",
-        "missing-image-delivery.order.confirmation.recipient = nobody@nowhere.com"})
 class ItemHandlerApplicationTests {
 
     @Rule
@@ -31,7 +26,7 @@ class ItemHandlerApplicationTests {
             "MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT";
 
     @Test
-    public void checkEnvironmentVariablesAllPresentReturnsTrue() {
+    void checkEnvironmentVariablesAllPresentReturnsTrue() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
@@ -50,7 +45,7 @@ class ItemHandlerApplicationTests {
     }
 
     @Test
-    public void checkEnvironmentVariablesChsApiKeyMissingReturnsFalse() {
+    void checkEnvironmentVariablesChsApiKeyMissingReturnsFalse() {
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
                 CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
@@ -68,7 +63,7 @@ class ItemHandlerApplicationTests {
     }
 
     @Test
-    public void checkEnvironmentVariablesIsErrorQueueConsumerMissingReturnsFalse() {
+    void checkEnvironmentVariablesIsErrorQueueConsumerMissingReturnsFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
                 CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT);
@@ -85,7 +80,7 @@ class ItemHandlerApplicationTests {
     }
 
     @Test
-    public void checkEnvironmentVariablesCertificateOrderConfirmationRecipientMissingReturnFalse() {
+    void checkEnvironmentVariablesCertificateOrderConfirmationRecipientMissingReturnFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT,
@@ -100,7 +95,7 @@ class ItemHandlerApplicationTests {
     }
 
     @Test
-    public void checkEnvironmentVariablesCertifiedCopyOrderConfirmationRecipientMissingReturnsFalse() {
+    void checkEnvironmentVariablesCertifiedCopyOrderConfirmationRecipientMissingReturnsFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,
@@ -115,7 +110,7 @@ class ItemHandlerApplicationTests {
     }
 
     @Test
-    public void checkEnvironmentVariablesMissingImageDeliveryOrderConfirmationRecipientMissingReturnsFalse() {
+    void checkEnvironmentVariablesMissingImageDeliveryOrderConfirmationRecipientMissingReturnsFalse() {
         environmentVariables.set(CHS_API_KEY, CHS_API_KEY);
         environmentVariables.set(IS_ERROR_QUEUE_CONSUMER, IS_ERROR_QUEUE_CONSUMER);
         environmentVariables.set(CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT,

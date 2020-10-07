@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.common.errors.SerializationException;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
@@ -43,6 +45,7 @@ class EmailServiceTest {
     private final static String ITEM_TYPE_CERTIFICATE = "certificate";
     private final static String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     private final static String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+    private final static String ITEM_TYPE_UNKNOWN = "unknown";
 
     @InjectMocks
     private EmailService emailServiceUnderTest;
@@ -94,6 +97,7 @@ class EmailServiceTest {
     }
 
     @Test
+    @DisplayName("Sends certificate order confirmation successfully")
     void sendsCertificateOrderConfirmation() throws Exception {
 
         // Given
@@ -121,6 +125,7 @@ class EmailServiceTest {
     }
 
     @Test
+    @DisplayName("Sends certified copy order confirmation successfully")
     void sendsCertifiedCopyOrderConfirmation() throws Exception {
 
         // Given
@@ -148,7 +153,9 @@ class EmailServiceTest {
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
     }
 
-    @Test void sendMissingImageDeliveryOrderConfirmation() throws Exception {
+    @Test
+    @DisplayName("Sends missing image delivery order confirmation successfully")
+    void sendMissingImageDeliveryOrderConfirmation() throws Exception {
 
         // Given
         final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
@@ -177,6 +184,25 @@ class EmailServiceTest {
     }
 
     @Test
+    @DisplayName("Errors clearly for unknown description ID value (item type)")
+    void errorsClearlyForUnknownItemType() {
+
+        // Given
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_UNKNOWN);
+        when(order.getReference()).thenReturn("456");
+
+        // When and then
+        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+                emailServiceUnderTest.sendOrderConfirmation(order))
+                .withMessage("Unable to determine order confirmation type from description ID unknown!")
+                .withNoCause();
+
+    }
+
+    @Test
+    @DisplayName("Propagates JsonProcessingException")
     void propagatesJsonProcessingException() throws Exception  {
 
         // Given
@@ -191,16 +217,19 @@ class EmailServiceTest {
     }
 
     @Test
+    @DisplayName("Propagates SerializationException")
     void propagatesSerializationException() throws Exception  {
         propagatesException(SerializationException::new, SerializationException.class);
     }
 
     @Test
+    @DisplayName("Propagates ExecutionException")
     void propagatesExecutionException() throws Exception  {
         propagatesException(TestExecutionException::new, ExecutionException.class);
     }
 
     @Test
+    @DisplayName("Propagates InterruptedException")
     void propagatesInterruptedException() throws Exception  {
         propagatesException(InterruptedException::new, InterruptedException.class);
     }
