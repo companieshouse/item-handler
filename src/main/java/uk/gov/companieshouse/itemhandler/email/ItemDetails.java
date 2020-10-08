@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.itemhandler.email;
 
-public class CertifiedDocument {
+public class ItemDetails {
     private String dateFiled;
     private String type;
     private String description;

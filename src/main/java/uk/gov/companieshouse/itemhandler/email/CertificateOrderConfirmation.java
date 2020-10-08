@@ -8,6 +8,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String feeAmount;
     private String certificateType;
     private String[] certificateIncludes;
+    private String deliveryMethod;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -31,5 +32,13 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setCertificateIncludes(String[] certificateIncludes) {
         this.certificateIncludes = certificateIncludes;
+    }
+
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(String deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
     }
 }

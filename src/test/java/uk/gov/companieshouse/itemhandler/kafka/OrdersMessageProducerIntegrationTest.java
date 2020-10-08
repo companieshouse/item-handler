@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -20,9 +19,7 @@ import static org.junit.Assert.assertEquals;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties={"certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
-public class OrdersMessageProducerIntegrationTest {
+class OrdersMessageProducerIntegrationTest {
     private static final String ORDER_URI = "/order/ORDER-12345";
     private static final String ORDER_TOPIC = "order-received";
 
