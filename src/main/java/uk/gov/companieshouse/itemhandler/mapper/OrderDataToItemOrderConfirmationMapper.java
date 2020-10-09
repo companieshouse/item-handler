@@ -47,8 +47,8 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
     public abstract ItemOrderConfirmation orderToConfirmation(OrderData order);
 
     @AfterMapping
-    public void mapCertifiedCopyItems(final OrderData order,
-                                       final @MappingTarget ItemOrderConfirmation confirmation) {
+    public void mapCertifiedCopyOrMissingImageDeliveryItems(final OrderData order,
+                                                            final @MappingTarget ItemOrderConfirmation confirmation) {
         final Item item = order.getItems().get(0);
 
         confirmation.setCompanyName(item.getCompanyName());
