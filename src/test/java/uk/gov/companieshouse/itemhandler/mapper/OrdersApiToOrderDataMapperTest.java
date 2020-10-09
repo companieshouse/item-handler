@@ -29,6 +29,8 @@ import uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTypeApi;
 import uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi;
 import uk.gov.companieshouse.api.model.order.item.ItemCostsApi;
 import uk.gov.companieshouse.api.model.order.item.LinksApi;
+import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryApi;
+import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryItemOptionsApi;
 import uk.gov.companieshouse.api.model.order.item.RegisteredOfficeAddressDetailsApi;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
@@ -38,6 +40,7 @@ import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.OrderLinks;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
@@ -56,6 +59,7 @@ import static uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTy
 import static uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi.PARTIAL;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFICATE;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFIED_COPY_INCORPORATION_SAME_DAY;
+import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.MISSING_IMAGE_DELIVERY;
 
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrdersApiToOrderDataMapperTest.Config.class)
@@ -95,21 +99,25 @@ public class OrdersApiToOrderDataMapperTest {
     private static final String DESCRIPTION         = "Certificate";
     private static final String DESCRIPTION_IDENTIFIER_CERTIFICATE = "certificate";
     private static final String DESCRIPTION_IDENTIFIER_CERTIFIEDCOPY = "certified-copy";
+    private static final String DESCRIPTION_IDENTIFIER_MISSING_IMAGE_DERLIVERY = "missing-image-derlivery";
     private static final Map<String, String> DESCRIPTION_VALUES = singletonMap("key1", "value1");
     private static final String POSTAGE_COST        = "0";
     private static final String TOTAL_ITEM_COST     = "100";
     private static final String KIND_CERTIFICATE    = "item#certificate";
     private static final String KIND_CERTIFIEDCOPY  = "item#certified-copy";
+    private static final String KIND_MISSING_IMAGE_DELIVERY = "item#missing-image-delivery";
     private static final boolean POSTAL_DELIVERY    = true;
     private static final String CUSTOMER_REFERENCE  = "Certificate ordered by NJ.";
     private static final String TOKEN_ETAG          = "9d39ea69b64c80ca42ed72328b48c303c4445e28";
     private static final FilingHistoryDocumentApi FILING_HISTORY;
     private static final ItemCostsApi CERTIFICATE_ITEM_COSTS;
     private static final ItemCostsApi CERTIFIED_COPY_ITEM_COSTS;
+    private static final ItemCostsApi MISSING_IMAGE_DELIVERY_ITEM_COSTS;
     private static final LinksApi LINKS_API;
     private static final String LINKS_SELF = "links/self";
     private static final CertificateItemOptionsApi CERTIFICATE_ITEM_OPTIONS;
     private static final CertifiedCopyItemOptionsApi CERTIFIED_COPY_ITEM_OPTIONS;
+    private static final MissingImageDeliveryItemOptionsApi MISSING_IMAGE_DELIVERY_ITEM_OPTIONS;
     private static final FilingHistoryDocument DOCUMENT = new FilingHistoryDocument(
             "1993-04-01",
             "memorandum-articles",
@@ -179,6 +187,12 @@ public class OrdersApiToOrderDataMapperTest {
         CERTIFIED_COPY_ITEM_COSTS.setCalculatedCost("3");
         CERTIFIED_COPY_ITEM_COSTS.setProductType(CERTIFIED_COPY_INCORPORATION_SAME_DAY);
 
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS = new ItemCostsApi();
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setDiscountApplied("1");
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setItemCost("2");
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setCalculatedCost("3");
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setProductType(MISSING_IMAGE_DELIVERY);
+
         FILING_HISTORY = new FilingHistoryDocumentApi(DOCUMENT.getFilingHistoryDate(),
                 DOCUMENT.getFilingHistoryDescription(),
                 DOCUMENT.getFilingHistoryDescriptionValues(),
@@ -196,6 +210,12 @@ public class OrdersApiToOrderDataMapperTest {
         CERTIFIED_COPY_ITEM_OPTIONS.setForename(FORENAME);
         CERTIFIED_COPY_ITEM_OPTIONS.setSurname(SURNAME);
 
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS = new MissingImageDeliveryItemOptionsApi();
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryDate(DOCUMENT.getFilingHistoryDate());
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryDescription(DOCUMENT.getFilingHistoryDescription());
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryDescriptionValues(DOCUMENT.getFilingHistoryDescriptionValues());
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryId(DOCUMENT.getFilingHistoryId());
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryType(DOCUMENT.getFilingHistoryType());
 
         LINKS_API = new LinksApi();
         LINKS_API.setSelf(LINKS_SELF);
@@ -293,6 +313,48 @@ public class OrdersApiToOrderDataMapperTest {
         assertThat(certifiedCopy.getTotalItemCost(), is(certifiedCopyApi.getTotalItemCost()));
     }
 
+    @Test
+    void testMissingImageDeliveryApiToMissingImageDelivery() throws JsonProcessingException {
+        MissingImageDeliveryApi missingImageDeliveryApi = new MissingImageDeliveryApi();
+        missingImageDeliveryApi.setId(ID);
+        missingImageDeliveryApi.setCompanyName(COMPANY_NAME);
+        missingImageDeliveryApi.setCompanyNumber(COMPANY_NUMBER);
+        missingImageDeliveryApi.setCustomerReference(CUSTOMER_REFERENCE);
+        missingImageDeliveryApi.setQuantity(QUANTITY);
+        missingImageDeliveryApi.setDescription(DESCRIPTION);
+        missingImageDeliveryApi.setDescriptionIdentifier(DESCRIPTION_IDENTIFIER_MISSING_IMAGE_DERLIVERY);
+        missingImageDeliveryApi.setDescriptionValues(DESCRIPTION_VALUES);
+        missingImageDeliveryApi.setItemCosts(singletonList(MISSING_IMAGE_DELIVERY_ITEM_COSTS));
+        missingImageDeliveryApi.setKind(KIND_MISSING_IMAGE_DELIVERY);
+        missingImageDeliveryApi.setItemOptions(MISSING_IMAGE_DELIVERY_ITEM_OPTIONS);
+        missingImageDeliveryApi.setLinks(LINKS_API);
+        missingImageDeliveryApi.setPostageCost(POSTAGE_COST);
+        missingImageDeliveryApi.setTotalItemCost(TOTAL_ITEM_COST);
+
+        final Item missingImageDeliveryItem = apiToOrderDataMapper.apiToItem(missingImageDeliveryApi);
+
+
+        assertEquals(missingImageDeliveryApi.getId(), missingImageDeliveryItem.getId());
+        assertThat(missingImageDeliveryItem.getId(), is(missingImageDeliveryApi.getId()));
+        assertThat(missingImageDeliveryItem.getCompanyName(), is(missingImageDeliveryApi.getCompanyName()));
+        assertThat(missingImageDeliveryItem.getCompanyNumber(), is(missingImageDeliveryApi.getCompanyNumber()));
+        assertThat(missingImageDeliveryItem.getCustomerReference(), is(missingImageDeliveryApi.getCustomerReference()));
+        assertThat(missingImageDeliveryItem.getQuantity(), is(missingImageDeliveryApi.getQuantity()));
+        assertThat(missingImageDeliveryItem.getDescription(), is(missingImageDeliveryApi.getDescription()));
+        assertThat(missingImageDeliveryItem.getDescriptionIdentifier(), is(missingImageDeliveryApi.getDescriptionIdentifier()));
+        assertThat(missingImageDeliveryItem.getDescriptionValues(), is(missingImageDeliveryApi.getDescriptionValues()));
+        assertThat(missingImageDeliveryItem.getKind(), is(missingImageDeliveryApi.getKind()));
+        assertThat(missingImageDeliveryItem.getEtag(), is(missingImageDeliveryApi.getEtag()));
+        assertThat(missingImageDeliveryItem.getItemUri(), is(missingImageDeliveryApi.getLinks().getSelf()));
+        assertThat(missingImageDeliveryItem.getLinks().getSelf(), is(missingImageDeliveryApi.getLinks().getSelf()));
+
+        assertItemCosts(missingImageDeliveryApi.getItemCosts().get(0), missingImageDeliveryItem.getItemCosts().get(0));
+        assertItemOptionsSame((MissingImageDeliveryItemOptionsApi) missingImageDeliveryApi.getItemOptions(),
+            (MissingImageDeliveryItemOptions) missingImageDeliveryItem.getItemOptions());
+        assertThat(missingImageDeliveryItem.getPostageCost(), is(missingImageDeliveryApi.getPostageCost()));
+        assertThat(missingImageDeliveryItem.getTotalItemCost(), is(missingImageDeliveryApi.getTotalItemCost()));
+    }
+
     private void assertItemCosts(final ItemCostsApi itemCostsApi, final ItemCosts itemCosts) {
         assertThat(itemCosts.getDiscountApplied(), is(itemCostsApi.getDiscountApplied()));
         assertThat(itemCosts.getItemCost(), is(itemCostsApi.getItemCost()));
@@ -327,6 +389,15 @@ public class OrdersApiToOrderDataMapperTest {
                 is(objectMapper.writeValueAsString(source.getFilingHistoryDocuments())));
         assertThat(target.getForename(), is(source.getForename()));
         assertThat(target.getSurname(), is(source.getSurname()));
+    }
+
+    private void assertItemOptionsSame(final MissingImageDeliveryItemOptionsApi source,
+                                       final MissingImageDeliveryItemOptions target) {
+        assertThat(target.getFilingHistoryDate(), is(source.getFilingHistoryDate()));
+        assertThat(target.getFilingHistoryDescription(), is(source.getFilingHistoryDescription()));
+        assertThat(target.getFilingHistoryDescriptionValues(), is(source.getFilingHistoryDescriptionValues()));
+        assertThat(target.getFilingHistoryId(), is(source.getFilingHistoryId()));
+        assertThat(target.getFilingHistoryType(), is(source.getFilingHistoryType()));
     }
 
     private void assertDetailsSame(final DirectorOrSecretaryDetailsApi source,

@@ -4,14 +4,15 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.mapstruct.Named;
-import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.email.CertifiedDocument;
+import org.springframework.beans.factory.annotation.Autowired;
+import uk.gov.companieshouse.itemhandler.email.ItemDetails;
+import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
@@ -23,7 +24,7 @@ import java.util.stream.IntStream;
 import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATE_FILED_FORMATTER;
 
 @Mapper(componentModel = "spring")
-public abstract class OrderDataToCertifiedCopyOrderConfirmationMapper implements MapperUtil {
+public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUtil {
 
     @Autowired
     private FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
@@ -43,42 +44,65 @@ public abstract class OrderDataToCertifiedCopyOrderConfirmationMapper implements
     @Mapping(source = "reference", target="orderReferenceNumber")
     @Mapping(source = "orderedBy.email", target="emailAddress")
     @Mapping(source = "totalOrderCost", target="totalFee")
-    public abstract CertifiedCopyOrderConfirmation orderToConfirmation(OrderData order);
+    public abstract ItemOrderConfirmation orderToConfirmation(OrderData order);
 
     @AfterMapping
-    public void mapCertifiedCopyItems(final OrderData order,
-                                       final @MappingTarget CertifiedCopyOrderConfirmation confirmation) {
+    public void mapCertifiedCopyOrMissingImageDeliveryItems(final OrderData order,
+                                                            final @MappingTarget ItemOrderConfirmation confirmation) {
         final Item item = order.getItems().get(0);
-        final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
 
         confirmation.setCompanyName(item.getCompanyName());
         confirmation.setCompanyNumber(item.getCompanyNumber());
-        String deliveryMethod = String.format("%s delivery (aim to dispatch within 4 working days)", toSentenceCase(timescale));
-        confirmation.setDeliveryMethod(deliveryMethod);
+
+        if (item.getKind().equals("item#certified-copy")) {
+            final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
+            String deliveryMethod = String.format("%s delivery (aim to dispatch within 4 working days)", toSentenceCase(timescale));
+            confirmation.setDeliveryMethod(deliveryMethod);
+            confirmation.setItemDetails(collateItemDetailsForCertifiedCopy(item));
+        }
+        else {
+            confirmation.setItemDetails(collateItemDetailsForMissingImageDelivery(item));
+        }
 
         confirmation.setTimeOfPayment(getTimeOfPayment(order.getOrderedAt()));
-        confirmation.setCertifiedDocuments(collateCertifiedDocuments(item));
     }
 
-    public List<CertifiedDocument> collateCertifiedDocuments(Item item) {
+    public List<ItemDetails> collateItemDetailsForMissingImageDelivery(Item item) {
+        MissingImageDeliveryItemOptions midItemOptions = (MissingImageDeliveryItemOptions) item.getItemOptions();
+        List<ItemCosts> itemCosts = item.getItemCosts();
+        List<ItemDetails> itemDetails = new ArrayList<>();
+        ItemDetails details = new ItemDetails();
+        details.setDateFiled(reformatDateFiled(midItemOptions.getFilingHistoryDate()));
+        details.setDescription(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(
+            midItemOptions.getFilingHistoryDescription(),
+            midItemOptions.getFilingHistoryDescriptionValues()
+        ));
+        details.setType(midItemOptions.getFilingHistoryType());
+        details.setFee(itemCosts.get(0).getCalculatedCost());
+        itemDetails.add(details);
+
+        return itemDetails;
+    }
+
+    public List<ItemDetails> collateItemDetailsForCertifiedCopy(Item item) {
         CertifiedCopyItemOptions itemOptions = (CertifiedCopyItemOptions) item.getItemOptions();
         List<FilingHistoryDocument> filingHistoryDocuments = itemOptions.getFilingHistoryDocuments();
         List<ItemCosts> itemCosts = item.getItemCosts();
 
-        List<CertifiedDocument> certifiedDocuments = new ArrayList<>();
+        List<ItemDetails> itemDetails = new ArrayList<>();
         IntStream.range(0, filingHistoryDocuments.size()).forEach(i -> {
-            CertifiedDocument certifiedDocument = new CertifiedDocument();
-            certifiedDocument.setDateFiled(reformatDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate()));
-            certifiedDocument.setType(filingHistoryDocuments.get(i).getFilingHistoryType());
-            certifiedDocument.setDescription(
+            ItemDetails details = new ItemDetails();
+            details.setDateFiled(reformatDateFiled(filingHistoryDocuments.get(i).getFilingHistoryDate()));
+            details.setType(filingHistoryDocuments.get(i).getFilingHistoryType());
+            details.setDescription(
                     filingHistoryDescriptionProviderService.mapFilingHistoryDescription(
                             filingHistoryDocuments.get(i).getFilingHistoryDescription(),
                             filingHistoryDocuments.get(i).getFilingHistoryDescriptionValues()));
-            certifiedDocument.setFee(itemCosts.get(i).getCalculatedCost());
-            certifiedDocuments.add(certifiedDocument);
+            details.setFee(itemCosts.get(i).getCalculatedCost());
+            itemDetails.add(details);
         });
 
-        return certifiedDocuments;
+        return itemDetails;
     }
 
     /**

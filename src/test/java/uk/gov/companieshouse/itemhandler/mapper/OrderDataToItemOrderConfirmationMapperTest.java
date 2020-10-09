@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import uk.gov.companieshouse.itemhandler.email.CertifiedCopyOrderConfirmation;
+import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
@@ -16,6 +16,7 @@ import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
@@ -39,8 +40,8 @@ import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_P
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
  */
 @ExtendWith(SpringExtension.class)
-@SpringJUnitConfig(OrderDataToCertifiedCopyOrderConfirmationMapperTest.Config.class)
-class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
+@SpringJUnitConfig(OrderDataToItemOrderConfirmationMapperTest.Config.class)
+class OrderDataToItemOrderConfirmationMapperTest {
 
     private static final LocalTime AM = LocalTime.of(7, 30, 15);
     private static final LocalTime PM = LocalTime.of(15, 30, 15);
@@ -55,32 +56,32 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
     private static final String EXPECTED_REFORMATTED_DATE_FILED = "23 Aug 2009";
 
     @Configuration
-    @ComponentScan(basePackageClasses = {OrderDataToCertifiedCopyOrderConfirmationMapperTest.class})
+    @ComponentScan(basePackageClasses = {OrderDataToItemOrderConfirmationMapperTest.class})
     static class Config {}
 
     @MockBean
     FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
 
     @Autowired
-    private OrderDataToCertifiedCopyOrderConfirmationMapper mapperUnderTest;
+    private OrderDataToItemOrderConfirmationMapper mapperUnderTest;
 
     /**
-     * Implements {@link OrderDataToCertifiedCopyOrderConfirmationMapper} to facilitate the testing of its default
+     * Implements {@link OrderDataToItemOrderConfirmationMapper} to facilitate the testing of its default
      * methods.
      */
-    static class TestOrderDataToCertifiedCopyOrderConfirmationMapper extends OrderDataToCertifiedCopyOrderConfirmationMapper {
-        TestOrderDataToCertifiedCopyOrderConfirmationMapper() {
+    static class TestOrderDataToItemOrderConfirmationMapper extends OrderDataToItemOrderConfirmationMapper {
+        TestOrderDataToItemOrderConfirmationMapper() {
             super();
         }
 
         @Override
-        public CertifiedCopyOrderConfirmation orderToConfirmation(OrderData order) {
+        public ItemOrderConfirmation orderToConfirmation(OrderData order) {
             return null; // Implemented only to satisfy requirement of an interface implementation
         }
     }
 
     @Test
-    void orderToConfirmationBehavesAsExpected() {
+    void orderToConfirmationBehavesAsExpectedForCertifiedCopy() {
 
         // Given
         final OrderData order = new OrderData();
@@ -135,7 +136,7 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         // When
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
                 .thenReturn("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
-        final CertifiedCopyOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        final ItemOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
 
         // Then
         assertThat(confirmation.getTo(), is(nullValue()));
@@ -161,17 +162,78 @@ class OrderDataToCertifiedCopyOrderConfirmationMapperTest {
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getTotalFee(), is("15"));
 
-        assertThat(confirmation.getCertifiedDocuments().get(0).getDateFiled(), is("15 Feb 2018"));
-        assertThat(confirmation.getCertifiedDocuments().get(0).getType(), is("AP01"));
-        assertThat(confirmation.getCertifiedDocuments().get(0).getDescription(),
+        assertThat(confirmation.getItemDetails().get(0).getDateFiled(), is("15 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getType(), is("AP01"));
+        assertThat(confirmation.getItemDetails().get(0).getDescription(),
                 is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
-        assertThat(confirmation.getCertifiedDocuments().get(0).getFee(), is("15"));
+        assertThat(confirmation.getItemDetails().get(0).getFee(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedForMissingImageDelivery() {
+
+        // Given
+        final OrderData order = new OrderData();
+        order.setReference("ORD-108815-904831");
+        order.setPaymentReference("orderable_item_ORD-108815-904831");
+
+        final ActionedBy orderedBy = new ActionedBy();
+        orderedBy.setEmail("demo@ch.gov.uk");
+        order.setOrderedBy(orderedBy);
+
+        final Item item = new Item();
+        item.setCompanyName("THE COMPANY");
+        item.setCompanyNumber("00000001");
+        item.setKind("item#missing-image-delivery");
+        final MissingImageDeliveryItemOptions options = new MissingImageDeliveryItemOptions();
+        options.setFilingHistoryDate("2018-02-15");
+        options.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
+        options.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
+        options.setFilingHistoryId("MDA0NTE1MTk2MmFkaXF6a2N4");
+        options.setFilingHistoryType("AP01");
+
+        List<ItemCosts> itemCosts = new ArrayList<>();
+        ItemCosts itemCost = new ItemCosts();
+        itemCost.setItemCost("3");
+        itemCost.setDiscountApplied("0");
+        itemCost.setCalculatedCost("3");
+        itemCosts.add(itemCost);
+
+        item.setItemOptions(options);
+        item.setItemCosts(itemCosts);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("3");
+
+        // When
+        when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
+            .thenReturn("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
+        final ItemOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertThat(confirmation.getTo(), is(nullValue()));
+
+        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
+        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+
+        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+
+        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
+        assertThat(confirmation.getCompanyNumber(), is("00000001"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getTotalFee(), is("3"));
+
+        assertThat(confirmation.getItemDetails().get(0).getDateFiled(), is("15 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getType(), is("AP01"));
+        assertThat(confirmation.getItemDetails().get(0).getDescription(),
+            is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getFee(), is("3"));
     }
 
     @Test
     void toSentenceCaseBehavesAsExpected() {
-        final TestOrderDataToCertifiedCopyOrderConfirmationMapper mapperUnderTest =
-                new TestOrderDataToCertifiedCopyOrderConfirmationMapper();
+        final TestOrderDataToItemOrderConfirmationMapper mapperUnderTest =
+                new TestOrderDataToItemOrderConfirmationMapper();
         assertThat(mapperUnderTest.toSentenceCase("INCORPORATION_WITH_ALL_NAME_CHANGES"), is("Incorporation with all name changes"));
         assertThat(mapperUnderTest.toSentenceCase("STANDARD delivery"), is("Standard delivery"));
         assertThat(mapperUnderTest.toSentenceCase("SAME_DAY delivery"), is("Same day delivery"));

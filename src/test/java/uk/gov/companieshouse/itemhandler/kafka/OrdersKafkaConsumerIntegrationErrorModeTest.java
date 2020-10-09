@@ -39,9 +39,7 @@ import static org.hamcrest.Matchers.isEmptyOrNullString;
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-@TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true",
-        "certificate.order.confirmation.recipient = nobody@nowhere.com",
-        "certified-copy.order.confirmation.recipient = nobody@nowhere.com"})
+@TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true"})
 @TestMethodOrder(MethodOrderer.Alphanumeric.class)
 class OrdersKafkaConsumerIntegrationErrorModeTest {
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
