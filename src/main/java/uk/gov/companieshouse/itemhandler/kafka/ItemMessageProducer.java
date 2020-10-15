@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -27,14 +28,17 @@ public class ItemMessageProducer {
         this.itemKafkaProducer = itemKafkaProducer;
     }
 
+    // TODO GCI-1301 Consider parameters passed around redundantly
     /**
      * Sends (produces) a message to the Kafka <code>chd-item-ordered</code> topic representing the missing image
      * delivery item provided.
+     * @param order the {@link OrderData} instance retrieved from the Orders API
      * @param orderReference the reference of the order to which the item belongs
      * @param itemId the ID of the item that the message to be sent represents
      * @param item the missing image delivery item
      */
-    public void sendMessage(final String orderReference,
+    public void sendMessage(final OrderData order,
+                            final String orderReference,
                             final String itemId,
                             final Item item) {
 
@@ -44,7 +48,7 @@ public class ItemMessageProducer {
         LOGGER.info("Sending message to kafka producer", logMap);
 
         try {
-            final Message message = itemMessageFactory.createMessage(item);
+            final Message message = itemMessageFactory.createMessage(order);
             itemKafkaProducer.sendMessage(orderReference, itemId, message,
                     recordMetadata ->
                             logOffsetFollowingSendIngOfMessage(orderReference, itemId, recordMetadata));
