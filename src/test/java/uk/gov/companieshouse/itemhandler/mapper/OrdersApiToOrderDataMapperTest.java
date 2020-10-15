@@ -59,7 +59,7 @@ import static uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTy
 import static uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi.PARTIAL;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFICATE;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFIED_COPY_INCORPORATION_SAME_DAY;
-import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.MISSING_IMAGE_DELIVERY;
+import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.MISSING_IMAGE_DELIVERY_ACCOUNTS;
 
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrdersApiToOrderDataMapperTest.Config.class)
@@ -191,7 +191,7 @@ public class OrdersApiToOrderDataMapperTest {
         MISSING_IMAGE_DELIVERY_ITEM_COSTS.setDiscountApplied("1");
         MISSING_IMAGE_DELIVERY_ITEM_COSTS.setItemCost("2");
         MISSING_IMAGE_DELIVERY_ITEM_COSTS.setCalculatedCost("3");
-        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setProductType(MISSING_IMAGE_DELIVERY);
+        MISSING_IMAGE_DELIVERY_ITEM_COSTS.setProductType(MISSING_IMAGE_DELIVERY_ACCOUNTS);
 
         FILING_HISTORY = new FilingHistoryDocumentApi(DOCUMENT.getFilingHistoryDate(),
                 DOCUMENT.getFilingHistoryDescription(),
