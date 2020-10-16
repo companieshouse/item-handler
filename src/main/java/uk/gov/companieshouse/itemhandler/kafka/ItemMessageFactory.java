@@ -14,7 +14,7 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 import uk.gov.companieshouse.orders.items.Item;
-import uk.gov.companieshouse.orders.items.ItemCost;
+import uk.gov.companieshouse.orders.items.ItemCosts;
 import uk.gov.companieshouse.orders.items.Links;
 import uk.gov.companieshouse.orders.items.OrderedBy;
 
@@ -95,12 +95,12 @@ public class ItemMessageFactory {
 		return outgoing;
 	}
 
-	private List<ItemCost> createFirstItemCosts(final uk.gov.companieshouse.itemhandler.model.Item firstItem) {
+	private List<ItemCosts> createFirstItemCosts(final uk.gov.companieshouse.itemhandler.model.Item firstItem) {
 		return firstItem.getItemCosts().stream().map(costs ->
-				new ItemCost(costs.getCalculatedCost(),
-						     costs.getDiscountApplied(),
-						     costs.getItemCost(),
-						     costs.getProductType().getJsonName()))
+				new ItemCosts(costs.getCalculatedCost(),
+						      costs.getDiscountApplied(),
+						      costs.getItemCost(),
+						      costs.getProductType().getJsonName()))
 				.collect(toList());
 
 	}
