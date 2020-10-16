@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemLinks;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
@@ -57,10 +58,10 @@ class ItemMessageFactoryTest {
     private ObjectMapper mapper;
 
     @Mock
-    private Links links;
+    private ItemLinks itemLinks;
 
     @Mock
-    private ItemLinks itemLinks;
+    private ActionedBy actionedBy;
 
     @Mock
     private AvroSerializer<ChdItemOrdered> serializer;
@@ -72,6 +73,7 @@ class ItemMessageFactoryTest {
         // Given
         when(order.getItems()).thenReturn(singletonList(item));
         when(order.getOrderedAt()).thenReturn(LocalDateTime.now());
+        when(order.getOrderedBy()).thenReturn(actionedBy);
         when(item.getItemOptions()).thenReturn(options);
         when(options.getFilingHistoryDescriptionValues()).thenReturn(new HashMap<>());
         when(item.getLinks()).thenReturn(itemLinks);

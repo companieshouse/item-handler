@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -15,6 +16,7 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 import uk.gov.companieshouse.orders.items.Item;
 import uk.gov.companieshouse.orders.items.ItemCost;
 import uk.gov.companieshouse.orders.items.Links;
+import uk.gov.companieshouse.orders.items.OrderedBy;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -63,6 +65,7 @@ public class ItemMessageFactory {
 		final uk.gov.companieshouse.itemhandler.model.Item firstItem = order.getItems().get(0);
 		final ChdItemOrdered outgoing = new ChdItemOrdered();
 		outgoing.setOrderedAt(order.getOrderedAt().toString()); // TODO GCI-1301 Check format is that desired
+		outgoing.setOrderedBy(createOrderedBy(order.getOrderedBy()));
 		outgoing.setPaymentReference(order.getPaymentReference());
 		outgoing.setReference(order.getReference());
 		outgoing.setTotalOrderCost(order.getTotalOrderCost());
@@ -117,5 +120,9 @@ public class ItemMessageFactory {
 				objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
 		optionsForMid.put("filingHistoryType", options.getFilingHistoryType());
 		return optionsForMid;
+	}
+
+	private OrderedBy createOrderedBy(final ActionedBy actionedBy) {
+		return new OrderedBy(actionedBy.getEmail(), actionedBy.getId());
 	}
 }
