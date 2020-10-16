@@ -100,7 +100,7 @@ public class ItemMessageFactory {
 				new ItemCost(costs.getCalculatedCost(),
 						     costs.getDiscountApplied(),
 						     costs.getItemCost(),
-						     costs.getProductType().toString())) // TODO GCI-1301 enum value
+						     costs.getProductType().getJsonName()))
 				.collect(toList());
 
 	}
