@@ -127,7 +127,7 @@ class ItemMessageProducerIntegrationTest {
         order.setTotalOrderCost("3");
 
         // Given that the actual message produced to the topic is a ChdItemOrdered object.
-        final ChdItemOrdered chdItemOrdered = itemMessageFactory.createChdItemOrdered(order);
+        final ChdItemOrdered chdItemOrdered = itemMessageFactory.buildChdItemOrdered(order);
 
         // When ChdItemOrdered message is sent to kafka topic
         final List<Message> messages =

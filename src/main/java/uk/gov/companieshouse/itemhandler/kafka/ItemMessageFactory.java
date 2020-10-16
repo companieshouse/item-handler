@@ -54,12 +54,12 @@ public class ItemMessageFactory {
 	 * Creates an item message for onward production to an outbound Kafka topic.
 	 * @param order the {@link OrderData} instance retrieved from the Orders API
 	 * @return the avro message representing the item (plus some order related information)
-	 * @throws SerializationException should something unexpected happen
-	 * @throws JsonProcessingException should something unexpected happen TODO GCI-1301 Better Javadoc?
+	 * @throws SerializationException should there be a failure to serialize the Kafka message
+	 * @throws JsonProcessingException should there be an error serialising order content
 	 */
 	public Message createMessage(final OrderData order) throws SerializationException, JsonProcessingException {
 		LOGGER.trace("Creating item message"); // TODO GCI-1301 Consider logging
-		final ChdItemOrdered outgoing = createChdItemOrdered(order);
+		final ChdItemOrdered outgoing = buildChdItemOrdered(order);
 		final AvroSerializer<ChdItemOrdered> serializer =
 				serializerFactory.getGenericRecordSerializer(ChdItemOrdered.class);
 		final Message message = new Message();
@@ -69,9 +69,15 @@ public class ItemMessageFactory {
 		return message;
 	}
 
-	// TODO GCI-1301 Could this be better named?
 	// TODO GCI-1301 Consider MapStruct or similar?
-	ChdItemOrdered createChdItemOrdered(final OrderData order) throws JsonProcessingException {
+	/**
+	 * Creates a {@link ChdItemOrdered} Kafka message content instance from the {@link OrderData} instance
+	 * provided.
+	 * @param order the original order from which the message content is built
+	 * @return the resulting Kafka message content object
+	 * @throws JsonProcessingException should there be an error serialising order content
+	 */
+	ChdItemOrdered buildChdItemOrdered(final OrderData order) throws JsonProcessingException {
 		final uk.gov.companieshouse.itemhandler.model.Item firstItem = order.getItems().get(0);
 		final ChdItemOrdered outgoing = new ChdItemOrdered();
 		outgoing.setOrderedAt(order.getOrderedAt().toString());
@@ -104,6 +110,13 @@ public class ItemMessageFactory {
 		return outgoing;
 	}
 
+	/**
+	 * Creates a List of {@link ItemCosts} from the first item's List of
+	 * {@link uk.gov.companieshouse.itemhandler.model.ItemCosts}.
+	 * @param firstItem {@link uk.gov.companieshouse.itemhandler.model.Item}, assumed to be the first (only) item
+	 *                                                                      in the order
+	 * @return list item costs
+	 */
 	private List<ItemCosts> createFirstItemCosts(final uk.gov.companieshouse.itemhandler.model.Item firstItem) {
 		return firstItem.getItemCosts().stream().map(costs ->
 				new ItemCosts(costs.getCalculatedCost(),
@@ -114,6 +127,13 @@ public class ItemMessageFactory {
 
 	}
 
+	/**
+	 * Creates a suitable map of values representing MID item options ready for use as part of a Kafka message.
+	 * @param firstItem {@link uk.gov.companieshouse.itemhandler.model.Item}, assumed to be the first (only) item in
+	 *                                                                         the order
+	 * @return map of values representing MID item options
+	 * @throws JsonProcessingException should there be an error serialising filing history description values
+	 */
 	private Map<String, String> createFirstItemOptionsForMid(final uk.gov.companieshouse.itemhandler.model.Item firstItem)
 			throws JsonProcessingException {
 		// For now we know we are dealing with MID only.
@@ -122,7 +142,7 @@ public class ItemMessageFactory {
 		optionsForMid.put(FILING_HISTORY_ID, options.getFilingHistoryId());
 		optionsForMid.put(FILING_HISTORY_DATE, options.getFilingHistoryDate());
 		optionsForMid.put(FILING_HISTORY_DESCRIPTION, options.getFilingHistoryDescription());
-		// TODO GCI-1301 This becomes an implicit contract.
+		// TODO GCI-1301 This becomes an implicit contract - consumer needs to deserialise to Map<String, Object>.
 		optionsForMid.put(FILING_HISTORY_DESCRIPTION_VALUES,
 				objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
 		optionsForMid.put(FILING_HISTORY_TYPE, options.getFilingHistoryType());
@@ -130,6 +150,11 @@ public class ItemMessageFactory {
 		return optionsForMid;
 	}
 
+	/**
+	 * Creates a Kafka message content {@link OrderedBy} instance from the {@link ActionedBy} instance provided.
+	 * @param actionedBy the ordered by info from the order
+	 * @return the info to populate the Kafka message with
+	 */
 	private OrderedBy createOrderedBy(final ActionedBy actionedBy) {
 		return new OrderedBy(actionedBy.getEmail(), actionedBy.getId());
 	}
