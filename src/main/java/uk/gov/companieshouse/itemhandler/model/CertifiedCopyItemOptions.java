@@ -2,7 +2,7 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import java.util.List;
 
-public class CertifiedCopyItemOptions extends ItemOptions {
+public class CertifiedCopyItemOptions extends DeliveryItemOptions {
 
     private List<FilingHistoryDocument> filingHistoryDocuments;
 

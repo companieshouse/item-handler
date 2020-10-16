@@ -13,6 +13,7 @@ import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryItemOption
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.ItemOptions;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -46,6 +47,7 @@ public interface OrdersApiToOrderDataMapper {
         }
     }
 
+    ItemOptions apiToOptions(BaseItemOptionsApi baseItemOptionsApi);
     CertificateItemOptions apiToCertificateItemOptions(CertificateItemOptionsApi certificateItemOptionsApi);
     CertifiedCopyItemOptions apiToCertifiedCopyItemOptions(CertifiedCopyItemOptionsApi certifiedCopyItemOptionsApi);
     MissingImageDeliveryItemOptions apiToMissingImageDeliveryOptions(MissingImageDeliveryItemOptionsApi missingImageDeliveryItemOptionsApi);
