@@ -32,6 +32,16 @@ public class ItemMessageFactory {
 
 	private static final String CHD_ITEM_ORDERED_TOPIC = "chd-item-ordered";
 
+	private static final String ZERO_POSTAGE_COST = "0";
+	private static final boolean NO_POSTAL_DELIVERY = false;
+
+	private static final String FILING_HISTORY_ID = 				"filingHistoryId";
+	private static final String FILING_HISTORY_DATE = 				"filingHistoryDate";
+	private static final String FILING_HISTORY_DESCRIPTION = 		"filingHistoryDescription";
+	private static final String FILING_HISTORY_DESCRIPTION_VALUES = "filingHistoryDescriptionValues";
+	private static final String FILING_HISTORY_TYPE = 				"filingHistoryType";
+	private static final String FILING_HISTORY_CATEGORY = 			"filingHistoryCategory";
+
 	private final SerializerFactory serializerFactory;
 	private final ObjectMapper objectMapper;
 
@@ -41,7 +51,7 @@ public class ItemMessageFactory {
 	}
 
 	/**
-	 * Creates an item message for onward production to a outbound Kafka topic.
+	 * Creates an item message for onward production to an outbound Kafka topic.
 	 * @param order the {@link OrderData} instance retrieved from the Orders API
 	 * @return the avro message representing the item (plus some order related information)
 	 * @throws SerializationException should something unexpected happen
@@ -83,9 +93,8 @@ public class ItemMessageFactory {
 		item.setItemUri(firstItem.getItemUri());
 		item.setKind(firstItem.getKind());
 
-		// TODO GCI-1301 Constants
-		item.setPostageCost("0");
-		item.setIsPostalDelivery(false);
+		item.setPostageCost(ZERO_POSTAGE_COST);
+		item.setIsPostalDelivery(NO_POSTAL_DELIVERY);
 
 		item.setLinks(new Links(firstItem.getLinks().getSelf()));
 		item.setQuantity(firstItem.getQuantity());
@@ -110,19 +119,19 @@ public class ItemMessageFactory {
 		// For now we know we are dealing with MID only.
 		final MissingImageDeliveryItemOptions options = (MissingImageDeliveryItemOptions) firstItem.getItemOptions();
 		final Map<String, String> optionsForMid = new HashMap<>();
-		// TODO GCI-1301 Constant for each key
-		optionsForMid.put("filingHistoryId", options.getFilingHistoryId());
-		optionsForMid.put("filingHistoryDate", options.getFilingHistoryDate());
-		optionsForMid.put("filingHistoryDescription", options.getFilingHistoryDescription());
-		// TODO GCI-1301 This becomes an implicit contract?
-		optionsForMid.put("filingHistoryDescriptionValues",
+		optionsForMid.put(FILING_HISTORY_ID, options.getFilingHistoryId());
+		optionsForMid.put(FILING_HISTORY_DATE, options.getFilingHistoryDate());
+		optionsForMid.put(FILING_HISTORY_DESCRIPTION, options.getFilingHistoryDescription());
+		// TODO GCI-1301 This becomes an implicit contract.
+		optionsForMid.put(FILING_HISTORY_DESCRIPTION_VALUES,
 				objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
-		optionsForMid.put("filingHistoryType", options.getFilingHistoryType());
-		optionsForMid.put("filingHistoryCategory", options.getFilingHistoryCategory());
+		optionsForMid.put(FILING_HISTORY_TYPE, options.getFilingHistoryType());
+		optionsForMid.put(FILING_HISTORY_CATEGORY, options.getFilingHistoryCategory());
 		return optionsForMid;
 	}
 
 	private OrderedBy createOrderedBy(final ActionedBy actionedBy) {
 		return new OrderedBy(actionedBy.getEmail(), actionedBy.getId());
 	}
+
 }
