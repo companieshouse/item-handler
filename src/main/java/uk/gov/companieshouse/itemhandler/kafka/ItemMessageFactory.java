@@ -64,7 +64,7 @@ public class ItemMessageFactory {
 	private ChdItemOrdered createChdItemOrdered(final OrderData order) throws JsonProcessingException {
 		final uk.gov.companieshouse.itemhandler.model.Item firstItem = order.getItems().get(0);
 		final ChdItemOrdered outgoing = new ChdItemOrdered();
-		outgoing.setOrderedAt(order.getOrderedAt().toString()); // TODO GCI-1301 Check format is that desired
+		outgoing.setOrderedAt(order.getOrderedAt().toString());
 		outgoing.setOrderedBy(createOrderedBy(order.getOrderedBy()));
 		outgoing.setPaymentReference(order.getPaymentReference());
 		outgoing.setReference(order.getReference());
