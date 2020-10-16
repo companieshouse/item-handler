@@ -79,7 +79,7 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageCreation() throws Exception {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verify(itemMessageFactory).createMessage(ORDER);
@@ -94,7 +94,7 @@ public class ItemMessageProducerTest {
         when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verify(itemKafkaProducer).sendMessage(
@@ -118,7 +118,7 @@ public class ItemMessageProducerTest {
 
         // When and then
         assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
-                messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM))
+                messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID))
                 .withMessage("Kafka item message could not be sent for order reference ORD-432118-793830 item " +
                         "ID MID-242116-007650")
                 .withCause(KAFKA_EXCEPTION);
@@ -136,7 +136,7 @@ public class ItemMessageProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();

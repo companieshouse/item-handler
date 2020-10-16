@@ -32,6 +32,6 @@ public class ChdItemSenderService {
         final String orderReference = order.getReference();
         logWithOrderReference("Sending items for order to CHD", orderReference);
         final Item firstItem = order.getItems().get(0);
-        itemMessageProducer.sendMessage(order, orderReference, firstItem.getId(), firstItem);
+        itemMessageProducer.sendMessage(order, orderReference, firstItem.getId());
     }
 }

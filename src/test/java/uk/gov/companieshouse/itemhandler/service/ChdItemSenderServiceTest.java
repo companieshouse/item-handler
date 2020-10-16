@@ -64,7 +64,7 @@ public class ChdItemSenderServiceTest {
         // Then
         verify(order).getReference();
         verify(item).getId();
-        verify(itemMessageProducer).sendMessage(order, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, item);
+        verify(itemMessageProducer).sendMessage(order, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
     }
 

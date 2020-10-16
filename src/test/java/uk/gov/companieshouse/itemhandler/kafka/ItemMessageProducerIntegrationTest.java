@@ -131,7 +131,7 @@ class ItemMessageProducerIntegrationTest {
 
         // When ChdItemOrdered message is sent to kafka topic
         final List<Message> messages =
-                sendAndConsumeMessage(order, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, item);
+                sendAndConsumeMessage(order, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then we have successfully consumed a message.
         assertThat(messages.isEmpty(), is(false));
@@ -149,14 +149,13 @@ class ItemMessageProducerIntegrationTest {
 
     private List<Message> sendAndConsumeMessage(final OrderData order,
                                                 final String orderReference,
-                                                final String itemId,
-                                                final Item item) {
+                                                final String itemId) {
         List<Message> messages;
         testItemMessageConsumer.connect();
         int count = 0;
         do {
             messages = testItemMessageConsumer.pollConsumerGroup();
-            itemMessageProducerUnderTest.sendMessage(order, orderReference, itemId, item);
+            itemMessageProducerUnderTest.sendMessage(order, orderReference, itemId);
             count++;
         } while (messages.isEmpty() && count < 15);
 
