@@ -111,7 +111,6 @@ public class ItemMessageFactory {
 		final MissingImageDeliveryItemOptions options = (MissingImageDeliveryItemOptions) firstItem.getItemOptions();
 		final Map<String, String> optionsForMid = new HashMap<>();
 		// TODO GCI-1301 Constant for each key
-		// TODO GCI-1301 Update MissingImageDeliveryItemOptions local image to include category
 		optionsForMid.put("filingHistoryId", options.getFilingHistoryId());
 		optionsForMid.put("filingHistoryDate", options.getFilingHistoryDate());
 		optionsForMid.put("filingHistoryDescription", options.getFilingHistoryDescription());
@@ -119,6 +118,7 @@ public class ItemMessageFactory {
 		optionsForMid.put("filingHistoryDescriptionValues",
 				objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
 		optionsForMid.put("filingHistoryType", options.getFilingHistoryType());
+		optionsForMid.put("filingHistoryCategory", options.getFilingHistoryCategory());
 		return optionsForMid;
 	}
 
