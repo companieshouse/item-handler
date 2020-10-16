@@ -61,7 +61,7 @@ public class ItemMessageFactory {
 
 	// TODO GCI-1301 Could this be better named?
 	// TODO GCI-1301 Consider MapStruct or similar?
-	private ChdItemOrdered createChdItemOrdered(final OrderData order) throws JsonProcessingException {
+	ChdItemOrdered createChdItemOrdered(final OrderData order) throws JsonProcessingException {
 		final uk.gov.companieshouse.itemhandler.model.Item firstItem = order.getItems().get(0);
 		final ChdItemOrdered outgoing = new ChdItemOrdered();
 		outgoing.setOrderedAt(order.getOrderedAt().toString());

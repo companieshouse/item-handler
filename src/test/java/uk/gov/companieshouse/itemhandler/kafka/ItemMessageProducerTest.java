@@ -14,6 +14,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -48,6 +49,7 @@ public class ItemMessageProducerTest {
     private static final int PARTITION_VALUE = 0;
     private static final Item ITEM;
     private static final RuntimeException KAFKA_EXCEPTION = new RuntimeException("Test exception");
+    private static final OrderData ORDER = new OrderData();
 
     static {
         ITEM = new Item();
@@ -77,10 +79,10 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageCreation() throws Exception {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
-        verify(itemMessageFactory).createMessage(ITEM);
+        verify(itemMessageFactory).createMessage(ORDER);
 
     }
 
@@ -89,10 +91,10 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageSending() throws Exception {
 
         // Given
-        when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
+        when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
         verify(itemKafkaProducer).sendMessage(
@@ -105,7 +107,7 @@ public class ItemMessageProducerTest {
     void sendMessagePropagatesProductionExceptionAsKafkaMessagingException() throws Exception {
 
         // Given
-        when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
+        when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
 
         doThrow(KAFKA_EXCEPTION).
         when(itemKafkaProducer).sendMessage(
@@ -116,7 +118,7 @@ public class ItemMessageProducerTest {
 
         // When and then
         assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
-                messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM))
+                messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM))
                 .withMessage("Kafka item message could not be sent for order reference ORD-432118-793830 item " +
                         "ID MID-242116-007650")
                 .withCause(KAFKA_EXCEPTION);
@@ -134,7 +136,7 @@ public class ItemMessageProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
