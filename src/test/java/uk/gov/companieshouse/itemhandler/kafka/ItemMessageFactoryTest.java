@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemLinks;
@@ -16,7 +17,6 @@ import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
-import uk.gov.companieshouse.orders.items.Links;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -24,12 +24,15 @@ import java.util.HashMap;
 import java.util.TimeZone;
 
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 /**
  * Unit tests the {@link ItemMessageFactory} class.
@@ -96,6 +99,27 @@ class ItemMessageFactoryTest {
         assertThat(message.getValue(), is(MESSAGE_CONTENT));
         assertThat(message.getTopic(), is("chd-item-ordered"));
         assertThat(isWithinExecutionInterval(message.getTimestamp(), intervalStart, intervalEnd), is(true));
+
+    }
+
+    @Test
+    @DisplayName("createMessage throws non-retryable KafkaMessagingException when input field is null")
+    void createMessageThrowsNonRetryableExceptionIfFieldIsNull() {
+
+        // Given
+        when(order.getItems()).thenReturn(singletonList(item));
+        when(order.getOrderedAt()).thenReturn(LocalDateTime.now());
+        when(order.getOrderedBy()).thenReturn(actionedBy);
+        when(order.getReference()).thenReturn(ORDER_REFERENCE);
+        when(item.getItemOptions()).thenReturn(options);
+        when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
+        when(options.getFilingHistoryDescriptionValues()).thenReturn(new HashMap<>());
+
+        // When and then
+        assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
+                factoryUnderTest.createMessage(order))
+                .withMessage("Unable to create message for order ORD-432118-793830 item ID MID-242116-007650!")
+                .withCause(new NullPointerException());
 
     }
 

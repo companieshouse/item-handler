@@ -3,11 +3,11 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -54,18 +55,27 @@ public class ItemMessageFactory {
 	 * Creates an item message for onward production to an outbound Kafka topic.
 	 * @param order the {@link OrderData} instance retrieved from the Orders API
 	 * @return the avro message representing the item (plus some order related information)
-	 * @throws SerializationException should there be a failure to serialize the Kafka message
-	 * @throws JsonProcessingException should there be an error serialising order content
+	 * @throws KafkaMessagingException (non-retryable) should there be any error creating the message
 	 */
-	public Message createMessage(final OrderData order) throws SerializationException, JsonProcessingException {
+	public Message createMessage(final OrderData order) throws KafkaMessagingException {
 		LOGGER.trace("Creating item message"); // TODO GCI-1301 Consider logging
-		final ChdItemOrdered outgoing = buildChdItemOrdered(order);
-		final AvroSerializer<ChdItemOrdered> serializer =
-				serializerFactory.getGenericRecordSerializer(ChdItemOrdered.class);
-		final Message message = new Message();
-		message.setValue(serializer.toBinary(outgoing));
-		message.setTopic(CHD_ITEM_ORDERED_TOPIC);
-		message.setTimestamp(new Date().getTime());
+		final Message message;
+		try {
+			final ChdItemOrdered outgoing = buildChdItemOrdered(order);
+			final AvroSerializer<ChdItemOrdered> serializer =
+					serializerFactory.getGenericRecordSerializer(ChdItemOrdered.class);
+			message = new Message();
+			message.setValue(serializer.toBinary(outgoing));
+			message.setTopic(CHD_ITEM_ORDERED_TOPIC);
+			message.setTimestamp(new Date().getTime());
+		} catch (Exception ex) {
+			final String errorMessage =
+					format("Unable to create message for order %s item ID %s!",
+							order.getReference(),
+							order.getItems().get(0).getId());
+			LOGGER.error(errorMessage, ex);
+			throw new KafkaMessagingException(errorMessage, ex);
+		}
 		return message;
 	}
 
