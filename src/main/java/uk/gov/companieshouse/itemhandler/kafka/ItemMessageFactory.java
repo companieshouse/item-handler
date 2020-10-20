@@ -79,7 +79,6 @@ public class ItemMessageFactory {
 		return message;
 	}
 
-	// TODO GCI-1301 Consider MapStruct or similar?
 	/**
 	 * Creates a {@link ChdItemOrdered} Kafka message content instance from the {@link OrderData} instance
 	 * provided.
@@ -152,7 +151,7 @@ public class ItemMessageFactory {
 		optionsForMid.put(FILING_HISTORY_ID, options.getFilingHistoryId());
 		optionsForMid.put(FILING_HISTORY_DATE, options.getFilingHistoryDate());
 		optionsForMid.put(FILING_HISTORY_DESCRIPTION, options.getFilingHistoryDescription());
-		// TODO GCI-1301 This becomes an implicit contract - consumer needs to deserialise to Map<String, Object>.
+		// Note this implicit contract - consumer needs to deserialise to Map<String, Object>.
 		optionsForMid.put(FILING_HISTORY_DESCRIPTION_VALUES,
 				objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
 		optionsForMid.put(FILING_HISTORY_TYPE, options.getFilingHistoryType());
