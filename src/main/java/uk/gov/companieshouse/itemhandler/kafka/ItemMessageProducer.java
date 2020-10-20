@@ -2,7 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -43,8 +43,8 @@ public class ItemMessageProducer {
         logIfNotNull(logMap, ITEM_ID, itemId);
         LOGGER.info("Sending message to kafka producer", logMap);
 
+        final Message message = itemMessageFactory.createMessage(order);
         try {
-            final Message message = itemMessageFactory.createMessage(order);
             itemKafkaProducer.sendMessage(orderReference, itemId, message,
                     recordMetadata ->
                             logOffsetFollowingSendIngOfMessage(orderReference, itemId, recordMetadata));
@@ -53,7 +53,8 @@ public class ItemMessageProducer {
                     "Kafka item message could not be sent for order reference %s item ID %s", orderReference, itemId);
             logMap.put(LoggingUtils.EXCEPTION, e);
             LOGGER.error(errorMessage, logMap);
-            throw new KafkaMessagingException(errorMessage, e);
+            // An error occurring during message production may be transient. Throw a retryable exception.
+            throw new RetryableErrorException(errorMessage, e);
         }
     }
 

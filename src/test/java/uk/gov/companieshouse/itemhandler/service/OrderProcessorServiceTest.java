@@ -7,12 +7,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -70,33 +73,50 @@ class OrderProcessorServiceTest {
     }
 
     @Test
-    void doesNotPropagateJsonProcessingException() throws Exception {
-        doesNotPropagateException(TestJsonProcessingException::new);
+    void propagatesJsonProcessingException() throws Exception {
+        propagatesException(TestJsonProcessingException::new);
     }
 
     @Test
-    void doesNotPropagateSerializationException() throws Exception {
-        doesNotPropagateException(SerializationException::new);
+    void propagatesSerializationException() throws Exception {
+        propagatesException(SerializationException::new);
     }
 
     @Test
-    void doesNotPropagateExecutionException() throws Exception {
-        doesNotPropagateException(TestExecutionException::new);
+    void propagatesExecutionException() throws Exception {
+        propagatesException(TestExecutionException::new);
     }
 
     @Test
-    void doesNotPropagateInterruptedException() throws Exception {
-        doesNotPropagateException(InterruptedException::new);
+    void propagatesInterruptedException() throws Exception {
+        propagatesException(InterruptedException::new);
     }
 
-    private void doesNotPropagateException(final Function<String, Exception> constructor)  throws Exception {
+    @Test
+    void propagatesServiceException() throws Exception {
+        propagatesException(ServiceException::new);
+    }
+
+    @Test
+    void propagatesKafkaMessagingException() throws Exception {
+        propagatesException(KafkaMessagingException::new);
+    }
+
+    @Test
+    void propagatesRetryableErrorException() throws Exception {
+        propagatesException(RetryableErrorException::new);
+    }
+
+    private void propagatesException(final Function<String, Exception> constructor)  throws Exception {
 
         // Given
-        givenSendCertificateOrderConfirmationThrowsException(TestJsonProcessingException::new);
+        givenSendCertificateOrderConfirmationThrowsException(constructor);
 
         // When and then
-        assertThatCode(() -> orderProcessorUnderTest.processOrderReceived(ORDER_URI))
-                .doesNotThrowAnyException();
+        assertThatExceptionOfType(constructor.apply(TEST_EXCEPTION_MESSAGE).getClass()).isThrownBy(() ->
+                orderProcessorUnderTest.processOrderReceived(ORDER_URI))
+                .withMessage(TEST_EXCEPTION_MESSAGE)
+                .withNoCause();
     }
 
     /**
@@ -105,7 +125,8 @@ class OrderProcessorServiceTest {
      * @param constructor the Exception constructor to use
      * @throws Exception should something unexpected happen
      */
-    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor) throws Exception {
+    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor)
+            throws Exception {
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
         when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
         doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(orderRouter).routeOrder(any(OrderData.class));

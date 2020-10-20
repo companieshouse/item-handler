@@ -9,6 +9,7 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.MessageHeaders;
+import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -138,6 +139,15 @@ public class OrdersKafkaConsumerTest {
     public void republishMessageNotCalledOnNonRetryableErrorException() {
         // Given & When
         doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), any());
+        ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
+        // Then
+        verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void republishMessageNotCalledOnNonRetryableKafkaMessagingException() {
+        // Given & When
+        doThrow(new KafkaMessagingException(PROCESSING_ERROR_MESSAGE, new Exception())).when(ordersKafkaConsumer).logMessageReceived(any(), any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
         // Then
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
