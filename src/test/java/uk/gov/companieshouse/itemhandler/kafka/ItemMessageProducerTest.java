@@ -158,8 +158,7 @@ public class ItemMessageProducerTest {
         when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
 
         // When
-        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(
-                ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, recordMetadata);
+        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(any(OrderData.class), eq(recordMetadata));
 
         // Then
         verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();
