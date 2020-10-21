@@ -55,9 +55,8 @@ public class ItemMessageFactory {
 	 * Creates an item message for onward production to an outbound Kafka topic.
 	 * @param order the {@link OrderData} instance retrieved from the Orders API
 	 * @return the avro message representing the item (plus some order related information)
-	 * @throws KafkaMessagingException (non-retryable) should there be any error creating the message
 	 */
-	public Message createMessage(final OrderData order) throws KafkaMessagingException {
+	public Message createMessage(final OrderData order) {
 		LOGGER.trace("Creating item message");
 		final Message message;
 		try {
