@@ -42,14 +42,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         final Item item = order.getItems().get(0);
 
         // Order details field mappings
-        final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
+        final CertificateItemOptions certificateItemOptions = (CertificateItemOptions) item.getItemOptions();
+        final String timescale = certificateItemOptions.getDeliveryTimescale().toString();
         confirmation.setDeliveryMethod(toSentenceCase(timescale) + " delivery");
         confirmation.setTimeOfPayment(getTimeOfPayment(order.getOrderedAt()));
 
         // Certificate details field mappings
         confirmation.setCompanyName(item.getCompanyName());
         confirmation.setCompanyNumber(item.getCompanyNumber());
-        CertificateItemOptions certificateItemOptions = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateType(getCertificateType(certificateItemOptions.getCertificateType()));
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
     }

@@ -55,7 +55,8 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
         confirmation.setCompanyNumber(item.getCompanyNumber());
 
         if (item.getKind().equals("item#certified-copy")) {
-            final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
+            final String timescale =
+                    ((CertifiedCopyItemOptions) item.getItemOptions()).getDeliveryTimescale().toString();
             String deliveryMethod = String.format("%s delivery (aim to dispatch within 4 working days)", toSentenceCase(timescale));
             confirmation.setDeliveryMethod(deliveryMethod);
             confirmation.setItemDetails(collateItemDetailsForCertifiedCopy(item));

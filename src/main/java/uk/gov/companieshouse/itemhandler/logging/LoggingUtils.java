@@ -32,6 +32,8 @@ public class LoggingUtils {
     public static final String DESCRIPTION_LOG_KEY = "description_key";
     public static final String ITEM_ID = "item_id";
     public static final String EXCEPTION = "exception";
+    public static final String PAYMENT_REFERENCE = "payment_reference";
+    public static final String COMPANY_NUMBER = "company_number";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
 

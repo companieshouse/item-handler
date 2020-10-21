@@ -11,9 +11,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -22,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -46,12 +48,20 @@ public class ItemMessageProducerTest {
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
     private static final int PARTITION_VALUE = 0;
+    private static final String COMPANY_NUMBER      = "00006444";
+    private static final String PAYMENT_REF         = "payment-ref-xyz";
     private static final Item ITEM;
     private static final RuntimeException KAFKA_EXCEPTION = new RuntimeException("Test exception");
+    private static final OrderData ORDER;
 
     static {
+        ORDER = new OrderData();
+        ORDER.setReference(ORDER_REFERENCE);
+        ORDER.setPaymentReference(PAYMENT_REF);
         ITEM = new Item();
         ITEM.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
+        ITEM.setCompanyNumber(COMPANY_NUMBER);
+        ORDER.setItems(singletonList(ITEM));
     }
 
     @InjectMocks
@@ -74,13 +84,13 @@ public class ItemMessageProducerTest {
 
     @Test
     @DisplayName("sendMessage delegates message creation to ItemMessageFactory")
-    void sendMessageDelegatesMessageCreation() throws Exception {
+    void sendMessageDelegatesMessageCreation() {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
-        verify(itemMessageFactory).createMessage(ITEM);
+        verify(itemMessageFactory).createMessage(ORDER);
 
     }
 
@@ -89,10 +99,10 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageSending() throws Exception {
 
         // Given
-        when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
+        when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verify(itemKafkaProducer).sendMessage(
@@ -101,11 +111,11 @@ public class ItemMessageProducerTest {
     }
 
     @Test
-    @DisplayName("sendMessage propagates ItemKafkaProducer exception as a KafkaMessagingException")
-    void sendMessagePropagatesProductionExceptionAsKafkaMessagingException() throws Exception {
+    @DisplayName("sendMessage propagates ItemKafkaProducer exception as a RetryableErrorException")
+    void sendMessagePropagatesProductionExceptionAsRetryableErrorException() throws Exception {
 
         // Given
-        when(itemMessageFactory.createMessage(ITEM)).thenReturn(message);
+        when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
 
         doThrow(KAFKA_EXCEPTION).
         when(itemKafkaProducer).sendMessage(
@@ -115,8 +125,8 @@ public class ItemMessageProducerTest {
                 any(Consumer.class));
 
         // When and then
-        assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
-                messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM))
+        assertThatExceptionOfType(RetryableErrorException.class).isThrownBy(() ->
+                messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID))
                 .withMessage("Kafka item message could not be sent for order reference ORD-432118-793830 item " +
                         "ID MID-242116-007650")
                 .withCause(KAFKA_EXCEPTION);
@@ -134,7 +144,7 @@ public class ItemMessageProducerTest {
         mockStatic(LoggingUtils.class);
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, ITEM);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verifyLoggingBeforeMessageSendingIsAdequate();
@@ -156,8 +166,7 @@ public class ItemMessageProducerTest {
         when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
 
         // When
-        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(
-                ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID, recordMetadata);
+        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(ORDER, recordMetadata);
 
         // Then
         verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();

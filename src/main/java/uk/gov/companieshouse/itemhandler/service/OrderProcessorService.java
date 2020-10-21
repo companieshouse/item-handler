@@ -16,7 +16,8 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNul
  * <ol>
  *     <li>handles order received notification</li>
  *     <li>retrieves the order (data) from the Orders API</li>
- *     <li>sends a certificate order confirmation via the CHS Email Sender</li>
+ *     <li>sends a certificate or certified copy order confirmation via the CHS Email Sender OR</li>
+ *     <li>sends a MID item message to the CHD Order Consumer</li>
  * </ol>
  */
 @Service
@@ -34,7 +35,7 @@ public class OrderProcessorService {
      * Implements all of the business logic required to process the notification of an order received.
      * @param orderUri the URI representing the order received
      */
-    public void processOrderReceived(final String orderUri) {
+    public void processOrderReceived(final String orderUri) throws Exception {
         final OrderData order;
         Map<String, Object> logMap = createLogMap();
         logIfNotNull(logMap, ORDER_URI, orderUri);
@@ -42,7 +43,7 @@ public class OrderProcessorService {
             order = ordersApi.getOrderData(orderUri);
         } catch (Exception ex) {
             getLogger().error("Exception caught getting order data.", ex, logMap);
-            return;
+            throw ex;
         }
         logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
         getLogger().info("Processing order received", logMap);
@@ -50,6 +51,7 @@ public class OrderProcessorService {
             orderRouter.routeOrder(order);
         } catch (Exception ex) {
             getLogger().error("Exception caught routing order.", ex, logMap);
+            throw ex;
         }
 
     }
