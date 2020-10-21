@@ -58,7 +58,7 @@ public class ItemMessageFactory {
 	 * @throws KafkaMessagingException (non-retryable) should there be any error creating the message
 	 */
 	public Message createMessage(final OrderData order) throws KafkaMessagingException {
-		LOGGER.trace("Creating item message"); // TODO GCI-1301 Consider logging
+		LOGGER.trace("Creating item message");
 		final Message message;
 		try {
 			final ChdItemOrdered outgoing = buildChdItemOrdered(order);
