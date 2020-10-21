@@ -23,6 +23,7 @@ import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -47,13 +48,20 @@ public class ItemMessageProducerTest {
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
     private static final int PARTITION_VALUE = 0;
+    private static final String COMPANY_NUMBER      = "00006444";
+    private static final String PAYMENT_REF         = "payment-ref-xyz";
     private static final Item ITEM;
     private static final RuntimeException KAFKA_EXCEPTION = new RuntimeException("Test exception");
-    private static final OrderData ORDER = new OrderData();
+    private static final OrderData ORDER;
 
     static {
+        ORDER = new OrderData();
+        ORDER.setReference(ORDER_REFERENCE);
+        ORDER.setPaymentReference(PAYMENT_REF);
         ITEM = new Item();
         ITEM.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
+        ITEM.setCompanyNumber(COMPANY_NUMBER);
+        ORDER.setItems(singletonList(ITEM));
     }
 
     @InjectMocks
@@ -76,7 +84,7 @@ public class ItemMessageProducerTest {
 
     @Test
     @DisplayName("sendMessage delegates message creation to ItemMessageFactory")
-    void sendMessageDelegatesMessageCreation() throws Exception {
+    void sendMessageDelegatesMessageCreation() {
 
         // When
         messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
@@ -158,7 +166,7 @@ public class ItemMessageProducerTest {
         when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
 
         // When
-        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(any(OrderData.class), eq(recordMetadata));
+        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(ORDER, recordMetadata);
 
         // Then
         verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();
