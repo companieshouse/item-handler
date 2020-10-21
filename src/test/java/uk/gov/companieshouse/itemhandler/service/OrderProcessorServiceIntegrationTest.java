@@ -79,7 +79,6 @@ class OrderProcessorServiceIntegrationTest {
                             "uk.gov.companieshouse.orders.items.ChdItemOrdered"));
     }
 
-    // TODO GCI-1301 Why not define a specific retryable exception?
     @Test
     @DisplayName("processOrderReceived() propagates retryable RetryableErrorException so consumer can retry")
     void propagatesRetryableErrorException() throws Exception {
