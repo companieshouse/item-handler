@@ -19,8 +19,7 @@ public enum ItemType {
     CERTIFIED_COPY("item#certified-copy"),
     MISSING_IMAGE_DELIVERY("item#missing-image-delivery") {
         @Override
-        public void sendMessages(OrderData order)
-                throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
+        public void sendMessages(OrderData order) {
             getItemSender().sendItemsToChd(order);
         }
     };
