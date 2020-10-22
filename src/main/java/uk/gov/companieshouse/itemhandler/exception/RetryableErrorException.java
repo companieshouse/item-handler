@@ -5,7 +5,12 @@ package uk.gov.companieshouse.itemhandler.exception;
  * network connectivity error while accessing an external api that may go away during subsequent retries.
  */
 public class RetryableErrorException extends RuntimeException {
+
     public RetryableErrorException(String message) {
         super(message);
+    }
+
+    public RetryableErrorException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

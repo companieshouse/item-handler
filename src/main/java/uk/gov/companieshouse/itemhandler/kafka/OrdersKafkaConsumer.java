@@ -41,7 +41,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private static long errorRecoveryOffset = 0L;
     private static final int MAX_RETRY_ATTEMPTS = 3;
 
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
     private boolean errorConsumerEnabled;
@@ -212,7 +212,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             String orderUri) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        LoggingUtils.getLogger().info("Order received message successfully processed", logMap);
+        LoggingUtils.getLogger().info("Order received message processing completed", logMap);
     }
 
     protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {

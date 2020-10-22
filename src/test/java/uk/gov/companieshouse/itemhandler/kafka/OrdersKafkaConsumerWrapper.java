@@ -32,7 +32,7 @@ public class OrdersKafkaConsumerWrapper {
     private CountDownLatch latch = new CountDownLatch(1);
     private String orderUri;
     private CHConsumerType testType = CHConsumerType.MAIN_CONSUMER;
-    @Value("${spring.kafka.consumer.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String brokerAddresses;
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";

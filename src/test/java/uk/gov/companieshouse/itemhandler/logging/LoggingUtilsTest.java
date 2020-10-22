@@ -5,6 +5,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import java.util.Map;
+
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +19,7 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @ExtendWith(MockitoExtension.class)
-public class LoggingUtilsTest {
+class LoggingUtilsTest {
     
     private static final String TOPIC_VALUE = "topic";
     private static final String KEY_VALUE = "key";
@@ -29,6 +31,9 @@ public class LoggingUtilsTest {
     org.springframework.messaging.Message<OrderReceived> orderReceivedMessage;
     @Mock
     MessageHeaders messageHeaders;
+
+    @Mock
+    private RecordMetadata acknowledgedMessage;
 
     @Test
     @DisplayName("createLogMap returns a new log map")
@@ -105,6 +110,26 @@ public class LoggingUtilsTest {
         assertNotNull(logMap);
         assertEquals(2, logMap.size());
         assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+    }
+
+    @Test
+    @DisplayName("createLogMapWithAcknowledgedKafkaMessage returns a populated map")
+    void createLogMapWithAcknowledgedKafkaMessageAllInfo() {
+
+        // Given
+        when(acknowledgedMessage.topic()).thenReturn(TOPIC_VALUE);
+        when(acknowledgedMessage.partition()).thenReturn(PARTITION_VALUE);
+        when(acknowledgedMessage.offset()).thenReturn(OFFSET_VALUE);
+
+        // When
+        final Map<String, Object> logMap = LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(acknowledgedMessage);
+
+        // Then
+        assertNotNull(logMap);
+        assertEquals(3, logMap.size());
+        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
         assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
     }
     

@@ -84,7 +84,7 @@ public class EmailService {
     }
 
     /**
-     * Sends out a certificate order confirmation email.
+     * Sends out a certificate or certified copy order confirmation email.
      *
      * @param order the order information used to compose the order confirmation email.
      * @throws JsonProcessingException

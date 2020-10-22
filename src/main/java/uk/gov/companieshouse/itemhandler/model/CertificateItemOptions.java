@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.itemhandler.model;
 
-public class CertificateItemOptions extends ItemOptions {
+public class CertificateItemOptions extends DeliveryItemOptions {
 
     private CertificateType certificateType;
 

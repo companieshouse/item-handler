@@ -47,15 +47,16 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
     public abstract ItemOrderConfirmation orderToConfirmation(OrderData order);
 
     @AfterMapping
-    public void mapCertifiedCopyItems(final OrderData order,
-                                       final @MappingTarget ItemOrderConfirmation confirmation) {
+    public void mapCertifiedCopyOrMissingImageDeliveryItems(final OrderData order,
+                                                            final @MappingTarget ItemOrderConfirmation confirmation) {
         final Item item = order.getItems().get(0);
 
         confirmation.setCompanyName(item.getCompanyName());
         confirmation.setCompanyNumber(item.getCompanyNumber());
 
         if (item.getKind().equals("item#certified-copy")) {
-            final String timescale = item.getItemOptions().getDeliveryTimescale().toString();
+            final String timescale =
+                    ((CertifiedCopyItemOptions) item.getItemOptions()).getDeliveryTimescale().toString();
             String deliveryMethod = String.format("%s delivery (aim to dispatch within 4 working days)", toSentenceCase(timescale));
             confirmation.setDeliveryMethod(deliveryMethod);
             confirmation.setItemDetails(collateItemDetailsForCertifiedCopy(item));
