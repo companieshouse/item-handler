@@ -2,8 +2,6 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
@@ -19,7 +17,6 @@ import static uk.gov.companieshouse.itemhandler.util.TestUtils.createDeliveryDet
  * {@link uk.gov.companieshouse.orders.items.ChdItemOrdered} to verify whether fields are handled as optional
  * within the ChdItemOrdered Avro schema.
  */
-@ExtendWith(MockitoExtension.class)
 class ChdItemOrderedAvroSerializerTest {
 
     final AvroSerializer<ChdItemOrdered> serializerUnderTest =
