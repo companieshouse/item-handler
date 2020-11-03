@@ -12,8 +12,8 @@
     <artifactId>item-handler</artifactId>
     <version>unversioned</version>
     <name>item-handler</name>
-    <description>Handler service dealing with placed orders and producing individual items to be
-        processed internally
+    <description>
+        Handler service dealing with placed orders and producing individual items to be processed internally
     </description>
 
     <properties>
