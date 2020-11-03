@@ -216,6 +216,8 @@ public class OrdersApiToOrderDataMapperTest {
         MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryDescriptionValues(DOCUMENT.getFilingHistoryDescriptionValues());
         MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryId(DOCUMENT.getFilingHistoryId());
         MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryType(DOCUMENT.getFilingHistoryType());
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryCategory("filingHistoryCategory");
+        MISSING_IMAGE_DELIVERY_ITEM_OPTIONS.setFilingHistoryBarcode("01234567");
 
         LINKS_API = new LinksApi();
         LINKS_API.setSelf(LINKS_SELF);
@@ -398,6 +400,8 @@ public class OrdersApiToOrderDataMapperTest {
         assertThat(target.getFilingHistoryDescriptionValues(), is(source.getFilingHistoryDescriptionValues()));
         assertThat(target.getFilingHistoryId(), is(source.getFilingHistoryId()));
         assertThat(target.getFilingHistoryType(), is(source.getFilingHistoryType()));
+        assertThat(target.getFilingHistoryCategory(), is(source.getFilingHistoryCategory()));
+        assertThat(target.getFilingHistoryBarcode(), is(source.getFilingHistoryBarcode()));
     }
 
     private void assertDetailsSame(final DirectorOrSecretaryDetailsApi source,

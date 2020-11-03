@@ -16,6 +16,8 @@ public class MissingImageDeliveryItemOptions extends ItemOptions{
 
     private String filingHistoryCategory;
 
+    private String filingHistoryBarcode;
+
     public String getFilingHistoryDate() {
         return filingHistoryDate;
     }
@@ -62,5 +64,13 @@ public class MissingImageDeliveryItemOptions extends ItemOptions{
 
     public void setFilingHistoryCategory(String filingHistoryCategory) {
         this.filingHistoryCategory = filingHistoryCategory;
+    }
+
+    public String getFilingHistoryBarcode() {
+        return filingHistoryBarcode;
+    }
+
+    public void setFilingHistoryBarcode(String filingHistoryBarcode) {
+        this.filingHistoryBarcode = filingHistoryBarcode;
     }
 }

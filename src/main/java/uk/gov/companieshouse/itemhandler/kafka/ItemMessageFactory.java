@@ -42,6 +42,7 @@ public class ItemMessageFactory {
     private static final String FILING_HISTORY_DESCRIPTION_VALUES = "filingHistoryDescriptionValues";
     private static final String FILING_HISTORY_TYPE = "filingHistoryType";
     private static final String FILING_HISTORY_CATEGORY = "filingHistoryCategory";
+    private static final String FILING_HISTORY_BARCODE = "filingHistory";
 
     private final SerializerFactory serializerFactory;
     private final ObjectMapper objectMapper;
@@ -159,6 +160,7 @@ public class ItemMessageFactory {
             objectMapper.writeValueAsString(options.getFilingHistoryDescriptionValues()));
         optionsForMid.put(FILING_HISTORY_TYPE, options.getFilingHistoryType());
         optionsForMid.put(FILING_HISTORY_CATEGORY, options.getFilingHistoryCategory());
+        optionsForMid.put(FILING_HISTORY_BARCODE, options.getFilingHistoryBarcode());
         return optionsForMid;
     }
 
