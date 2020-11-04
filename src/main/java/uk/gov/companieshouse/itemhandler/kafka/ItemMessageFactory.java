@@ -42,7 +42,7 @@ public class ItemMessageFactory {
     private static final String FILING_HISTORY_DESCRIPTION_VALUES = "filingHistoryDescriptionValues";
     private static final String FILING_HISTORY_TYPE = "filingHistoryType";
     private static final String FILING_HISTORY_CATEGORY = "filingHistoryCategory";
-    private static final String FILING_HISTORY_BARCODE = "filingHistory";
+    private static final String FILING_HISTORY_BARCODE = "filingHistoryBarcode";
 
     private final SerializerFactory serializerFactory;
     private final ObjectMapper objectMapper;
