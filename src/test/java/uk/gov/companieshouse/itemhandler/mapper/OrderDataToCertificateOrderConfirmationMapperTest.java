@@ -163,6 +163,10 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("Yes"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
