@@ -55,7 +55,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
         confirmation.setCertificateDirectors(getCertificateOptionsText(options.getDirectorDetails().getIncludeBasicInformation()));
-        confirmation.setCertificateSecretaries(getCertificateOptionsText(options.getSecretaryDetails().getIncludeBasicInformation()));
+
+        final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
+        if (secretaryDetails == null) {
+            confirmation.setCertificateSecretaries("Yes");
+        } else {
+            confirmation.setCertificateSecretaries(getCertificateOptionsText(secretaryDetails.getIncludeBasicInformation()));
+        }
+
         confirmation.setCertificateCompanyObjects(getCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));
     }
 

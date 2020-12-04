@@ -14,8 +14,6 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateSecretaries;
     private String certificateCompanyObjects;
 
-
-
     public String getFeeAmount() {
         return feeAmount;
     }
