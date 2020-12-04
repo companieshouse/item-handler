@@ -58,14 +58,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
         if (secretaryDetails == null) {
-            confirmation.setCertificateSecretaries("Yes");
+            confirmation.setCertificateSecretaries("No");
         } else {
             confirmation.setCertificateSecretaries(getCertificateOptionsText(secretaryDetails.getIncludeBasicInformation()));
         }
 
         final DirectorOrSecretaryDetails directorDetails = options.getDirectorDetails();
         if (directorDetails == null) {
-            confirmation.setCertificateDirectors("Yes");
+            confirmation.setCertificateDirectors("No");
         } else {
             confirmation.setCertificateDirectors(getCertificateOptionsText(directorDetails.getIncludeBasicInformation()));
         }
