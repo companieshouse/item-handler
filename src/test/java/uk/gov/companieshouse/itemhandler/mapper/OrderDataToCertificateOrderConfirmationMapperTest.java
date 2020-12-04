@@ -45,7 +45,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     private static final String[] FULL_CERTIFICATE_INCLUDES = new String[]{
             "Statement of good standing",
             "Registered office address",
-            "Directors",
             "Secretaries",
             "Company objects"
     };
@@ -126,7 +125,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         officeDetails.setIncludeAddressRecordsType(CURRENT);
         options.setRegisteredOfficeAddressDetails(officeDetails);
         final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
-        directors.setIncludeBasicInformation(true);
+        directors.setIncludeBasicInformation(false);
         options.setDirectorDetails(directors);
         final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
         secretaries.setIncludeBasicInformation(true);
@@ -164,7 +163,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
-        assertThat(confirmation.getCertificateDirectors(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
