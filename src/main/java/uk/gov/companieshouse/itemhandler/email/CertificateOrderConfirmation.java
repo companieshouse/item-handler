@@ -9,6 +9,10 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateType;
     private String[] certificateIncludes;
     private String deliveryMethod;
+    private String certificateGoodStandingInformation;
+    private String certificateDirectors;
+    private String certificateSecretaries;
+    private String certificateCompanyObjects;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -32,6 +36,38 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setCertificateIncludes(String[] certificateIncludes) {
         this.certificateIncludes = certificateIncludes;
+    }
+
+    public String getCertificateGoodStandingInformation() {
+        return certificateGoodStandingInformation;
+    }
+
+    public void setCertificateGoodStandingInformation(String certificateGoodStandingInformation) {
+        this.certificateGoodStandingInformation = certificateGoodStandingInformation;
+    }
+
+    public String getCertificateDirectors() {
+        return certificateDirectors;
+    }
+
+    public void setCertificateDirectors(String certificateDirectors) {
+        this.certificateDirectors = certificateDirectors;
+    }
+
+    public String getCertificateSecretaries() {
+        return certificateSecretaries;
+    }
+
+    public void setCertificateSecretaries(String certificateSecretaries) {
+        this.certificateSecretaries = certificateSecretaries;
+    }
+
+    public String getCertificateCompanyObjects() {
+        return certificateCompanyObjects;
+    }
+
+    public void setCertificateCompanyObjects(String certificateCompanyObjects) {
+        this.certificateCompanyObjects = certificateCompanyObjects;
     }
 
     public String getDeliveryMethod() {

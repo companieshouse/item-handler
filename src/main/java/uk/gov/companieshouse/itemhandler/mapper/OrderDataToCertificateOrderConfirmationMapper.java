@@ -52,6 +52,25 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCompanyNumber(item.getCompanyNumber());
         confirmation.setCertificateType(getCertificateType(certificateItemOptions.getCertificateType()));
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
+        final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
+        confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
+        confirmation.setCertificateDirectors(getCertificateOptionsText(options.getDirectorDetails().getIncludeBasicInformation()));
+
+        final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
+        if (secretaryDetails == null) {
+            confirmation.setCertificateSecretaries("No");
+        } else {
+            confirmation.setCertificateSecretaries(getCertificateOptionsText(secretaryDetails.getIncludeBasicInformation()));
+        }
+
+        final DirectorOrSecretaryDetails directorDetails = options.getDirectorDetails();
+        if (directorDetails == null) {
+            confirmation.setCertificateDirectors("No");
+        } else {
+            confirmation.setCertificateDirectors(getCertificateOptionsText(directorDetails.getIncludeBasicInformation()));
+        }
+
+        confirmation.setCertificateCompanyObjects(getCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));
     }
 
     /**
@@ -81,6 +100,13 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             includes.add("Company objects");
         }
         return includes.toArray(new String[0]);
+    }
+
+    default String getCertificateOptionsText (Boolean options) {
+        if (options == null) {
+            return "No";
+        }
+        return (options) ? "Yes": "No";
     }
 
     /**
