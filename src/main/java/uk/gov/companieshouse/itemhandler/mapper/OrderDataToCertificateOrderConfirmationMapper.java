@@ -63,6 +63,13 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             confirmation.setCertificateSecretaries(getCertificateOptionsText(secretaryDetails.getIncludeBasicInformation()));
         }
 
+        final DirectorOrSecretaryDetails directorDetails = options.getDirectorDetails();
+        if (directorDetails == null) {
+            confirmation.setCertificateDirectors("Yes");
+        } else {
+            confirmation.setCertificateDirectors(getCertificateOptionsText(directorDetails.getIncludeBasicInformation()));
+        }
+
         confirmation.setCertificateCompanyObjects(getCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));
     }
 
