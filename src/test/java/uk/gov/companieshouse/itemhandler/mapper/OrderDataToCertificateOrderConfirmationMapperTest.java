@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,12 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
             "Company objects"
     };
 
+    private OrderData order;
+    private ActionedBy orderedBy;
+    private DeliveryDetails delivery;
+    private Item item;
+    private CertificateItemOptions options;
+
     private static final LocalTime AM = LocalTime.of(7, 30, 15);
     private static final LocalTime PM = LocalTime.of(15, 30, 15);
     private static final LocalDate DATE = LocalDate.of(2020, 6, 4);
@@ -88,19 +95,17 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         }
     }
 
-    @Test
-    void orderToConfirmationBehavesAsExpected() {
-
-        // Given
-        final OrderData order = new OrderData();
+    @BeforeEach
+    void setUp(){
+        order = new OrderData();
         order.setReference("ORD-108815-904831");
         order.setPaymentReference("orderable_item_ORD-108815-904831");
 
-        final ActionedBy orderedBy = new ActionedBy();
+        orderedBy = new ActionedBy();
         orderedBy.setEmail("demo@ch.gov.uk");
         order.setOrderedBy(orderedBy);
 
-        final DeliveryDetails delivery = new DeliveryDetails();
+        delivery = new DeliveryDetails();
         delivery.setForename("Jenny");
         delivery.setSurname("Wilson");
         delivery.setAddressLine1("Kemp House Capital Office");
@@ -112,13 +117,18 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         delivery.setCountry("England");
 
         order.setDeliveryDetails(delivery);
-        final Item item = new Item();
+
+        item = new Item();
         item.setCompanyName("THE COMPANY");
         item.setCompanyNumber("00000001");
         item.setKind("item#certificate");
-        final CertificateItemOptions options = new CertificateItemOptions();
+        options = new CertificateItemOptions();
         options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpected() {
 
         options.setIncludeGoodStandingInformation(true);
         final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
@@ -139,29 +149,98 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
 
-        // Then
-        assertThat(confirmation.getTo(), is(nullValue()));
+    @Test
+    void orderToConfirmationBehavesAsExpectedNullDirectorDetails() {
 
-        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
-        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        options.setDirectorDetails(null);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
 
-        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
 
-        assertThat(confirmation.getForename(), is("Jenny"));
-        assertThat(confirmation.getSurname(), is("Wilson"));
-        assertThat(confirmation.getAddressLine1(), is("Kemp House Capital Office"));
-        assertThat(confirmation.getAddressLine2(), is("LTD"));
-        assertThat(confirmation.getHouseName(), is("Kemp House"));
-        assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
-        assertThat(confirmation.getCity(), is("London"));
-        assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
-        assertThat(confirmation.getCountry(), is("England"));
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
 
-        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
-        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
-        assertThat(confirmation.getCompanyNumber(), is("00000001"));
-        assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
+    @Test
+    void orderToConfirmationBehavesAsExpectedNullSecretaries() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        options.setSecretaryDetails(null);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("No"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedNullDirectorsDetails() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(null);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -173,12 +252,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
     @Test
     void orderToConfirmationCopesWithMissingDirectorAndSecretaryDetails() {
-        final OrderData order = new OrderData();
-        final Item item = new Item();
-        item.setKind("item#certificate");
-        final CertificateItemOptions options = new CertificateItemOptions();
-        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
-        options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
 
         options.setIncludeGoodStandingInformation(true);
         final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
@@ -276,6 +349,32 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
                 assertThat(mapperUnderTest.getCertificateType(type), is(mapperUnderTest.toSentenceCase(type.toString())));
             }
         }
+    }
+
+    void assertInformationIsAsExpected(CertificateOrderConfirmation confirmation){
+
+        // Then
+        assertThat(confirmation.getTo(), is(nullValue()));
+
+        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
+        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+
+        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+
+        assertThat(confirmation.getForename(), is("Jenny"));
+        assertThat(confirmation.getSurname(), is("Wilson"));
+        assertThat(confirmation.getAddressLine1(), is("Kemp House Capital Office"));
+        assertThat(confirmation.getAddressLine2(), is("LTD"));
+        assertThat(confirmation.getHouseName(), is("Kemp House"));
+        assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
+        assertThat(confirmation.getCity(), is("London"));
+        assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
+        assertThat(confirmation.getCountry(), is("England"));
+
+        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
+        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
+        assertThat(confirmation.getCompanyNumber(), is("00000001"));
+        assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
     }
 
 }
