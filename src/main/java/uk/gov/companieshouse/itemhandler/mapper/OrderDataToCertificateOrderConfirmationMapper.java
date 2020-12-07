@@ -54,7 +54,6 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
-        confirmation.setCertificateDirectors(getCertificateOptionsText(options.getDirectorDetails().getIncludeBasicInformation()));
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
         if (secretaryDetails == null) {
@@ -78,6 +77,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
      * @param certificate the certificate item
      * @return the certificate includes
      */
+    //Remove when all tickets are done
     default String[] getCertificateIncludes(final Item certificate) {
         final List<String> includes = new ArrayList<>();
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
