@@ -106,17 +106,23 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
     default String getCertificateRegisteredOfficeOptions(final Item certificate) {
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final RegisteredOfficeAddressDetails office = options.getRegisteredOfficeAddressDetails();
-        switch (office.getIncludeAddressRecordsType()) {
-            case CURRENT:
-                return "Current address";
-            case CURRENT_AND_PREVIOUS:
-                return "Current address and the one previous";
-            case CURRENT_PREVIOUS_AND_PRIOR:
-                return "Current address and the two previous";
-            case ALL:
-                return "All current and previous addresses";
-            default:
-                return "No";
+        if (office.getIncludeAddressRecordsType() == null)
+        {
+            return "No";
+        }
+        else{
+            switch (office.getIncludeAddressRecordsType()) {
+                case CURRENT:
+                    return "Current address";
+                case CURRENT_AND_PREVIOUS:
+                    return "Current address and the one previous";
+                case CURRENT_PREVIOUS_AND_PRIOR:
+                    return "Current address and the two previous";
+                case ALL:
+                    return "All current and previous addresses";
+                default:
+                    return "No";
+            }
         }
     }
 
