@@ -125,7 +125,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         officeDetails.setIncludeAddressRecordsType(CURRENT);
         options.setRegisteredOfficeAddressDetails(officeDetails);
         final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
-        directors.setIncludeBasicInformation(false);
+        directors.setIncludeBasicInformation(null);
         options.setDirectorDetails(directors);
         final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
         secretaries.setIncludeBasicInformation(true);
