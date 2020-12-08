@@ -32,9 +32,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.*;
 import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -45,7 +44,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
 
     private static final String[] FULL_CERTIFICATE_INCLUDES = new String[]{
             "Statement of good standing",
-            "Registered office address",
             "Secretaries",
             "Company objects"
     };
@@ -154,7 +152,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
-        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
     }
@@ -184,7 +181,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
-        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
     }
@@ -245,7 +241,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
-        assertThat(confirmation.getCertificateIncludes(), is(FULL_CERTIFICATE_INCLUDES));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
     }
@@ -258,15 +253,186 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         officeDetails.setIncludeAddressRecordsType(CURRENT);
         options.setRegisteredOfficeAddressDetails(officeDetails);
         final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
         options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
         order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
 
+        // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
-        assertThat(confirmation.getCertificateIncludes(), is(CERTIFICATE_INCLUDES_WITHOUT_DIRECTOR_AND_SECRETARY_DETAILS));
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationROOCurrentAddress() {
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationROOCurrentAddressAndOnePrevious() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT_AND_PREVIOUS);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address and the one previous"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationROOCurrentAddressAndTwoPrevious() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(CURRENT_PREVIOUS_AND_PRIOR);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address and the two previous"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationROOAllAddresses() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(ALL);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("All current and previous addresses"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationROONoAddresses() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(null);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
     }
 
     @Test

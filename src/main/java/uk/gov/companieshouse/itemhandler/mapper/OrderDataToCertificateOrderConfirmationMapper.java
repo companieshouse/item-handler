@@ -52,6 +52,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCompanyNumber(item.getCompanyNumber());
         confirmation.setCertificateType(getCertificateType(certificateItemOptions.getCertificateType()));
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
+        confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
 
@@ -100,6 +101,29 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             includes.add("Company objects");
         }
         return includes.toArray(new String[0]);
+    }
+
+    default String getCertificateRegisteredOfficeOptions(final Item certificate) {
+        final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
+        final RegisteredOfficeAddressDetails office = options.getRegisteredOfficeAddressDetails();
+        if (office.getIncludeAddressRecordsType() == null)
+        {
+            return "No";
+        }
+        else{
+            switch (office.getIncludeAddressRecordsType()) {
+                case CURRENT:
+                    return "Current address";
+                case CURRENT_AND_PREVIOUS:
+                    return "Current address and the one previous";
+                case CURRENT_PREVIOUS_AND_PRIOR:
+                    return "Current address and the two previous";
+                case ALL:
+                    return "All current and previous addresses";
+                default:
+                    return "No";
+            }
+        }
     }
 
     default String getCertificateOptionsText (Boolean options) {
