@@ -52,8 +52,8 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCompanyNumber(item.getCompanyNumber());
         confirmation.setCertificateType(getCertificateType(certificateItemOptions.getCertificateType()));
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
-        confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
+        confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
@@ -106,8 +106,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
     default String getCertificateRegisteredOfficeOptions(final Item certificate) {
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final RegisteredOfficeAddressDetails office = options.getRegisteredOfficeAddressDetails();
-        if (office.getIncludeAddressRecordsType() == null)
-        {
+        if (office == null || office.getIncludeAddressRecordsType() == null) {
             return "No";
         }
         else{
