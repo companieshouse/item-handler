@@ -54,6 +54,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
+        confirmation.setCertificateDirectorOptions(getCertificateDirectorOptions(item));
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
@@ -124,6 +125,35 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             }
         }
     }
+
+    default String[] getCertificateDirectorOptions(final Item certificate) {
+        final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
+        final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
+        final List<String> includes = new ArrayList<>();
+        if (directors == null || directors.getIncludeBasicInformation() == null) {
+            includes.add("No");
+        }
+        if (directors.getIncludeAddress()) {
+            includes.add("Correspondence address");
+        }
+        if (directors.getIncludeOccupation()) {
+            includes.add("Occupation");
+        }
+        if (directors.getIncludeDobType() === "partial") {
+            includes.add("Date of birth (month and year)");
+        }
+        if (directors.getIncludeAppointmentDate()) {
+            includes.add("Appointment date");
+        }
+        if (directors.getIncludeNationality()) {
+            includes.add("Nationality");
+        }
+        if (directors.getIncludeCountryOfResidence()) {
+            includes.add("Country of residence");
+        }
+        return includes.toArray(new String[0]);
+    }
+
 
     default String getCertificateOptionsText (Boolean options) {
         if (options == null) {

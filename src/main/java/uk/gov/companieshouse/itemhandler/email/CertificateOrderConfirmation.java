@@ -13,6 +13,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateDirectors;
     private String certificateSecretaries;
     private String certificateCompanyObjects;
+    private String[] certificateDirectorOptions;
 
     private String certificateRegisteredOfficeOptions;
 
@@ -54,6 +55,14 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setCertificateRegisteredOfficeOptions(String certificateRegisteredOfficeOptions) {
         this.certificateRegisteredOfficeOptions = certificateRegisteredOfficeOptions;
+    }
+
+    public String[] getCertificateDirectorOptions() {
+        return certificateDirectorOptions;
+    }
+
+    public void setCertificateDirectorOptions(String[] certificateDirectorOptions) {
+        this.certificateDirectorOptions = certificateDirectorOptions;
     }
 
     public String getCertificateDirectors() {
