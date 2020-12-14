@@ -139,7 +139,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         if (directors.getIncludeOccupation()) {
             includes.add("Occupation");
         }
-        if (directors.getIncludeDobType() === "partial") {
+        if (directors.getIncludeDobType() != null) {
             includes.add("Date of birth (month and year)");
         }
         if (directors.getIncludeAppointmentDate()) {
