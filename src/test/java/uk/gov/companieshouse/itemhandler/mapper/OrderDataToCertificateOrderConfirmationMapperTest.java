@@ -10,15 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.model.ActionedBy;
-import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.CertificateType;
-import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
-import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
-import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
-import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
+import uk.gov.companieshouse.itemhandler.model.*;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDate;
@@ -429,6 +421,127 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationDirectorsOptionsAllYes() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(null);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(true);
+        directors.setIncludeDobType(IncludeDobType.PARTIAL);
+        directors.setIncludeAddress(true);
+        directors.setIncludeAppointmentDate(true);
+        directors.setIncludeCountryOfResidence(true);
+        directors.setIncludeNationality(true);
+        directors.setIncludeOccupation(true);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
+        assertThat(confirmation.getCertificateDirectors(), is("Yes"));
+        assertThat(directors.getIncludeDobType(), is(IncludeDobType.PARTIAL));
+        assertThat(directors.getIncludeAddress(), is(true));
+        assertThat(directors.getIncludeAppointmentDate(), is(true));
+        assertThat(directors.getIncludeCountryOfResidence(), is(true));
+        assertThat(directors.getIncludeNationality(), is(true));
+        assertThat(directors.getIncludeOccupation(), is(true));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationDirectorsOptionsIsNotSelected() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(null);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(false);
+        directors.setIncludeAddress(false);
+        directors.setIncludeAppointmentDate(false);
+        directors.setIncludeCountryOfResidence(false);
+        directors.setIncludeNationality(false);
+        directors.setIncludeOccupation(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(directors.getIncludeAddress(), is(false));
+        assertThat(directors.getIncludeAppointmentDate(), is(false));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getFeeAmount(), is("15"));
+    }
+
+    @Test
+    void orderToConfirmationDirectorsOptionsMixOfChoices() {
+
+        options.setIncludeGoodStandingInformation(true);
+        final RegisteredOfficeAddressDetails officeDetails = new RegisteredOfficeAddressDetails();
+        officeDetails.setIncludeAddressRecordsType(null);
+        options.setRegisteredOfficeAddressDetails(officeDetails);
+        final DirectorOrSecretaryDetails directors = new DirectorOrSecretaryDetails();
+        directors.setIncludeBasicInformation(true);
+        directors.setIncludeDobType(IncludeDobType.PARTIAL);
+        directors.setIncludeAddress(true);
+        directors.setIncludeAppointmentDate(false);
+        options.setDirectorDetails(directors);
+        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
+        secretaries.setIncludeBasicInformation(true);
+        options.setSecretaryDetails(secretaries);
+        options.setIncludeCompanyObjectsInformation(true);
+
+        item.setItemOptions(options);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
+        assertThat(confirmation.getCertificateDirectors(), is("Yes"));
+        assertThat(directors.getIncludeDobType(), is(IncludeDobType.PARTIAL));
+        assertThat(directors.getIncludeAddress(), is(true));
+        assertThat(directors.getIncludeAppointmentDate(), is(false));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));

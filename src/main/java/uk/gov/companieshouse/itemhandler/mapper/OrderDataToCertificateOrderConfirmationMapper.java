@@ -133,24 +133,34 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         if (directors == null || directors.getIncludeBasicInformation() == null) {
             includes.add("No");
         }
-        if (directors.getIncludeAddress()) {
-            includes.add("Correspondence address");
+        else{
+            includes.add("Including directors':");
+            if (directors.getIncludeAddress() != null && directors.getIncludeAddress()) {
+                includes.add("Correspondence address");
+            }
+            if (directors.getIncludeOccupation() != null && directors.getIncludeOccupation()) {
+                includes.add("Occupation");
+            }
+            if (directors.getIncludeDobType() != null && directors.getIncludeDobType() == IncludeDobType.PARTIAL) {
+                includes.add("Date of birth (month and year)");
+            }
+            if (directors.getIncludeAppointmentDate() != null && directors.getIncludeAppointmentDate()) {
+                includes.add("Appointment date");
+            }
+            if (directors.getIncludeNationality() != null && directors.getIncludeNationality()) {
+                includes.add("Nationality");
+            }
+            if (directors.getIncludeCountryOfResidence() != null && directors.getIncludeCountryOfResidence()) {
+                includes.add("Country of residence");
+            }
         }
-        if (directors.getIncludeOccupation()) {
-            includes.add("Occupation");
-        }
-        if (directors.getIncludeDobType() != null) {
-            includes.add("Date of birth (month and year)");
-        }
-        if (directors.getIncludeAppointmentDate()) {
-            includes.add("Appointment date");
-        }
-        if (directors.getIncludeNationality()) {
-            includes.add("Nationality");
-        }
-        if (directors.getIncludeCountryOfResidence()) {
-            includes.add("Country of residence");
-        }
+
+        //String htmlString = "";
+        //includes.toArray(new String[0]);
+
+//        for (String element : includes) {
+//            htmlString = htmlString.concat(element + "<br>") ;
+//        }
         return includes.toArray(new String[0]);
     }
 
@@ -161,6 +171,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         }
         return (options) ? "Yes": "No";
     }
+
 
     /**
      * Gets the appropriate label for the {@link CertificateType} value provided.
