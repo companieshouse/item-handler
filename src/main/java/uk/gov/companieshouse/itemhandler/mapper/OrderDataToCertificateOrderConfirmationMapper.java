@@ -155,12 +155,6 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             }
         }
 
-        //String htmlString = "";
-        //includes.toArray(new String[0]);
-
-//        for (String element : includes) {
-//            htmlString = htmlString.concat(element + "<br>") ;
-//        }
         return includes.toArray(new String[0]);
     }
 
