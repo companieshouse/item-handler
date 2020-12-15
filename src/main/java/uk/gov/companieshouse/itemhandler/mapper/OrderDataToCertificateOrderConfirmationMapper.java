@@ -158,14 +158,12 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         return includes.toArray(new String[0]);
     }
 
-
     default String getCertificateOptionsText (Boolean options) {
         if (options == null) {
             return "No";
         }
         return (options) ? "Yes": "No";
     }
-
 
     /**
      * Gets the appropriate label for the {@link CertificateType} value provided.
