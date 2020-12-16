@@ -1,8 +1,19 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
-import org.mapstruct.*;
+
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
+import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
+
 
 import java.util.ArrayList;
 import java.util.List;

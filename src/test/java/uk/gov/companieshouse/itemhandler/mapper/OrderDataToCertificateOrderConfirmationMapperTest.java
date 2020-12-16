@@ -10,7 +10,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.itemhandler.model.ActionedBy;
+import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
+import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
+import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
+import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDate;
