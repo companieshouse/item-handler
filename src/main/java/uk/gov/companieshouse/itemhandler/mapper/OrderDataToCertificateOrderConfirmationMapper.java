@@ -1,8 +1,19 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
-import org.mapstruct.*;
+
+import org.mapstruct.AfterMapping;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
+import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +65,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         confirmation.setCertificateIncludes(getCertificateIncludes(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
+        confirmation.setCertificateDirectorOptions(getCertificateDirectorOptions(item));
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
@@ -123,6 +135,33 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
                     return "No";
             }
         }
+    }
+
+    default String[] getCertificateDirectorOptions(final Item certificate) {
+        final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
+        final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
+        final List<String> includes = new ArrayList<>();
+        if (directors != null && directors.getIncludeBasicInformation() != null) {
+            if (directors.getIncludeAddress() != null && directors.getIncludeAddress()) {
+                includes.add("Correspondence address");
+            }
+            if (directors.getIncludeOccupation() != null && directors.getIncludeOccupation()) {
+                includes.add("Occupation");
+            }
+            if (directors.getIncludeDobType() != null && directors.getIncludeDobType() == IncludeDobType.PARTIAL) {
+                includes.add("Date of birth (month and year)");
+            }
+            if (directors.getIncludeAppointmentDate() != null && directors.getIncludeAppointmentDate()) {
+                includes.add("Appointment date");
+            }
+            if (directors.getIncludeNationality() != null && directors.getIncludeNationality()) {
+                includes.add("Nationality");
+            }
+            if (directors.getIncludeCountryOfResidence() != null && directors.getIncludeCountryOfResidence()) {
+                includes.add("Country of residence");
+            }
+        }
+        return includes.toArray(new String[0]);
     }
 
     default String getCertificateOptionsText (Boolean options) {
