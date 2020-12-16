@@ -131,10 +131,9 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
         final List<String> includes = new ArrayList<>();
         if (directors == null || directors.getIncludeBasicInformation() == null) {
-            includes.add("No");
+            //DO NOTHING
         }
         else{
-            includes.add("Including directors':");
             if (directors.getIncludeAddress() != null && directors.getIncludeAddress()) {
                 includes.add("Correspondence address");
             }
