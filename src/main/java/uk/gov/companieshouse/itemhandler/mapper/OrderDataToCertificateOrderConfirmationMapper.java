@@ -141,10 +141,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
         final List<String> includes = new ArrayList<>();
-        if (directors == null || directors.getIncludeBasicInformation() == null) {
-            //DO NOTHING
-        }
-        else{
+        if (directors != null && directors.getIncludeBasicInformation() != null) {
             if (directors.getIncludeAddress() != null && directors.getIncludeAddress()) {
                 includes.add("Correspondence address");
             }
@@ -164,7 +161,6 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
                 includes.add("Country of residence");
             }
         }
-
         return includes.toArray(new String[0]);
     }
 
