@@ -557,7 +557,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getFeeAmount(), is("15"));
     }
 
-    //SECRETARIES FROM HERE
     @Test
     void orderToConfirmationSecretaryOptionsAllYes() {
 
@@ -570,9 +569,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeAddress(true);
         secretary.setIncludeAppointmentDate(true);
         options.setSecretaryDetails(secretary);
-        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
-        secretaries.setIncludeBasicInformation(true);
-        options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
 
         item.setItemOptions(options);
@@ -588,7 +584,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(secretary.getIncludeAddress(), is(true));
         assertThat(secretary.getIncludeAppointmentDate(), is(true));
-        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
@@ -605,10 +600,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeBasicInformation(false);
         secretary.setIncludeAddress(false);
         secretary.setIncludeAppointmentDate(false);
-        options.setDirectorDetails(secretary);
-        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
-        secretaries.setIncludeBasicInformation(false);
-        options.setSecretaryDetails(secretaries);
+        options.setSecretaryDetails(secretary);
         options.setIncludeCompanyObjectsInformation(true);
 
         item.setItemOptions(options);
@@ -640,10 +632,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeBasicInformation(true);
         secretary.setIncludeAddress(true);
         secretary.setIncludeAppointmentDate(false);
-        options.setDirectorDetails(secretary);
-        final DirectorOrSecretaryDetails secretaries = new DirectorOrSecretaryDetails();
-        secretaries.setIncludeBasicInformation(true);
-        options.setSecretaryDetails(secretaries);
+        options.setSecretaryDetails(secretary);
         options.setIncludeCompanyObjectsInformation(true);
 
         item.setItemOptions(options);
@@ -656,10 +645,9 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
-        assertThat(confirmation.getCertificateDirectors(), is("Yes"));
+        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(secretary.getIncludeAddress(), is(true));
         assertThat(secretary.getIncludeAppointmentDate(), is(false));
-        assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
