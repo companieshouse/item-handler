@@ -15,6 +15,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateCompanyObjects;
     private String[] certificateDirectorOptions;
     private String certificateRegisteredOfficeOptions;
+    private String[] CertificateSecretaryOptions;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -62,6 +63,14 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setCertificateDirectorOptions(String[] certificateDirectorOptions) {
         this.certificateDirectorOptions = certificateDirectorOptions;
+    }
+
+    public String[] getCertificateSecretaryOptions() {
+        return CertificateSecretaryOptions;
+    }
+
+    public void setCertificateSecretaryOptions(String[] certificateSecretaryOptions) {
+        CertificateSecretaryOptions = certificateSecretaryOptions;
     }
 
     public String getCertificateDirectors() {
