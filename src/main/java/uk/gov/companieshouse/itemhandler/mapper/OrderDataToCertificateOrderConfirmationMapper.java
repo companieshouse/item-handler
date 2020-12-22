@@ -66,6 +66,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
         confirmation.setCertificateRegisteredOfficeOptions(getCertificateRegisteredOfficeOptions(item));
         confirmation.setCertificateDirectorOptions(getCertificateDirectorOptions(item));
+        confirmation.setCertificateSecretaryOptions(getCertificateSecretaryOptions(item));
         confirmation.setCertificateGoodStandingInformation(getCertificateOptionsText(options.getIncludeGoodStandingInformation()));
 
         final DirectorOrSecretaryDetails secretaryDetails = options.getSecretaryDetails();
@@ -159,6 +160,21 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
             }
             if (directors.getIncludeCountryOfResidence() != null && directors.getIncludeCountryOfResidence()) {
                 includes.add("Country of residence");
+            }
+        }
+        return includes.toArray(new String[0]);
+    }
+
+    default String[] getCertificateSecretaryOptions(final Item certificate) {
+        final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
+        final DirectorOrSecretaryDetails secretaries = options.getSecretaryDetails();
+        final List<String> includes = new ArrayList<>();
+        if (secretaries != null && secretaries.getIncludeBasicInformation() != null) {
+            if (secretaries.getIncludeAddress() != null && secretaries.getIncludeAddress()) {
+                includes.add("Correspondence address");
+            }
+            if (secretaries.getIncludeAppointmentDate() != null && secretaries.getIncludeAppointmentDate()) {
+                includes.add("Appointment date");
             }
         }
         return includes.toArray(new String[0]);
