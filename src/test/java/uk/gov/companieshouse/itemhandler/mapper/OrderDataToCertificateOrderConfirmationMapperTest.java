@@ -582,6 +582,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
+        assertThat(secretary.getIncludeBasicInformation(), is(true));
         assertThat(secretary.getIncludeAddress(), is(true));
         assertThat(secretary.getIncludeAppointmentDate(), is(true));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -614,6 +615,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
+        assertThat(secretary.getIncludeBasicInformation(), is(false));
         assertThat(secretary.getIncludeAddress(), is(false));
         assertThat(secretary.getIncludeAppointmentDate(), is(false));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));

@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.itemhandler.model;
 
 public class CertificateItemOptions extends DeliveryItemOptions {
-
     private CertificateType certificateType;
     private DirectorOrSecretaryDetails directorDetails;
     private Boolean includeCompanyObjectsInformation;
