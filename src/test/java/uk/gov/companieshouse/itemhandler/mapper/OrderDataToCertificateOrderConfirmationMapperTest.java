@@ -86,7 +86,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
      * Implements {@link OrderDataToCertificateOrderConfirmationMapper} to facilitate the testing of its default
      * methods.
      */
-    static class TestOrderDataToCertificateOrderConfirmationMapper implements
+    static class TestOrderDataToCertificateOrderConfirmationMapper extends
             OrderDataToCertificateOrderConfirmationMapper {
         @Override
         public CertificateOrderConfirmation orderToConfirmation(OrderData order) {
@@ -758,7 +758,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
         assertThat(confirmation.getCountry(), is("England"));
 
-        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery"));
+        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within ${dispatch-days} working days)"));
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));

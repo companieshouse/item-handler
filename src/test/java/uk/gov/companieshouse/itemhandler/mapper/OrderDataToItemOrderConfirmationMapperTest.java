@@ -156,7 +156,7 @@ class OrderDataToItemOrderConfirmationMapperTest {
         assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
         assertThat(confirmation.getCountry(), is("England"));
 
-        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within 4 working days)"));
+        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within ${dispatch-days} working days)"));
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));

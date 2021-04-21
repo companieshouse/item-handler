@@ -6,6 +6,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import uk.gov.companieshouse.itemhandler.email.ItemDetails;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
@@ -25,6 +26,9 @@ import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATE_FILED_FO
 
 @Mapper(componentModel = "spring")
 public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUtil {
+
+    @Value("${dispatch-days}")
+    private String dispatchDays;
 
     @Autowired
     private FilingHistoryDescriptionProviderService filingHistoryDescriptionProviderService;
@@ -57,7 +61,7 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
         if (item.getKind().equals("item#certified-copy")) {
             final String timescale =
                     ((CertifiedCopyItemOptions) item.getItemOptions()).getDeliveryTimescale().toString();
-            String deliveryMethod = String.format("%s delivery (aim to dispatch within 4 working days)", toSentenceCase(timescale));
+            String deliveryMethod = String.format("%s delivery (aim to dispatch within %s working days)", toSentenceCase(timescale), dispatchDays);
             confirmation.setDeliveryMethod(deliveryMethod);
             confirmation.setItemDetails(collateItemDetailsForCertifiedCopy(item));
         }
