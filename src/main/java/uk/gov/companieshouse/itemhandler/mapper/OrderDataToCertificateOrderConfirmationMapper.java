@@ -5,6 +5,7 @@ import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Value;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
@@ -22,7 +23,10 @@ import static java.lang.Boolean.TRUE;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 
 @Mapper(componentModel = "spring")
-public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUtil {
+public abstract class OrderDataToCertificateOrderConfirmationMapper implements MapperUtil {
+
+    @Value("${dispatch-days}")
+    private String dispatchDays;
 
     // Name/address mappings
     @Mapping(source = "deliveryDetails.forename", target="forename")
@@ -40,7 +44,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
     @Mapping(source = "orderedBy.email", target="emailAddress")
     @Mapping(source = "totalOrderCost", target="feeAmount")
 
-    CertificateOrderConfirmation orderToConfirmation(OrderData order);
+    public abstract CertificateOrderConfirmation orderToConfirmation(OrderData order);
 
     /**
      * Implements the more complex mapping behaviour required for some fields.
@@ -48,14 +52,14 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
      * @param confirmation the confirmation mapped to
      */
     @AfterMapping
-    default void specialMappings(final OrderData order, final @MappingTarget CertificateOrderConfirmation confirmation)
+    public void specialMappings(final OrderData order, final @MappingTarget CertificateOrderConfirmation confirmation)
     {
         final Item item = order.getItems().get(0);
 
         // Order details field mappings
         final CertificateItemOptions certificateItemOptions = (CertificateItemOptions) item.getItemOptions();
         final String timescale = certificateItemOptions.getDeliveryTimescale().toString();
-        confirmation.setDeliveryMethod(toSentenceCase(timescale) + " delivery");
+        confirmation.setDeliveryMethod(toSentenceCase(timescale) + " delivery (aim to dispatch within " + dispatchDays + " working days)");
         confirmation.setTimeOfPayment(getTimeOfPayment(order.getOrderedAt()));
 
         // Certificate details field mappings
@@ -92,7 +96,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
      * @return the certificate includes
      */
     //Remove when all tickets are done
-    default String[] getCertificateIncludes(final Item certificate) {
+    public String[] getCertificateIncludes(final Item certificate) {
         final List<String> includes = new ArrayList<>();
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         if (TRUE.equals(options.getIncludeGoodStandingInformation())) {
@@ -116,7 +120,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         return includes.toArray(new String[0]);
     }
 
-    default String getCertificateRegisteredOfficeOptions(final Item certificate) {
+    public String getCertificateRegisteredOfficeOptions(final Item certificate) {
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final RegisteredOfficeAddressDetails office = options.getRegisteredOfficeAddressDetails();
         if (office == null || office.getIncludeAddressRecordsType() == null) {
@@ -138,7 +142,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         }
     }
 
-    default String[] getCertificateDirectorOptions(final Item certificate) {
+    public String[] getCertificateDirectorOptions(final Item certificate) {
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final DirectorOrSecretaryDetails directors = options.getDirectorDetails();
         final List<String> includes = new ArrayList<>();
@@ -165,7 +169,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         return includes.toArray(new String[0]);
     }
 
-    default String[] getCertificateSecretaryOptions(final Item certificate) {
+    public String[] getCertificateSecretaryOptions(final Item certificate) {
         final CertificateItemOptions options = (CertificateItemOptions) certificate.getItemOptions();
         final DirectorOrSecretaryDetails secretaries = options.getSecretaryDetails();
         final List<String> includes = new ArrayList<>();
@@ -180,7 +184,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
         return includes.toArray(new String[0]);
     }
 
-    default String getCertificateOptionsText (Boolean options) {
+    public String getCertificateOptionsText (Boolean options) {
         if (options == null) {
             return "No";
         }
@@ -192,7 +196,7 @@ public interface OrderDataToCertificateOrderConfirmationMapper extends MapperUti
      * @param type the type to be labelled
      * @return the label string representing the type as it is to be rendered in a certificate confirmation email
      */
-    default String getCertificateType(final CertificateType type) {
+    public String getCertificateType(final CertificateType type) {
         return type == CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES ?
                 "Incorporation with all company name changes" : toSentenceCase(type.toString());
     }
