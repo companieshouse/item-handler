@@ -8,6 +8,14 @@ public class CertificateItemOptions extends DeliveryItemOptions {
     private Boolean includeGoodStandingInformation;
     private RegisteredOfficeAddressDetails registeredOfficeAddressDetails;
     private DirectorOrSecretaryDetails secretaryDetails;
+    private CompanyType companyType;
+    private DesignatedMembersDetails designatedMembersDetails;
+    private MembersDetails membersDetails;
+    private GeneralPartnerDetails generalPartnerDetails;
+    private LimitedPartnerDetails limitedPartnerDetails;
+    private PrincipalPlaceOfBusinessDetails principalPlaceOfBusinessDetails;
+    private Boolean includeGeneralNatureOfBusinessInformation;
+
     public CertificateType getCertificateType() {
         return certificateType;
     }
@@ -65,4 +73,59 @@ public class CertificateItemOptions extends DeliveryItemOptions {
         this.secretaryDetails = secretaryDetails;
     }
 
+    public CompanyType getCompanyType() {
+        return companyType;
+    }
+
+    public void setCompanyType(CompanyType companyType) {
+        this.companyType = companyType;
+    }
+
+    public DesignatedMembersDetails getDesignatedMembersDetails() {
+        return designatedMembersDetails;
+    }
+
+    public void setDesignatedMembersDetails(DesignatedMembersDetails designatedMembersDetails) {
+        this.designatedMembersDetails = designatedMembersDetails;
+    }
+
+    public MembersDetails getMembersDetails() {
+        return membersDetails;
+    }
+
+    public void setMembersDetails(MembersDetails membersDetails) {
+        this.membersDetails = membersDetails;
+    }
+
+    public GeneralPartnerDetails getGeneralPartnerDetails() {
+        return generalPartnerDetails;
+    }
+
+    public void setGeneralPartnerDetails(GeneralPartnerDetails generalPartnerDetails) {
+        this.generalPartnerDetails = generalPartnerDetails;
+    }
+
+    public LimitedPartnerDetails getLimitedPartnerDetails() {
+        return limitedPartnerDetails;
+    }
+
+    public void setLimitedPartnerDetails(LimitedPartnerDetails limitedPartnerDetails) {
+        this.limitedPartnerDetails = limitedPartnerDetails;
+    }
+
+    public PrincipalPlaceOfBusinessDetails getPrincipalPlaceOfBusinessDetails() {
+        return principalPlaceOfBusinessDetails;
+    }
+
+    public void setPrincipalPlaceOfBusinessDetails(PrincipalPlaceOfBusinessDetails principalPlaceOfBusinessDetails) {
+        this.principalPlaceOfBusinessDetails = principalPlaceOfBusinessDetails;
+    }
+
+    public Boolean getIncludeGeneralNatureOfBusinessInformation() {
+        return includeGeneralNatureOfBusinessInformation;
+    }
+
+    public void setIncludeGeneralNatureOfBusinessInformation(Boolean includeGeneralNatureOfBusinessInformation) {
+        this.includeGeneralNatureOfBusinessInformation = includeGeneralNatureOfBusinessInformation;
+    }
 }

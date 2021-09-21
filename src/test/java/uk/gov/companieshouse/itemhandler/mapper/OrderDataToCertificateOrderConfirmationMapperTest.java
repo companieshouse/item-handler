@@ -155,6 +155,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
+        // TODO
     }
 
     @Test
@@ -684,7 +685,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         item.setItemOptions(options);
 
         // When
-        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+        final String[] includes =  mapperUnderTest.mapCertificateIncludes(item);
 
         // Then
         assertThat(asList(includes), contains("Registered office address"));
@@ -703,7 +704,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         item.setItemOptions(options);
 
         // When
-        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+        final String[] includes =  mapperUnderTest.mapCertificateIncludes(item);
 
         // Then
         assertThat(asList(includes), not(contains("Registered office address")));
@@ -721,7 +722,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         item.setItemOptions(options);
 
         // When
-        final String[] includes =  mapperUnderTest.getCertificateIncludes(item);
+        final String[] includes =  mapperUnderTest.mapCertificateIncludes(item);
 
         // Then
         assertThat(asList(includes), not(contains("Registered office address")));
@@ -731,9 +732,9 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     void incorporationWithAllNameChangesHasASpecialLabel() {
         for (final CertificateType type : CertificateType.values()) {
             if (type == CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES) {
-                assertThat(mapperUnderTest.getCertificateType(type), is("Incorporation with all company name changes"));
+                assertThat(mapperUnderTest.mapCertificateType(type), is("Incorporation with all company name changes"));
             } else {
-                assertThat(mapperUnderTest.getCertificateType(type), is(mapperUnderTest.toSentenceCase(type.toString())));
+                assertThat(mapperUnderTest.mapCertificateType(type), is(mapperUnderTest.toSentenceCase(type.toString())));
             }
         }
     }
