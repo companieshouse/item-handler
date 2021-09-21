@@ -21,6 +21,7 @@ import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
@@ -79,7 +80,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateDirectors(mapIncludeBasicInformationText(options.getDirectorDetails()));
         confirmation.setCertificateCompanyObjects(mapCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));
 
-        confirmation.setCertificateCompanyType(options.getCompanyType().getJsonName());
+        confirmation.setCertificateCompanyType(options.getCompanyType() != null ? options.getCompanyType().getJsonName() : null);
         confirmation.setCertificateDesignatedMembers(mapIncludeBasicInformationText(options.getDesignatedMembersDetails()));
         confirmation.setCertificateDesignatedMembersDetails(mapMembersOptions(options.getDesignatedMembersDetails()));
         confirmation.setCertificateMembers(mapIncludeBasicInformationText(options.getMembersDetails()));
