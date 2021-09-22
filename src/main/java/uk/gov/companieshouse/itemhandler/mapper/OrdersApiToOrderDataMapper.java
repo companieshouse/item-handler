@@ -48,6 +48,8 @@ public interface OrdersApiToOrderDataMapper {
     }
 
     ItemOptions apiToOptions(BaseItemOptionsApi baseItemOptionsApi);
+    @Mapping(source = "designatedMemberDetails", target = "designatedMembersDetails")
+    @Mapping(source = "memberDetails", target = "membersDetails")
     CertificateItemOptions apiToCertificateItemOptions(CertificateItemOptionsApi certificateItemOptionsApi);
     CertifiedCopyItemOptions apiToCertifiedCopyItemOptions(CertifiedCopyItemOptionsApi certifiedCopyItemOptionsApi);
     MissingImageDeliveryItemOptions apiToMissingImageDeliveryOptions(MissingImageDeliveryItemOptionsApi missingImageDeliveryItemOptionsApi);
