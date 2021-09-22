@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
+import org.apache.avro.generic.GenericData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,19 +14,27 @@ import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
+import uk.gov.companieshouse.itemhandler.model.DesignatedMembersDetails;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
+import uk.gov.companieshouse.itemhandler.model.GeneralPartnerDetails;
+import uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.LimitedPartnerDetails;
+import uk.gov.companieshouse.itemhandler.model.MembersDetails;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
+import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collection;
+import java.util.Collections;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -141,6 +150,42 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyType(CompanyType.OTHER);
+        options.setDesignatedMembersDetails(new DesignatedMembersDetails() {
+            {
+                setIncludeAddress(true);
+                setIncludeBasicInformation(true);
+                setIncludeAppointmentDate(true);
+                setIncludeCountryOfResidence(true);
+                setIncludeDobType(IncludeDobType.PARTIAL);
+            }
+        });
+        options.setMembersDetails(new MembersDetails() {
+            {
+                setIncludeAddress(true);
+                setIncludeBasicInformation(true);
+                setIncludeAppointmentDate(true);
+                setIncludeCountryOfResidence(true);
+                setIncludeDobType(IncludeDobType.PARTIAL);
+            }
+        });
+        options.setGeneralPartnerDetails(new GeneralPartnerDetails() {
+            {
+                setIncludeBasicInformation(true);
+            }
+        });
+        options.setLimitedPartnerDetails(new LimitedPartnerDetails() {
+            {
+                setIncludeBasicInformation(true);
+            }
+        });
+        options.setPrincipalPlaceOfBusinessDetails(new PrincipalPlaceOfBusinessDetails() {
+            {
+                setIncludeAddressRecordsType(ALL);
+                setIncludeDates(true);
+            }
+        });
+        options.setIncludeGeneralNatureOfBusinessInformation(true);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -148,6 +193,8 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         order.setTotalOrderCost("15");
 
         // When
+        String [] expectedMembersDetails = new String [] {"Correspondence address", "Date of birth (month and year)", "Appointment date", "Country of residence"};
+
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
@@ -156,7 +203,15 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
-        // TODO
+        assertThat(confirmation.getCertificateCompanyType(), is("other"));
+        assertThat(confirmation.getCertificateDesignatedMembers(), is("Yes"));
+        assertThat(confirmation.getCertificateDesignatedMembersDetails(), is(expectedMembersDetails));
+        assertThat(confirmation.getCertificateMembers(), is("Yes"));
+        assertThat(confirmation.getCertificateMembersDetails(), is(expectedMembersDetails));
+        assertThat(confirmation.getCertificateGeneralPartner(), is("Yes"));
+        assertThat(confirmation.getCertificateLimitedPartner(), is("Yes"));
+        assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
+        assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
     }
 
     @Test
@@ -766,4 +821,32 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
     }
 
+    @Test
+    void orderToConfirmationBehavesAsExpectedWithAllItemOptionsPropertiesNull() {
+
+        // Given options with all properties set to null
+        order.setItems(Collections.singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("99");
+        item.setItemOptions(options);
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is("No"));
+        assertThat(confirmation.getCertificateDirectors(), is("No"));
+        assertThat(confirmation.getCertificateSecretaries(), is("No"));
+        assertThat(confirmation.getCertificateCompanyObjects(), is("No"));
+        assertThat(confirmation.getCertificateCompanyType(), is(nullValue()));
+        assertThat(confirmation.getCertificateDesignatedMembers(), is("No"));
+        assertThat(confirmation.getCertificateMembers(), is("No"));
+        assertThat(confirmation.getCertificateDesignatedMembersDetails(), is(new String[]{}));
+        assertThat(confirmation.getCertificateMembersDetails(), is(new String[]{}));
+        assertThat(confirmation.getCertificateGeneralPartner(), is("No"));
+        assertThat(confirmation.getCertificateLimitedPartner(), is("No"));
+        assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
+        assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
+    }
 }
