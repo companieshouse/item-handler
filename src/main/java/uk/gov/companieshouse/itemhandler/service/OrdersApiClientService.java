@@ -1,7 +1,5 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.handler.order.PrivateOrderResourceHandler;
@@ -15,6 +13,10 @@ import uk.gov.companieshouse.itemhandler.mapper.OrdersApiToOrderDataMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+
+import java.util.Map;
+
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
 @Service
 public class OrdersApiClientService {

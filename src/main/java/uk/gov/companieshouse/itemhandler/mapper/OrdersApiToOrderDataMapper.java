@@ -3,7 +3,10 @@ package uk.gov.companieshouse.itemhandler.mapper;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.ValueMapping;
+import org.mapstruct.ValueMappings;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
 import uk.gov.companieshouse.api.model.order.item.BaseItemApi;
 import uk.gov.companieshouse.api.model.order.item.BaseItemOptionsApi;
@@ -12,6 +15,7 @@ import uk.gov.companieshouse.api.model.order.item.CertifiedCopyItemOptionsApi;
 import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryItemOptionsApi;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemOptions;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
@@ -48,7 +52,16 @@ public interface OrdersApiToOrderDataMapper {
     }
 
     ItemOptions apiToOptions(BaseItemOptionsApi baseItemOptionsApi);
+    @Mapping(source = "designatedMemberDetails", target = "designatedMembersDetails")
+    @Mapping(source = "memberDetails", target = "membersDetails")
     CertificateItemOptions apiToCertificateItemOptions(CertificateItemOptionsApi certificateItemOptionsApi);
     CertifiedCopyItemOptions apiToCertifiedCopyItemOptions(CertifiedCopyItemOptionsApi certifiedCopyItemOptionsApi);
     MissingImageDeliveryItemOptions apiToMissingImageDeliveryOptions(MissingImageDeliveryItemOptionsApi missingImageDeliveryItemOptionsApi);
+    @ValueMappings({
+        @ValueMapping(source = "llp", target = "LIMITED_LIABILITY_PARTNERSHIP"),
+        @ValueMapping(source = "limited-partnership", target = "LIMITED_PARTNERSHIP"),
+        @ValueMapping(source = MappingConstants.ANY_UNMAPPED, target = "OTHER")
+    })
+    CompanyType mapCompanyType(String companyType);
+
 }

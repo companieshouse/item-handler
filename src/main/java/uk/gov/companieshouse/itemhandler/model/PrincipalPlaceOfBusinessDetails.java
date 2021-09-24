@@ -2,12 +2,12 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import com.google.gson.Gson;
 
-public class RegisteredOfficeAddressDetails implements Address {
+public class PrincipalPlaceOfBusinessDetails implements Address {
+
     private IncludeAddressRecordsType includeAddressRecordsType;
 
     private Boolean includeDates;
 
-    @Override
     public IncludeAddressRecordsType getIncludeAddressRecordsType() {
         return includeAddressRecordsType;
     }
@@ -16,7 +16,6 @@ public class RegisteredOfficeAddressDetails implements Address {
         this.includeAddressRecordsType = includeAddressRecordsType;
     }
 
-    @Override
     public Boolean getIncludeDates() {
         return includeDates;
     }
@@ -27,5 +26,4 @@ public class RegisteredOfficeAddressDetails implements Address {
 
     @Override
     public String toString() { return new Gson().toJson(this); }
-
 }

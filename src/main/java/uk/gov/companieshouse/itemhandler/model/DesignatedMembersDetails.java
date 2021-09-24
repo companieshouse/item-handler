@@ -2,15 +2,14 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import com.google.gson.Gson;
 
-public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
+public class DesignatedMembersDetails implements Members {
     private Boolean includeAddress;
     private Boolean includeAppointmentDate;
     private Boolean includeBasicInformation;
     private Boolean includeCountryOfResidence;
     private IncludeDobType includeDobType;
-    private Boolean includeNationality;
-    private Boolean includeOccupation;
 
+    @Override
     public Boolean getIncludeAddress() {
         return includeAddress;
     }
@@ -19,6 +18,7 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeAddress = includeAddress;
     }
 
+    @Override
     public Boolean getIncludeAppointmentDate() {
         return includeAppointmentDate;
     }
@@ -36,6 +36,7 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeBasicInformation = includeBasicInformation;
     }
 
+    @Override
     public Boolean getIncludeCountryOfResidence() {
         return includeCountryOfResidence;
     }
@@ -44,6 +45,7 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeCountryOfResidence = includeCountryOfResidence;
     }
 
+    @Override
     public IncludeDobType getIncludeDobType() {
         return includeDobType;
     }
@@ -52,23 +54,6 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeDobType = includeDobType;
     }
 
-    public Boolean getIncludeNationality() {
-        return includeNationality;
-    }
-
-    public void setIncludeNationality(Boolean includeNationality) {
-        this.includeNationality = includeNationality;
-    }
-
-    public Boolean getIncludeOccupation() {
-        return includeOccupation;
-    }
-
-    public void setIncludeOccupation(Boolean includeOccupation) {
-        this.includeOccupation = includeOccupation;
-    }
-
     @Override
     public String toString() { return new Gson().toJson(this); }
-
 }

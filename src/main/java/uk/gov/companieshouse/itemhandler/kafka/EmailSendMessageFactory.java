@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 
-import java.util.Date;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -10,6 +8,9 @@ import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+
+import java.util.Date;
+import java.util.Map;
 
 @Service
 public class EmailSendMessageFactory {

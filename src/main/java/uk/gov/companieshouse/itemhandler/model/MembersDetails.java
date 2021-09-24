@@ -2,14 +2,12 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import com.google.gson.Gson;
 
-public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
+public class MembersDetails implements Members {
     private Boolean includeAddress;
     private Boolean includeAppointmentDate;
     private Boolean includeBasicInformation;
     private Boolean includeCountryOfResidence;
     private IncludeDobType includeDobType;
-    private Boolean includeNationality;
-    private Boolean includeOccupation;
 
     public Boolean getIncludeAddress() {
         return includeAddress;
@@ -27,7 +25,6 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeAppointmentDate = includeAppointmentDate;
     }
 
-    @Override
     public Boolean getIncludeBasicInformation() {
         return includeBasicInformation;
     }
@@ -52,23 +49,6 @@ public class DirectorOrSecretaryDetails implements BasicInformationIncludable {
         this.includeDobType = includeDobType;
     }
 
-    public Boolean getIncludeNationality() {
-        return includeNationality;
-    }
-
-    public void setIncludeNationality(Boolean includeNationality) {
-        this.includeNationality = includeNationality;
-    }
-
-    public Boolean getIncludeOccupation() {
-        return includeOccupation;
-    }
-
-    public void setIncludeOccupation(Boolean includeOccupation) {
-        this.includeOccupation = includeOccupation;
-    }
-
     @Override
     public String toString() { return new Gson().toJson(this); }
-
 }

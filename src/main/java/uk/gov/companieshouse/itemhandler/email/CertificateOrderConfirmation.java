@@ -16,6 +16,15 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String[] certificateDirectorOptions;
     private String certificateRegisteredOfficeOptions;
     private String[] certificateSecretaryOptions;
+    private String certificateCompanyType;
+    private String certificateDesignatedMembers;
+    private String[] certificateDesignatedMembersDetails;
+    private String certificateMembers;
+    private String[] certificateMembersDetails;
+    private String certificateGeneralPartner;
+    private String certificateLimitedPartner;
+    private String certificatePrincipalPlaceOfBusinessDetails;
+    private String certificateGeneralNatureOfBusinessInformation;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -103,5 +112,77 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setDeliveryMethod(String deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
+    }
+
+    public String getCertificateCompanyType() {
+        return certificateCompanyType;
+    }
+
+    public void setCertificateCompanyType(String certificateCompanyType) {
+        this.certificateCompanyType = certificateCompanyType;
+    }
+
+    public String getCertificateDesignatedMembers() {
+        return certificateDesignatedMembers;
+    }
+
+    public void setCertificateDesignatedMembers(String certificateDesignatedMembers) {
+        this.certificateDesignatedMembers = certificateDesignatedMembers;
+    }
+
+    public String[] getCertificateDesignatedMembersDetails() {
+        return certificateDesignatedMembersDetails;
+    }
+
+    public void setCertificateDesignatedMembersDetails(String[] certificateDesignatedMembersDetails) {
+        this.certificateDesignatedMembersDetails = certificateDesignatedMembersDetails;
+    }
+
+    public String getCertificateMembers() {
+        return certificateMembers;
+    }
+
+    public void setCertificateMembers(String certificateMembers) {
+        this.certificateMembers = certificateMembers;
+    }
+
+    public String[] getCertificateMembersDetails() {
+        return certificateMembersDetails;
+    }
+
+    public void setCertificateMembersDetails(String[] certificateMembersDetails) {
+        this.certificateMembersDetails = certificateMembersDetails;
+    }
+
+    public String getCertificateGeneralPartner() {
+        return certificateGeneralPartner;
+    }
+
+    public void setCertificateGeneralPartner(String certificateGeneralPartner) {
+        this.certificateGeneralPartner = certificateGeneralPartner;
+    }
+
+    public String getCertificateLimitedPartner() {
+        return certificateLimitedPartner;
+    }
+
+    public void setCertificateLimitedPartner(String certificateLimitedPartner) {
+        this.certificateLimitedPartner = certificateLimitedPartner;
+    }
+
+    public String getCertificatePrincipalPlaceOfBusinessDetails() {
+        return certificatePrincipalPlaceOfBusinessDetails;
+    }
+
+    public void setCertificatePrincipalPlaceOfBusinessDetails(String certificatePrincipalPlaceOfBusinessDetails) {
+        this.certificatePrincipalPlaceOfBusinessDetails = certificatePrincipalPlaceOfBusinessDetails;
+    }
+
+    public String getCertificateGeneralNatureOfBusinessInformation() {
+        return certificateGeneralNatureOfBusinessInformation;
+    }
+
+    public void setCertificateGeneralNatureOfBusinessInformation(String certificateGeneralNatureOfBusinessInformation) {
+        this.certificateGeneralNatureOfBusinessInformation = certificateGeneralNatureOfBusinessInformation;
     }
 }
