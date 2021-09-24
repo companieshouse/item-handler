@@ -5,7 +5,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.Named;
 import org.mapstruct.ValueMapping;
 import org.mapstruct.ValueMappings;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
@@ -22,9 +21,6 @@ import uk.gov.companieshouse.itemhandler.model.ItemOptions;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-
-import static uk.gov.companieshouse.itemhandler.model.CompanyType.LIMITED_LIABILITY_PARTNERSHIP;
-import static uk.gov.companieshouse.itemhandler.model.CompanyType.LIMITED_PARTNERSHIP;
 
 @Mapper(componentModel = "spring")
 public interface OrdersApiToOrderDataMapper {

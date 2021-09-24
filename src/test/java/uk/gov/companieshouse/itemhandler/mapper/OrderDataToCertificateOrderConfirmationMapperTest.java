@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
-import org.apache.avro.generic.GenericData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,20 +11,19 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
+import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
+import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.DesignatedMembersDetails;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.GeneralPartnerDetails;
-import uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType;
+import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.LimitedPartnerDetails;
 import uk.gov.companieshouse.itemhandler.model.MembersDetails;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
-import uk.gov.companieshouse.itemhandler.model.CertificateType;
-import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
@@ -33,7 +31,6 @@ import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProvide
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Collection;
 import java.util.Collections;
 
 import static java.util.Arrays.asList;
@@ -43,7 +40,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.*;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.ALL;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_PREVIOUS_AND_PRIOR;
 import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 /**

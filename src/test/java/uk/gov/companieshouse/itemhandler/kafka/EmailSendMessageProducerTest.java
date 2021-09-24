@@ -28,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.TOPIC;
-
 import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 /**

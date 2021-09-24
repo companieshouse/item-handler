@@ -16,12 +16,11 @@ import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.Members;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
-
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static java.lang.Boolean.TRUE;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
@@ -72,7 +71,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateType(mapCertificateType(certificateItemOptions.getCertificateType()));
         confirmation.setCertificateIncludes(mapCertificateIncludes(item));
         final CertificateItemOptions options = (CertificateItemOptions) item.getItemOptions();
-        confirmation.setCertificateRegisteredOfficeOptions(mapCertificateRegisteredOfficeOptions(options));
+        confirmation.setCertificateRegisteredOfficeOptions(mapCertificateRegisteredOfficeOptions(options.getRegisteredOfficeAddressDetails()));
         confirmation.setCertificateDirectorOptions(mapCertificateDirectorOptions(item));
         confirmation.setCertificateSecretaryOptions(mapCertificateSecretaryOptions(item));
         confirmation.setCertificateGoodStandingInformation(mapCertificateOptionsText(options.getIncludeGoodStandingInformation()));
@@ -87,7 +86,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateMembersDetails(mapMembersOptions(options.getMembersDetails()));
         confirmation.setCertificateGeneralPartner(mapIncludeBasicInformationText(options.getGeneralPartnerDetails()));
         confirmation.setCertificateLimitedPartner(mapIncludeBasicInformationText(options.getLimitedPartnerDetails()));
-        confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options));
+        confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options.getPrincipalPlaceOfBusinessDetails()));
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
     }
 
@@ -121,8 +120,8 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         return includes.toArray(new String[0]);
     }
 
-    protected String mapCertificateRegisteredOfficeOptions(final CertificateItemOptions itemOptions) {
-        return mapAddressOptions(itemOptions.getRegisteredOfficeAddressDetails());
+    protected String mapCertificateRegisteredOfficeOptions(final RegisteredOfficeAddressDetails registeredOfficeAddressDetails) {
+        return mapAddressOptions(registeredOfficeAddressDetails);
     }
 
     protected String[] mapCertificateDirectorOptions(final Item certificate) {
@@ -200,8 +199,8 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         return includes.toArray(new String[0]);
     }
 
-    protected String mapCertificatePrincipalPlaceOfBusinessDetails(final CertificateItemOptions itemOptions) {
-        return mapAddressOptions(itemOptions.getPrincipalPlaceOfBusinessDetails());
+    protected String mapCertificatePrincipalPlaceOfBusinessDetails(final PrincipalPlaceOfBusinessDetails principalPlaceOfBusinessDetails) {
+        return mapAddressOptions(principalPlaceOfBusinessDetails);
     }
 
     private String mapAddressOptions(Address address) {

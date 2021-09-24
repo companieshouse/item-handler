@@ -1,8 +1,5 @@
 package uk.gov.companieshouse.itemhandler.logging;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
@@ -10,6 +7,9 @@ import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoggingUtils {
 

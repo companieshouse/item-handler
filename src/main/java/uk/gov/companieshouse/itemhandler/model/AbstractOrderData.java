@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.itemhandler.model;
 
 import com.google.gson.Gson;
-import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
-import uk.gov.companieshouse.itemhandler.model.Item;
 
 import java.util.ArrayList;
 import java.util.List;
