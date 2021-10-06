@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.email;
 
+import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
+
 /**
  * An instance of this holds the information required to generate a certificate order confirmation email.
  */
@@ -25,6 +27,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateLimitedPartner;
     private String certificatePrincipalPlaceOfBusinessDetails;
     private String certificateGeneralNatureOfBusinessInformation;
+    private FeatureOptions featureOptions;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -184,5 +187,13 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setCertificateGeneralNatureOfBusinessInformation(String certificateGeneralNatureOfBusinessInformation) {
         this.certificateGeneralNatureOfBusinessInformation = certificateGeneralNatureOfBusinessInformation;
+    }
+
+    public FeatureOptions getFeatureOptions() {
+        return featureOptions;
+    }
+
+    public void setFeatureOptions(FeatureOptions featureOptions) {
+        this.featureOptions = featureOptions;
     }
 }

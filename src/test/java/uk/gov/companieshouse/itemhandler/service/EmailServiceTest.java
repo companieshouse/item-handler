@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
@@ -66,6 +67,9 @@ class EmailServiceTest {
     private OrderData order;
 
     @Mock
+    private FeatureOptions featureOptions;
+
+    @Mock
     private List<Item> items;
 
     @Mock
@@ -102,7 +106,7 @@ class EmailServiceTest {
 
         // Given
         final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order)).thenReturn(certificateOrderConfirmation);
+        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
         when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
         when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
         when(order.getItems()).thenReturn(items);
@@ -206,7 +210,7 @@ class EmailServiceTest {
     void propagatesJsonProcessingException() throws Exception  {
 
         // Given
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order)).thenReturn(certificateOrderConfirmation);
+        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
         when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
@@ -257,7 +261,7 @@ class EmailServiceTest {
      * @throws Exception should something unexpected happen
      */
     private void givenSendMessageThrowsException(final Function<String, Exception> constructor) throws Exception {
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order)).thenReturn(certificateOrderConfirmation);
+        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
         when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
         when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
         when(order.getItems()).thenReturn(items);
