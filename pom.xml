@@ -43,6 +43,11 @@
         <powermock.version>2.0.7</powermock.version>
         <!-- Docker property -->
         <jib-maven-plugin.version>3.1.1</jib-maven-plugin.version>
+        <sonar.exclusions>
+            **/config/FeatureOptions.java,
+            **/config/FeatureOptionsConfig.java,
+            **/email/CertificateOrderConfirmation.java
+        </sonar.exclusions>
     </properties>
 
     <dependencyManagement>
