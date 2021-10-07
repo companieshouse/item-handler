@@ -32,20 +32,6 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
     @Value("${dispatch-days}")
     private String dispatchDays;
 
-    @Mapping(source = "deliveryDetails.forename", target="forename")
-    @Mapping(source = "deliveryDetails.surname", target="surname")
-    @Mapping(source = "deliveryDetails.addressLine1", target="addressLine1")
-    @Mapping(source = "deliveryDetails.addressLine2", target="addressLine2")
-    @Mapping(source = "deliveryDetails.locality", target="houseName")
-    @Mapping(source = "deliveryDetails.premises", target="houseNumberStreetName")
-    @Mapping(source = "deliveryDetails.region", target="city")
-    @Mapping(source = "deliveryDetails.postalCode", target="postCode")
-    @Mapping(source = "deliveryDetails.country", target="country")
-    @Mapping(source = "reference", target="orderReferenceNumber")
-    @Mapping(source = "orderedBy.email", target="emailAddress")
-    @Mapping(source = "totalOrderCost", target="feeAmount")
-    public abstract CertificateOrderConfirmation orderToConfirmation(OrderData order);
-
     @Mapping(source = "order.deliveryDetails.forename", target="forename")
     @Mapping(source = "order.deliveryDetails.surname", target="surname")
     @Mapping(source = "order.deliveryDetails.addressLine1", target="addressLine1")
@@ -59,6 +45,10 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
     @Mapping(source = "order.orderedBy.email", target="emailAddress")
     @Mapping(source = "order.totalOrderCost", target="feeAmount")
     public abstract CertificateOrderConfirmation orderToConfirmation(OrderData order, FeatureOptions featureOptions);
+
+    public CertificateOrderConfirmation orderToConfirmation(OrderData order) {
+        return orderToConfirmation(order, null);
+    }
 
     /**
      * Implements the more complex mapping behaviour required for some fields.

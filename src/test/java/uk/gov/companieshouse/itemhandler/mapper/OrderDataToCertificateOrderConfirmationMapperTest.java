@@ -101,11 +101,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
             OrderDataToCertificateOrderConfirmationMapper {
         @Override
         public CertificateOrderConfirmation orderToConfirmation(OrderData order, FeatureOptions featureOptions) {
-            return null;
-        }
-
-        @Override
-        public CertificateOrderConfirmation orderToConfirmation(OrderData order) {
             return null; // Implemented only to satisfy requirement of an interface implementation
         }
     }
