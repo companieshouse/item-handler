@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
@@ -99,7 +100,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
     static class TestOrderDataToCertificateOrderConfirmationMapper extends
             OrderDataToCertificateOrderConfirmationMapper {
         @Override
-        public CertificateOrderConfirmation orderToConfirmation(OrderData order) {
+        public CertificateOrderConfirmation orderToConfirmation(OrderData order, FeatureOptions featureOptions) {
             return null; // Implemented only to satisfy requirement of an interface implementation
         }
     }

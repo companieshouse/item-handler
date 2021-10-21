@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
@@ -48,6 +49,9 @@ class EmailServiceIntegrationTest {
     private OrderData order;
 
     @MockBean
+    private FeatureOptions featureOptions;
+
+    @MockBean
     private List<Item> items;
 
     @MockBean
@@ -65,7 +69,7 @@ class EmailServiceIntegrationTest {
     void usesConfiguredRecipientValueForCertificate() throws Exception {
 
         // Given
-        when(orderToCertificateConfirmationMapper.orderToConfirmation(order)).thenReturn(certificateOrderConfirmation);
+        when(orderToCertificateConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
 
         // When
         when(order.getItems()).thenReturn(items);

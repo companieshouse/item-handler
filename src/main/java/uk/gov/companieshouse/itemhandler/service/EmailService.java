@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
@@ -65,6 +66,7 @@ public class EmailService {
     private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer producer;
+    private final FeatureOptions featureOptions;
 
     @Value("${certificate.order.confirmation.recipient}")
     private String certificateOrderRecipient;
@@ -76,11 +78,13 @@ public class EmailService {
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
-            final ObjectMapper objectMapper, final EmailSendMessageProducer producer) {
+            final ObjectMapper objectMapper, final EmailSendMessageProducer producer,
+            final FeatureOptions featureOptions) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.producer = producer;
+        this.featureOptions = featureOptions;
     }
 
     /**
@@ -119,10 +123,11 @@ public class EmailService {
         final OrderConfirmation confirmation;
         switch (descriptionId) {
             case ITEM_TYPE_CERTIFICATE:
-                confirmation = orderToCertificateOrderConfirmationMapper.orderToConfirmation(order);
+                confirmation = orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions);
                 confirmation.setTo(certificateOrderRecipient);
                 email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
                 email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
