@@ -8,7 +8,7 @@ public class LiquidatorsDetails implements BasicInformationIncludable {
 
     @Override
     public Boolean getIncludeBasicInformation() {
-        return  includeBasicInformation;
+        return includeBasicInformation;
     }
 
     public void setIncludeBasicInformation(Boolean includeBasicInformation) {
@@ -16,5 +16,7 @@ public class LiquidatorsDetails implements BasicInformationIncludable {
     }
 
     @Override
-    public String toString() { return new Gson().toJson(this); }
+    public String toString() {
+        return new Gson().toJson(this);
+    }
 }

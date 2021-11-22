@@ -42,6 +42,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.ALL;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
@@ -856,6 +857,26 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("No"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
+        assertNull(confirmation.getCertificateLiquidatorsDetails());
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedWhenBasicInformationNullForLiquidators() {
+
+        // Given options with all properties set to null
+        order.setItems(Collections.singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("99");
+
+        options.setLiquidatorsDetails(new LiquidatorsDetails());
+
+        item.setItemOptions(options);
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateLiquidatorsDetails(), is("No"));
     }
 }
