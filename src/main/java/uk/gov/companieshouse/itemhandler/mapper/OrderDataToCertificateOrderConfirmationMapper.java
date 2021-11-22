@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
 
+import java.util.Optional;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -89,6 +90,8 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateLimitedPartner(mapIncludeBasicInformationText(options.getLimitedPartnerDetails()));
         confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options.getPrincipalPlaceOfBusinessDetails()));
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
+        confirmation.setCertificateLiquidatorsDetails(
+                Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
     }
 
     /**
