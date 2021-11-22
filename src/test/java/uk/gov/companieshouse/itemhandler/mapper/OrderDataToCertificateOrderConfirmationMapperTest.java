@@ -23,6 +23,7 @@ import uk.gov.companieshouse.itemhandler.model.GeneralPartnerDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.LimitedPartnerDetails;
+import uk.gov.companieshouse.itemhandler.model.LiquidatorsDetails;
 import uk.gov.companieshouse.itemhandler.model.MembersDetails;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
@@ -187,6 +188,11 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
             }
         });
         options.setIncludeGeneralNatureOfBusinessInformation(true);
+        options.setLiquidatorsDetails(new LiquidatorsDetails() {
+            {
+                setIncludeBasicInformation(true);
+            }
+        });
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -213,6 +219,7 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("Yes"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("Yes"));
     }
 
     @Test
@@ -849,5 +856,6 @@ public class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("No"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("No"));
     }
 }

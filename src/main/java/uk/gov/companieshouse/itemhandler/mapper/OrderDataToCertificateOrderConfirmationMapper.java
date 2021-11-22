@@ -89,6 +89,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateLimitedPartner(mapIncludeBasicInformationText(options.getLimitedPartnerDetails()));
         confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options.getPrincipalPlaceOfBusinessDetails()));
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
+        confirmation.setCertificateLiquidatorsDetails(mapIncludeBasicInformationText(options.getLiquidatorsDetails()));
     }
 
     /**
