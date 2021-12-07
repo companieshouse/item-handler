@@ -1,6 +1,10 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +20,8 @@ import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmation
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
-import java.util.List;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 /** Integration tests the {@link EmailService} service. */
-@SpringBootTest
+@SpringBootTest(classes = {EmailService.class})
 @EmbeddedKafka
 class EmailServiceIntegrationTest {
 
