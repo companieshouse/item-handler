@@ -11,7 +11,8 @@ import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
+import uk.gov.companieshouse.itemhandler.exception.SerialisationException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -140,7 +141,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
                 resetRetryCount(receivedTopic + "-" + orderReceivedUri);
             }
             logMessageProcessed(message, orderReceivedUri);
-        } catch (RetryableErrorException ex) {
+        } catch (RetryableException ex) {
             retryMessage(message, orderReceivedUri, receivedTopic, ex);
         } catch (Exception x) {
             logMessageProcessingFailureNonRecoverable(message, x);
@@ -148,7 +149,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     }
 
     /**
-     * Retries a message that failed processing with a `RetryableErrorException`. Checks which topic
+     * Retries a message that failed processing with a `RetryableException`. Checks which topic
      * the message was received from and whether any retry attempts remain. The message is published
      * to the next topic for failover processing, if retries match or exceed `MAX_RETRY_ATTEMPTS`.
      * 
@@ -158,7 +159,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      * @param ex
      */
     private void retryMessage(org.springframework.messaging.Message<OrderReceived> message,
-            String orderReceivedUri, String receivedTopic, RetryableErrorException ex) {
+            String orderReceivedUri, String receivedTopic, RetryableException ex) {
         String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
                 || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR)) ? ORDER_RECEIVED_TOPIC_RETRY
                         : ORDER_RECEIVED_TOPIC_ERROR;
@@ -253,6 +254,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
             LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
                     orderUri, topic), e, logMap);
+            throw new SerialisationException("Failed to serialise message");
         }
         message.setTopic(topic);
         message.setTimestamp(new Date().getTime());

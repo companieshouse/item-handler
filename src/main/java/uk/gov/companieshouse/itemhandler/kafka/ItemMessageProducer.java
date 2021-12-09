@@ -2,7 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -57,7 +57,7 @@ public class ItemMessageProducer {
             logMap.put(LoggingUtils.EXCEPTION, e);
             LOGGER.error(errorMessage, logMap);
             // An error occurring during message production may be transient. Throw a retryable exception.
-            throw new RetryableErrorException(errorMessage, e);
+            throw new RetryableException(errorMessage, e);
         }
     }
 

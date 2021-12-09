@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.ItemKafkaProducer;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -80,7 +80,7 @@ class OrderProcessorServiceIntegrationTest {
     }
 
     @Test
-    @DisplayName("processOrderReceived() propagates retryable RetryableErrorException so consumer can retry")
+    @DisplayName("processOrderReceived() propagates retryable RetryableException so consumer can retry")
     void propagatesRetryableErrorException() throws Exception {
 
         // Given we have a valid order...
@@ -97,7 +97,7 @@ class OrderProcessorServiceIntegrationTest {
                                                      any(Consumer.class));
 
         // and when the order is processed then the message production error is propagated as a retryable error
-        assertThatExceptionOfType(RetryableErrorException.class).isThrownBy(() ->
+        assertThatExceptionOfType(RetryableException.class).isThrownBy(() ->
             orderProcessorServiceUnderTest.processOrderReceived(ORDER_RECEIVED_URI))
             .withMessage(
                 "Kafka item message could not be sent for order reference ORD-432118-793830 item ID MID-242116-007650")

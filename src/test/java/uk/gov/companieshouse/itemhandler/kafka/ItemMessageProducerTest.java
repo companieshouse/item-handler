@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -111,7 +111,7 @@ public class ItemMessageProducerTest {
     }
 
     @Test
-    @DisplayName("sendMessage propagates ItemKafkaProducer exception as a RetryableErrorException")
+    @DisplayName("sendMessage propagates ItemKafkaProducer exception as a RetryableException")
     void sendMessagePropagatesProductionExceptionAsRetryableErrorException() throws Exception {
 
         // Given
@@ -125,7 +125,7 @@ public class ItemMessageProducerTest {
                 any(Consumer.class));
 
         // When and then
-        assertThatExceptionOfType(RetryableErrorException.class).isThrownBy(() ->
+        assertThatExceptionOfType(RetryableException.class).isThrownBy(() ->
                 messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID))
                 .withMessage("Kafka item message could not be sent for order reference ORD-432118-793830 item " +
                         "ID MID-242116-007650")

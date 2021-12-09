@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -104,7 +104,7 @@ class OrderProcessorServiceTest {
 
     @Test
     void propagatesRetryableErrorException() throws Exception {
-        propagatesException(RetryableErrorException::new);
+        propagatesException(RetryableException::new);
     }
 
     private void propagatesException(final Function<String, Exception> constructor)  throws Exception {
