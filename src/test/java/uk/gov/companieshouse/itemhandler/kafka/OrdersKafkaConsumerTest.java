@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
-import uk.gov.companieshouse.itemhandler.exception.SerialisationException;
+import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -26,8 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
@@ -90,12 +89,12 @@ class OrdersKafkaConsumerTest {
     }
 
     @Test
-    void republishMessageToRetryTopicThrowsSerializationException()
-        throws ExecutionException, InterruptedException, SerializationException {
+    void republishMessageToRetryTopicThrowsSerializationException() throws SerializationException {
         // Given & When
         when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
         when(serializer.toBinary(any())).thenThrow(SerializationException.class);
-        SerialisationException exception = assertThrows(SerialisationException.class, () -> ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY));
+        ApplicationSerialisationException
+                exception = assertThrows(ApplicationSerialisationException.class, () -> ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY));
         Assertions.assertEquals("Failed to serialise message", exception.getMessage());
     }
 
@@ -127,9 +126,11 @@ class OrdersKafkaConsumerTest {
 //    }
 
     @Test
-    void republishMessageNotCalledForFirstRetryMessageOnRetryableErrorException() {
+    void republishMessageIsCalledForFirstRetryMessageOnRetryableErrorException() throws Exception {
         // Given & When
-        doThrow(new RetryableException(PROCESSING_ERROR_MESSAGE)).doNothing().when(ordersKafkaConsumer).logMessageReceived(any(), any());
+        //doThrow(new RetryableException(PROCESSING_ERROR_MESSAGE)).doNothing().when
+        // (ordersKafkaConsumer).logMessageReceived(any(), any());
+        doThrow(new RetryableException((PROCESSING_ERROR_MESSAGE))).when(processor).processOrderReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
         // Then
         // TODO: messages should be republished to the retry topic if < max attempts

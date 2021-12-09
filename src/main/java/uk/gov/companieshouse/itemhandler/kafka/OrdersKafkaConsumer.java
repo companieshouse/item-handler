@@ -12,7 +12,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
-import uk.gov.companieshouse.itemhandler.exception.SerialisationException;
+import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -254,7 +254,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
             LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
                     orderUri, topic), e, logMap);
-            throw new SerialisationException("Failed to serialise message");
+            throw new ApplicationSerialisationException("Failed to serialise message");
         }
         message.setTopic(topic);
         message.setTimestamp(new Date().getTime());
