@@ -1,5 +1,11 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
@@ -11,8 +17,9 @@ import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -20,13 +27,6 @@ import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
 @Service
 public class OrdersKafkaConsumer implements ConsumerSeekAware {
@@ -52,16 +52,16 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private final OrdersKafkaProducer kafkaProducer;
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
-    private final OrderProcessorService processor;
+    private final OrderProcessorService orderProcessorService;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
             OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
-            final OrderProcessorService processor) {
+            final OrderProcessorService orderProcessorService) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
         this.retryCount = new HashMap<>();
-        this.processor = processor;
+        this.orderProcessorService = orderProcessorService;
     }
 
     /**
@@ -74,7 +74,17 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
-        handleMessage(message);
+        try {
+            handleMessage(message);
+        } catch (NonRetryableException exception) {
+            logMessageProcessingFailureNonRecoverable(message, exception);
+
+        } catch (RuntimeException exception) {
+            logMessageProcessingFailureNonRecoverable(message, exception);
+
+            // TODO: determine whether application should stop consuming messages
+            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
+        }
     }
 
     /**
@@ -134,7 +144,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageReceived(message, orderReceivedUri);
 
             // process message
-            processor.processOrderReceived(orderReceivedUri);
+            orderProcessorService.processOrderReceived(orderReceivedUri);
 
             // on successful processing remove counterKey from retryCount
             if (retryCount.containsKey(orderReceivedUri)) {
@@ -143,8 +153,6 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             logMessageProcessed(message, orderReceivedUri);
         } catch (RetryableException ex) {
             retryMessage(message, orderReceivedUri, receivedTopic, ex);
-        } catch (Exception x) {
-            logMessageProcessingFailureNonRecoverable(message, x);
         }
     }
 

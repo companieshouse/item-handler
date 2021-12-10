@@ -13,13 +13,11 @@ import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Communicates with <code>chs-email-sender</code> via the <code>send-email</code> Kafka topic to
@@ -65,7 +63,7 @@ public class EmailService {
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
     private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
-    private final EmailSendMessageProducer producer;
+    private final EmailSendMessageProducer emailSendProducer;
     private final FeatureOptions featureOptions;
 
     @Value("${certificate.order.confirmation.recipient}")
@@ -78,12 +76,12 @@ public class EmailService {
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
-            final ObjectMapper objectMapper, final EmailSendMessageProducer producer,
+            final ObjectMapper objectMapper, final EmailSendMessageProducer emailSendProducer,
             final FeatureOptions featureOptions) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
-        this.producer = producer;
+        this.emailSendProducer = emailSendProducer;
         this.featureOptions = featureOptions;
     }
 
@@ -91,25 +89,25 @@ public class EmailService {
      * Sends out a certificate or certified copy order confirmation email.
      *
      * @param order the order information used to compose the order confirmation email.
-     * @throws JsonProcessingException
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
      */
-    public void sendOrderConfirmation(final OrderData order)
-            throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException {
+    public void sendOrderConfirmation(final OrderData order) {
         final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
         final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
         final EmailSend email = orderConfirmationAndEmail.email;
 
         email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
         email.setMessageId(UUID.randomUUID().toString());
-        email.setData(objectMapper.writeValueAsString(confirmation));
+        try {
+            email.setData(objectMapper.writeValueAsString(confirmation));
+        } catch (JsonProcessingException e) {
+            //TODO:
+            e.printStackTrace();
+        }
         email.setCreatedAt(LocalDateTime.now().toString());
 
         String orderReference = confirmation.getOrderReferenceNumber();
         LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-        producer.sendMessage(email, orderReference);
+        emailSendProducer.sendMessage(email, orderReference);
     }
 
     /**

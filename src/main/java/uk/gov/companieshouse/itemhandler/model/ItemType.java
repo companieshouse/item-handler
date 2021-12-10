@@ -71,13 +71,8 @@ public enum ItemType {
     /**
      * Sends outbound Kafka message(s) to propagate the order and/or its items onwards for further processing.
      * @param order the order to be propagated
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
-     * @throws JsonProcessingException
      */
-    public void sendMessages(final OrderData order)
-            throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
+    public void sendMessages(final OrderData order) {
         emailer.sendOrderConfirmation(order);
     }
 

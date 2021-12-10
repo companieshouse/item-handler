@@ -59,7 +59,7 @@ class OrdersKafkaConsumerTest {
     @Captor
     ArgumentCaptor<String> nextTopicArgument;
     @Mock
-    private OrderProcessorService processor;
+    private OrderProcessorService orderProcessorService;
 
     @Test
     void createRetryMessageBuildsMessageSuccessfully() {
@@ -68,7 +68,7 @@ class OrdersKafkaConsumerTest {
                 new OrdersKafkaConsumer(new SerializerFactory(),
                                         new OrdersKafkaProducer(),
                                         new KafkaListenerEndpointRegistry(),
-                                        processor);
+                        orderProcessorService);
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         // Then
@@ -130,11 +130,14 @@ class OrdersKafkaConsumerTest {
         // Given & When
         //doThrow(new RetryableException(PROCESSING_ERROR_MESSAGE)).doNothing().when
         // (ordersKafkaConsumer).logMessageReceived(any(), any());
-        doThrow(new RetryableException((PROCESSING_ERROR_MESSAGE))).when(processor).processOrderReceived(any());
+        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
+        when(serializer.toBinary(any())).thenReturn(new byte[4]);
+        doThrow(new RetryableException((PROCESSING_ERROR_MESSAGE))).when(orderProcessorService).processOrderReceived(any());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
         // Then
         // TODO: messages should be republished to the retry topic if < max attempts
-        verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
+        verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(),
+                anyString());
     }
 
     @Test
@@ -147,14 +150,6 @@ class OrdersKafkaConsumerTest {
         verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
     }
 
-    @Test
-    void republishMessageNotCalledOnNonRetryableErrorException() {
-        // Given & When
-        doThrow(new OrderProcessingException()).when(ordersKafkaConsumer).logMessageReceived(any(), any());
-        ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC));
-        // Then
-        verify(ordersKafkaConsumer, times(0)).republishMessageToTopic(anyString(), anyString(), anyString());
-    }
 
 //    @Test
 //    void republishMessageNotCalledOnNonRetryableKafkaMessagingException() {

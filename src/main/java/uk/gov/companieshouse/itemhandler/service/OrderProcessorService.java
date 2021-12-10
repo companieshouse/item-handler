@@ -35,24 +35,13 @@ public class OrderProcessorService {
      * Implements all of the business logic required to process the notification of an order received.
      * @param orderUri the URI representing the order received
      */
-    public void processOrderReceived(final String orderUri) throws Exception {
-        final OrderData order;
+    public void processOrderReceived(final String orderUri) {
         Map<String, Object> logMap = createLogMap();
         logIfNotNull(logMap, ORDER_URI, orderUri);
-        try {
-            order = ordersApi.getOrderData(orderUri);
-        } catch (Exception ex) {
-            getLogger().error("Exception caught getting order data.", ex, logMap);
-            throw ex;
-        }
+        final OrderData order = ordersApi.getOrderData(orderUri);
+
         logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
         getLogger().info("Processing order received", logMap);
-        try {
-            orderRouter.routeOrder(order);
-        } catch (Exception ex) {
-            getLogger().error("Exception caught routing order.", ex, logMap);
-            throw ex;
-        }
-
+        orderRouter.routeOrder(order);
     }
 }

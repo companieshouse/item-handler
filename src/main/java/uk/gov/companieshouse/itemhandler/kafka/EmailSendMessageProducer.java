@@ -3,13 +3,13 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMapWithAcknowledgedKafkaMessage;
@@ -32,19 +32,20 @@ public class EmailSendMessageProducer {
     /**
      * Sends an email-send message to the Kafka producer.
      * @param email EmailSend object encapsulating the message content
-     * @throws SerializationException should there be a failure to serialize the EmailSend object
-     * @throws ExecutionException should the production of the message to the topic error for some reason
-     * @throws InterruptedException should the execution thread be interrupted
      */
-    public void sendMessage(final EmailSend email, String orderReference)
-            throws SerializationException, ExecutionException, InterruptedException {
-        Map<String, Object> logMap =
-                LoggingUtils.logWithOrderReference("Sending message to kafka producer", orderReference);
-        final Message message = emailSendAvroSerializer.createMessage(email, orderReference);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, message.getTopic());
-        emailSendKafkaProducer.sendMessage(message, orderReference,
-                recordMetadata ->
-                    logOffsetFollowingSendIngOfMessage(orderReference, recordMetadata));
+    public void sendMessage(final EmailSend email, String orderReference) {
+        Map<String, Object> logMap = LoggingUtils.logWithOrderReference("Sending message to kafka producer", orderReference);
+        try {
+            final Message message = emailSendAvroSerializer.createMessage(email, orderReference);
+            LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, message.getTopic());
+            emailSendKafkaProducer.sendMessage(message, orderReference,
+                    recordMetadata ->
+                            logOffsetFollowingSendIngOfMessage(orderReference, recordMetadata));
+        } catch (SerializationException exception) {
+            String message = String.format("Failed to serialise email message for order reference %s", orderReference);
+            LOGGER.error(message, exception, logMap);
+            throw new ApplicationSerialisationException(message);
+        }
     }
 
     /**
