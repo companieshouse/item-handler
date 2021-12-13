@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -91,23 +92,22 @@ public class EmailService {
      * @param order the order information used to compose the order confirmation email.
      */
     public void sendOrderConfirmation(final OrderData order) {
-        final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
-        final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
-        final EmailSend email = orderConfirmationAndEmail.email;
-
-        email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
-        email.setMessageId(UUID.randomUUID().toString());
         try {
+            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
+            final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
+            final EmailSend email = orderConfirmationAndEmail.email;
+            email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+            email.setMessageId(UUID.randomUUID().toString());
             email.setData(objectMapper.writeValueAsString(confirmation));
-        } catch (JsonProcessingException e) {
-            //TODO:
-            e.printStackTrace();
+            email.setCreatedAt(LocalDateTime.now().toString());
+            String orderReference = confirmation.getOrderReferenceNumber();
+            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+            emailSendProducer.sendMessage(email, orderReference);
+        } catch (JsonProcessingException exception) {
+            String msg = String.format("Error converting order (%s) confirmation to JSON", order.getReference());
+            LOGGER.error(msg, exception);
+            throw new NonRetryableException(msg);
         }
-        email.setCreatedAt(LocalDateTime.now().toString());
-
-        String orderReference = confirmation.getOrderReferenceNumber();
-        LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-        emailSendProducer.sendMessage(email, orderReference);
     }
 
     /**

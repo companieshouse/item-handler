@@ -4,7 +4,7 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>480</x>
+      <x>490</x>
       <y>20</y>
       <w>220</w>
       <h>30</h>
@@ -15,7 +15,7 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>440</x>
+      <x>450</x>
       <y>110</y>
       <w>310</w>
       <h>50</h>
@@ -27,7 +27,7 @@ exception.ItemHandlerRuntimeException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>580</x>
+      <x>590</x>
       <y>40</y>
       <w>30</w>
       <h>90</h>
@@ -38,7 +38,7 @@ exception.ItemHandlerRuntimeException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>20</x>
+      <x>30</x>
       <y>390</y>
       <w>300</w>
       <h>50</h>
@@ -50,7 +50,7 @@ kafka.SendKafkaMessageException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>160</x>
+      <x>170</x>
       <y>290</y>
       <w>260</w>
       <h>120</h>
@@ -61,7 +61,7 @@ kafka.SendKafkaMessageException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>250</x>
+      <x>260</x>
       <y>250</y>
       <w>310</w>
       <h>50</h>
@@ -73,7 +73,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>390</x>
+      <x>400</x>
       <y>150</y>
       <w>220</w>
       <h>120</h>
@@ -84,7 +84,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>610</x>
+      <x>620</x>
       <y>250</y>
       <w>310</w>
       <h>50</h>
@@ -96,7 +96,7 @@ exception.NonRetryableException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>580</x>
+      <x>590</x>
       <y>150</y>
       <w>220</w>
       <h>120</h>
@@ -107,7 +107,7 @@ exception.NonRetryableException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>480</x>
+      <x>490</x>
       <y>390</y>
       <w>300</w>
       <h>50</h>
@@ -119,7 +119,7 @@ exception.ApiException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>390</x>
+      <x>400</x>
       <y>290</y>
       <w>260</w>
       <h>120</h>
@@ -130,7 +130,7 @@ exception.ApiException</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>20</x>
+      <x>30</x>
       <y>10</y>
       <w>190</w>
       <h>60</h>
@@ -138,5 +138,39 @@ exception.ApiException</panel_attributes>
     <panel_attributes>ItemHandler application
 exception hierarchy</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>90</x>
+      <y>530</y>
+      <w>220</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>java.lang.Exception</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>50</x>
+      <y>620</y>
+      <w>310</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.
+exception.ServiceUnavailableException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>190</x>
+      <y>550</y>
+      <w>30</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
   </element>
 </diagram>

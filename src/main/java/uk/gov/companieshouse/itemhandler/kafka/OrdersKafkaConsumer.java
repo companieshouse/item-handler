@@ -18,9 +18,9 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
-import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -54,6 +54,8 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
 
+    private Map<OrderProcessResponse.Status, java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>> responseHandler;
+
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
             OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
             final OrderProcessorService orderProcessorService) {
@@ -62,6 +64,14 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         this.registry = registry;
         this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
+        responseHandler = new HashMap<OrderProcessResponse.Status, java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>>() {
+            {
+                put(OrderProcessResponse.Status.OK, (message) -> {});
+                put(OrderProcessResponse.Status.SERVICE_UNAVAILABLE, OrdersKafkaConsumer.this::publishToRetryTopic);
+                put(OrderProcessResponse.Status.SERVICE_ERROR, OrdersKafkaConsumer.this::logServiceError);
+            }
+        };
+
     }
 
     /**
@@ -74,17 +84,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
-        try {
-            handleMessage(message);
-        } catch (NonRetryableException exception) {
-            logMessageProcessingFailureNonRecoverable(message, exception);
-
-        } catch (RuntimeException exception) {
-            logMessageProcessingFailureNonRecoverable(message, exception);
-
-            // TODO: determine whether application should stop consuming messages
-            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
-        }
+        handleMessage(message);
     }
 
     /**
@@ -117,17 +117,17 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedError(
             org.springframework.messaging.Message<OrderReceived> message) {
-        long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
-        if (offset <= errorRecoveryOffset) {
-            handleMessage(message);
-        } else {
-            Map<String, Object> logMap = LoggingUtils.createLogMap();
-            logMap.put(LoggingUtils.ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset);
-            logMap.put(LoggingUtils.TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
-            LoggingUtils.getLogger().info("Pausing error consumer as error recovery offset reached.",
-                    logMap);
-            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
-        }
+//        long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
+//        if (offset <= errorRecoveryOffset) {
+//            handleMessage(message);
+//        } else {
+//            Map<String, Object> logMap = LoggingUtils.createLogMap();
+//            logMap.put(LoggingUtils.ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset);
+//            logMap.put(LoggingUtils.TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
+//            LoggingUtils.getLogger().info("Pausing error consumer as error recovery offset reached.",
+//                    logMap);
+//            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
+//        }
     }
 
     /**
@@ -136,24 +136,43 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      * @param message
      */
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
-        OrderReceived msg = message.getPayload();
-        String orderReceivedUri = msg.getOrderUri();
+        OrderReceived orderReceived = message.getPayload();
+        String orderReceivedUri = orderReceived.getOrderUri();
         MessageHeaders headers = message.getHeaders();
         String receivedTopic = headers.get(KafkaHeaders.RECEIVED_TOPIC).toString();
-        try {
-            logMessageReceived(message, orderReceivedUri);
+        logMessageReceived(message, orderReceivedUri);
 
-            // process message
-            orderProcessorService.processOrderReceived(orderReceivedUri);
+        // process message
+        OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
+        responseHandler.get(response.getStatus()).accept(message);
 
-            // on successful processing remove counterKey from retryCount
-            if (retryCount.containsKey(orderReceivedUri)) {
-                resetRetryCount(receivedTopic + "-" + orderReceivedUri);
-            }
-            logMessageProcessed(message, orderReceivedUri);
-        } catch (RetryableException ex) {
-            retryMessage(message, orderReceivedUri, receivedTopic, ex);
-        }
+
+//            // on successful processing remove counterKey from retryCount
+//            if (retryCount.containsKey(orderReceivedUri)) {
+//                resetRetryCount(receivedTopic + "-" + orderReceivedUri);
+//            }
+//            logMessageProcessed(message, orderReceivedUri);
+//        } catch (RetryableException ex) {
+//            retryMessage(message, orderReceivedUri, receivedTopic, ex);
+//        }
+    }
+
+    /**
+     * Publish to retry topic.
+     *
+     * @param message
+     */
+    private void publishToRetryTopic(org.springframework.messaging.Message<OrderReceived> message) {
+
+    }
+
+    /**
+     * Publish to error topic.
+     *
+     * @param message
+     */
+    private void logServiceError(org.springframework.messaging.Message<OrderReceived> message) {
+
     }
 
     /**
@@ -168,23 +187,23 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      */
     private void retryMessage(org.springframework.messaging.Message<OrderReceived> message,
             String orderReceivedUri, String receivedTopic, RetryableException ex) {
-        String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR)) ? ORDER_RECEIVED_TOPIC_RETRY
-                        : ORDER_RECEIVED_TOPIC_ERROR;
-        String counterKey = receivedTopic + "-" + orderReceivedUri;
-
-        if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-                || retryCount.getOrDefault(counterKey, 1) >= MAX_RETRY_ATTEMPTS) {
-            republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
-            if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
-                resetRetryCount(counterKey);
-            }
-        } else {
-            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 1) + 1);
-            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
-            // retry
-            handleMessage(message);
-        }
+//        String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
+//                || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR)) ? ORDER_RECEIVED_TOPIC_RETRY
+//                        : ORDER_RECEIVED_TOPIC_ERROR;
+//        String counterKey = receivedTopic + "-" + orderReceivedUri;
+//
+//        if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
+//                || retryCount.getOrDefault(counterKey, 1) >= MAX_RETRY_ATTEMPTS) {
+//            republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
+//            if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
+//                resetRetryCount(counterKey);
+//            }
+//        } else {
+//            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 1) + 1);
+//            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
+//            // retry
+//            handleMessage(message);
+//        }
     }
 
     /**

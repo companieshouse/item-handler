@@ -31,28 +31,42 @@ public class OrdersApiClientService {
         this.apiClient = apiClient;
     }
 
+    /**
+     * Gets an order using an orderUri identifier.
+     *
+     * @param orderUri order identifier
+     * @return OrderData or null no order with supplied reference
+     * @throws ApiException if the service is unavailable
+     */
     public OrderData getOrderData(String orderUri) {
         LOGGER.debug(String.format("Order URI %s", orderUri));
         InternalApiClient internalApiClient = apiClient.getInternalApiClient();
         PrivateOrderResourceHandler privateOrderResourceHandler = internalApiClient.privateOrderResourceHandler();
 
+        OrderData orderData;
         try {
-            OrdersApi ordersApi = privateOrderResourceHandler.getOrder(orderUri).execute().getData();
-            LOGGER.debug(String.format("Order URI %s returned data from Order API", orderUri));
-            return ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi);
+            OrdersApi ordersApi = privateOrderResourceHandler.getOrder(orderUri)
+                    .execute()
+                    .getData();
+            LOGGER.debug(String.format("Order API got order %s", ordersApi.getReference()));
+            orderData = ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi);
+        } catch (ApiErrorResponseException exception) {
+            String message = String.format("Order URI %s, API exception %s, HTTP status %d",
+                    orderUri,
+                    exception.getMessage(),
+                    exception.getStatusCode());
+            if (exception.getStatusCode() != HttpStatusCodes.STATUS_CODE_NOT_FOUND) {
+                LOGGER.info(message);
+                throw new ApiException(message, exception);
+            } else {
+                LOGGER.error(message);
+                throw new NonRetryableException(message);
+            }
         } catch (URIValidationException exception) {
             String message = String.format("Invalid order URI %s", orderUri);
             LOGGER.error(message, exception);
             throw new NonRetryableException(message);
-        } catch (ApiErrorResponseException exception) {
-            String message = String.format("Order URI %s, API exception %s, HTTP status %d", orderUri, exception.getMessage(), exception.getStatusCode());
-            if (exception.getStatusCode() == HttpStatusCodes.STATUS_CODE_NOT_FOUND) {
-                LOGGER.error(message, exception);
-                throw new NonRetryableException(message, exception);
-            } else {
-                LOGGER.info(message);
-                throw new ApiException(message, exception);
-            }
         }
+        return orderData;
     }
 }
