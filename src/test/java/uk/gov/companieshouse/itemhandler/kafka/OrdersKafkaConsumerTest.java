@@ -61,6 +61,8 @@ class OrdersKafkaConsumerTest {
     ArgumentCaptor<String> nextTopicArgument;
     @Mock
     private OrderProcessorService orderProcessorService;
+    @Mock
+    private OrderProcessResponseHandler orderProcessResponseHandler;
 
     @Test
     void createRetryMessageBuildsMessageSuccessfully() {
@@ -69,7 +71,8 @@ class OrdersKafkaConsumerTest {
                 new OrdersKafkaConsumer(new SerializerFactory(),
                                         new OrdersKafkaProducer(),
                                         new KafkaListenerEndpointRegistry(),
-                        orderProcessorService);
+                        orderProcessorService,
+                        orderProcessResponseHandler);
         Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue    = actualMessage.getValue();
         // Then
@@ -136,7 +139,7 @@ class OrdersKafkaConsumerTest {
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
         // Then
         // TODO: messages should be republished to the retry topic if < max attempts
-        verify(ordersKafkaConsumer, times(1)).publishToRetryTopic(any());
+        verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
     }
 
     @Test

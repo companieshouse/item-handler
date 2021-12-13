@@ -1,8 +1,11 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import org.springframework.messaging.Message;
+import uk.gov.companieshouse.orders.OrderReceived;
+
 public class OrderProcessResponse {
-    private String orderUri;
-    private Status status;
+    private final String orderUri;
+    private final Status status;
 
     private OrderProcessResponse(Builder builder) {
         orderUri = builder.orderUri;
@@ -13,7 +16,44 @@ public class OrderProcessResponse {
         return new Builder();
     }
 
-    public enum Status { OK, SERVICE_UNAVAILABLE, SERVICE_ERROR};
+    public String getOrderUri() {
+        return orderUri;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public enum Status implements Accept {
+        OK {
+            @Override
+            public void accept(Visitor visitor, Message<OrderReceived> message) {
+                visitor.serviceOk(message);
+            }
+        }, SERVICE_UNAVAILABLE {
+            @Override
+            public void accept(Visitor visitor, Message<OrderReceived> message) {
+                visitor.serviceUnavailable(message);
+            }
+        }, SERVICE_ERROR {
+            @Override
+            public void accept(Visitor visitor, Message<OrderReceived> message) {
+                visitor.serviceError(message);
+            }
+        }
+    }
+
+    public interface Accept {
+        void accept(Visitor visitor, Message<OrderReceived> message);
+    }
+
+    public interface Visitor {
+        void serviceOk(Message<OrderReceived> message);
+
+        void serviceUnavailable(Message<OrderReceived> message);
+
+        void serviceError(Message<OrderReceived> message);
+    }
 
     public static final class Builder {
         private String orderUri;
@@ -35,13 +75,5 @@ public class OrderProcessResponse {
         public OrderProcessResponse build() {
             return new OrderProcessResponse(this);
         }
-    }
-
-    public String getOrderUri() {
-        return orderUri;
-    }
-
-    public Status getStatus() {
-        return status;
     }
 }

@@ -53,20 +53,18 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
-
-    private Map<OrderProcessResponse.Status, java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>> responseHandler;
+    private final OrderProcessResponseHandler orderProcessResponseHandler;
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
-            OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
-            final OrderProcessorService orderProcessorService,
-            Map<OrderProcessResponse.Status,
-                    java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>> responseHandler) {
+                               OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
+                               final OrderProcessorService orderProcessorService,
+                               final OrderProcessResponseHandler orderProcessResponseHandler) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
         this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
-        this.responseHandler = responseHandler;
+        this.orderProcessResponseHandler = orderProcessResponseHandler;
     }
 
     /**
@@ -137,37 +135,10 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         String receivedTopic = headers.get(KafkaHeaders.RECEIVED_TOPIC).toString();
         logMessageReceived(message, orderReceivedUri);
 
-        // process message
+        // Process message
         OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
-        responseHandler.get(response.getStatus()).accept(message);
-
-
-//            // on successful processing remove counterKey from retryCount
-//            if (retryCount.containsKey(orderReceivedUri)) {
-//                resetRetryCount(receivedTopic + "-" + orderReceivedUri);
-//            }
-//            logMessageProcessed(message, orderReceivedUri);
-//        } catch (RetryableException ex) {
-//            retryMessage(message, orderReceivedUri, receivedTopic, ex);
-//        }
-    }
-
-    /**
-     * Publish to retry topic.
-     *
-     * @param message
-     */
-    void publishToRetryTopic(org.springframework.messaging.Message<OrderReceived> message) {
-
-    }
-
-    /**
-     * Publish to error topic.
-     *
-     * @param message
-     */
-    private void logServiceError(org.springframework.messaging.Message<OrderReceived> message) {
-
+        // Handle response
+        response.getStatus().accept(orderProcessResponseHandler, message);
     }
 
     /**
