@@ -8,7 +8,6 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -144,7 +143,7 @@ public class EmailService {
                 final String error = "Unable to determine order confirmation type from description ID " +
                         descriptionId + "!";
                 LOGGER.error(error, logMap);
-                throw new ServiceException(error);
+                throw new NonRetryableException(error);
         }
     }
 

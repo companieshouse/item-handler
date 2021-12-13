@@ -15,7 +15,7 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
@@ -198,7 +198,7 @@ class EmailServiceTest {
         when(order.getReference()).thenReturn("456");
 
         // When and then
-        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+        assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
                 emailServiceUnderTest.sendOrderConfirmation(order))
                 .withMessage("Unable to determine order confirmation type from description ID unknown!")
                 .withNoCause();

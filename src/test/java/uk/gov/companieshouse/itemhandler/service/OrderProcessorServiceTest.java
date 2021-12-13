@@ -1,33 +1,30 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.apache.kafka.common.errors.SerializationException;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
-import uk.gov.companieshouse.itemhandler.exception.RetryableException;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
-
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.exception.ApiException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+
 /** Unit tests the {@link OrderProcessorService} class. */
 @ExtendWith(MockitoExtension.class)
 class OrderProcessorServiceTest {
 
     private static final String ORDER_URI = "/orders/" + ORDER_REFERENCE_NUMBER;
-    private static final String TEST_EXCEPTION_MESSAGE = "Test message!";
 
     @InjectMocks
     private OrderProcessorService orderProcessorUnderTest;
@@ -41,24 +38,8 @@ class OrderProcessorServiceTest {
     @Mock
     private OrderData order;
 
-    /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
-    private static class TestJsonProcessingException extends JsonProcessingException {
-
-        protected TestJsonProcessingException(String msg) {
-            super(msg);
-        }
-    }
-
-    /** Extends {@link ExecutionException} so it can be instantiated in these tests. */
-    private static class TestExecutionException extends ExecutionException {
-
-        protected TestExecutionException(String msg) {
-            super(msg);
-        }
-    }
-
     @Test
-    void getsOrderAndSendsOutConfirmation() throws Exception {
+    void getsOrderAndSendsOutConfirmation() {
 
         // Given
         when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
@@ -73,64 +54,18 @@ class OrderProcessorServiceTest {
     }
 
     @Test
-    void propagatesJsonProcessingException() throws Exception {
-        propagatesException(TestJsonProcessingException::new);
+    void testServiceUnavailable() {
+        when(ordersApi.getOrderData(ORDER_URI)).thenThrow(ApiException.class);
+
+        OrderProcessResponse actual = orderProcessorUnderTest.processOrderReceived(ORDER_URI);
+        assertEquals(OrderProcessResponse.Status.SERVICE_UNAVAILABLE, actual.getStatus());
     }
 
     @Test
-    void propagatesSerializationException() throws Exception {
-        propagatesException(SerializationException::new);
+    void testServiceError() {
+        when(ordersApi.getOrderData(ORDER_URI)).thenThrow(NonRetryableException.class);
+
+        OrderProcessResponse actual = orderProcessorUnderTest.processOrderReceived(ORDER_URI);
+        assertEquals(OrderProcessResponse.Status.SERVICE_ERROR, actual.getStatus());
     }
-
-    @Test
-    void propagatesExecutionException() throws Exception {
-        propagatesException(TestExecutionException::new);
-    }
-
-    @Test
-    void propagatesInterruptedException() throws Exception {
-        propagatesException(InterruptedException::new);
-    }
-
-    @Test
-    void propagatesServiceException() throws Exception {
-        propagatesException(ServiceException::new);
-    }
-
-    @Test
-    void propagatesKafkaMessagingException() throws Exception {
-        propagatesException(KafkaMessagingException::new);
-    }
-
-    @Test
-    void propagatesRetryableErrorException() throws Exception {
-        propagatesException(RetryableException::new);
-    }
-
-    private void propagatesException(final Function<String, Exception> constructor)  throws Exception {
-
-        // Given
-        givenSendCertificateOrderConfirmationThrowsException(constructor);
-
-        // When and then
-        assertThatExceptionOfType(constructor.apply(TEST_EXCEPTION_MESSAGE).getClass()).isThrownBy(() ->
-                orderProcessorUnderTest.processOrderReceived(ORDER_URI))
-                .withMessage(TEST_EXCEPTION_MESSAGE)
-                .withNoCause();
-    }
-
-    /**
-     * Sets up mocks to throw the exception for which the constructor is provided when the service calls
-     * {@link OrderRouterService#routeOrder(OrderData)}.
-     * @param constructor the Exception constructor to use
-     * @throws Exception should something unexpected happen
-     */
-    private void givenSendCertificateOrderConfirmationThrowsException(final Function<String, Exception> constructor)
-            throws Exception {
-        when(ordersApi.getOrderData(ORDER_URI)).thenReturn(order);
-        when(order.getReference()).thenReturn(ORDER_REFERENCE_NUMBER);
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(orderRouter).routeOrder(any(OrderData.class));
-    }
-
-
 }

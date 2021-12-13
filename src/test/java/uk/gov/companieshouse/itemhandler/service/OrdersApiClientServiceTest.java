@@ -12,7 +12,7 @@ import uk.gov.companieshouse.api.handler.order.request.OrdersGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
 import uk.gov.companieshouse.api.model.order.OrdersApi;
 import uk.gov.companieshouse.itemhandler.client.ApiClient;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.mapper.OrdersApiToOrderDataMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -72,7 +72,7 @@ public class OrdersApiClientServiceTest {
     }
 
     @Test
-    void getOrderDataThrowsServiceExceptionForIncorrectUri() {
-        Assertions.assertThrows(ServiceException.class, () -> serviceUnderTest.getOrderData(ORDER_URL_INCORRECT));
+    void getOrderDataThrowsNonRetryableExceptionForIncorrectUri() {
+        Assertions.assertThrows(NonRetryableException.class, () -> serviceUnderTest.getOrderData(ORDER_URL_INCORRECT));
     }
 }

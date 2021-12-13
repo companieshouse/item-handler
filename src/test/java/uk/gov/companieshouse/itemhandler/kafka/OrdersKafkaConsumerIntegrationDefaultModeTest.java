@@ -47,7 +47,7 @@ class OrdersKafkaConsumerIntegrationDefaultModeTest {
     private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
     private static final String GROUP_NAME = "order-received-consumers";
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\"}";
+    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\", \"attempt\": 0}";
     @Value("${spring.kafka.bootstrap-servers}")
     private String brokerAddresses;
     @Autowired

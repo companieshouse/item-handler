@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -84,7 +84,7 @@ public class OrderRouterServiceTest {
         when(order.getReference()).thenReturn(ORDER_REFERENCE);
 
         // When and then
-        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+        assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
                 serviceUnderTest.routeOrder(order))
                 .withMessage("Order ORD-432118-793830 contains no items.")
                 .withNoCause();
@@ -138,11 +138,11 @@ public class OrderRouterServiceTest {
     }
 
     /**
-     * Asserts that an exception of type {@link ServiceException} is thrown with the expected message.
+     * Asserts that an exception of type {@link NonRetryableException} is thrown with the expected message.
      * @param exceptionMessage the expected exception message
      */
     private void thenNonRetryableExceptionIsThrownWithMessage(final String exceptionMessage) {
-        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+        assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
                 serviceUnderTest.getItemType(order))
                 .withMessage(exceptionMessage)
                 .withNoCause();

@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DatumReader;
 import org.apache.kafka.common.errors.SerializationException;
@@ -23,10 +25,8 @@ public class OrderReceivedDeserializerTest {
     private DatumReader<OrderReceived> datumReader;
 
     @Test
-    public void deserializeThrowsSerializationException() throws IOException {
-        byte[] testData = new String("Test data").getBytes();
-
-        Assertions.assertThrows(SerializationException.class, () -> deserializer.deserialize("email-send", testData));
+    public void deserializeReturnsNullIfMessageCannotBeDeserialised() {
+        assertNull(deserializer.deserialize("email-send", "Test data".getBytes()));
     }
 
 }

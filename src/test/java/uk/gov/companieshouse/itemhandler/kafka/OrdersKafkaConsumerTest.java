@@ -15,6 +15,7 @@ import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
+import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -130,14 +131,12 @@ class OrdersKafkaConsumerTest {
         // Given & When
         //doThrow(new RetryableException(PROCESSING_ERROR_MESSAGE)).doNothing().when
         // (ordersKafkaConsumer).logMessageReceived(any(), any());
-        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
-        when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        doThrow(new RetryableException((PROCESSING_ERROR_MESSAGE))).when(orderProcessorService).processOrderReceived(any());
+        when(orderProcessorService.processOrderReceived(any())).thenReturn(OrderProcessResponse.newBuilder().withStatus(
+                OrderProcessResponse.Status.SERVICE_UNAVAILABLE).build());
         ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
         // Then
         // TODO: messages should be republished to the retry topic if < max attempts
-        verify(ordersKafkaConsumer, times(1)).republishMessageToTopic(anyString(), anyString(),
-                anyString());
+        verify(ordersKafkaConsumer, times(1)).publishToRetryTopic(any());
     }
 
     @Test

@@ -58,20 +58,15 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
 
     public OrdersKafkaConsumer(SerializerFactory serializerFactory,
             OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
-            final OrderProcessorService orderProcessorService) {
+            final OrderProcessorService orderProcessorService,
+            Map<OrderProcessResponse.Status,
+                    java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>> responseHandler) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
         this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
-        responseHandler = new HashMap<OrderProcessResponse.Status, java.util.function.Consumer<org.springframework.messaging.Message<OrderReceived>>>() {
-            {
-                put(OrderProcessResponse.Status.OK, (message) -> {});
-                put(OrderProcessResponse.Status.SERVICE_UNAVAILABLE, OrdersKafkaConsumer.this::publishToRetryTopic);
-                put(OrderProcessResponse.Status.SERVICE_ERROR, OrdersKafkaConsumer.this::logServiceError);
-            }
-        };
-
+        this.responseHandler = responseHandler;
     }
 
     /**
@@ -162,7 +157,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
      *
      * @param message
      */
-    private void publishToRetryTopic(org.springframework.messaging.Message<OrderReceived> message) {
+    void publishToRetryTopic(org.springframework.messaging.Message<OrderReceived> message) {
 
     }
 
