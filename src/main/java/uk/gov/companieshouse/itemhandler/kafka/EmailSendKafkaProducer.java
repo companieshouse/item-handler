@@ -34,18 +34,9 @@ public class EmailSendKafkaProducer extends KafkaProducer  {
             final Future<RecordMetadata> recordMetadataFuture = getChKafkaProducer().sendAndReturnFuture(message);
             asyncResponseLogger.accept(recordMetadataFuture.get());
         } catch (InterruptedException | ExecutionException e) {
-            Throwable cause = e.getCause();
-            // TODO: determine if Kafka broker unavailable
-            if (1 == 1) {
-                // TODO: if Kafka broker unavailable throw RetryableException
-                String msg = String.format("Kafka broker unavailable %s", e.getMessage());
-                LOGGER.error(msg, e);
-                throw new SendKafkaMessageException(msg);
-            } else {
-                String msg = String.format("Unexpected Kafka error %s", e.getMessage());
-                LOGGER.error(msg, e);
-                throw new NonRetryableException(msg);
-            }
+            String msg = String.format("Unexpected Kafka error: %s", e.getMessage());
+            LOGGER.error(msg, e);
+            throw new NonRetryableException(msg);
         }
     }
 }
