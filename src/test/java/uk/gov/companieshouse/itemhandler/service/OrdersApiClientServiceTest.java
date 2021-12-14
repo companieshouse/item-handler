@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
+import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.api.handler.order.PrivateOrderResourceHandler;
 import uk.gov.companieshouse.api.handler.order.request.OrdersGet;
 import uk.gov.companieshouse.api.model.ApiResponse;
@@ -27,7 +28,7 @@ import uk.gov.companieshouse.itemhandler.mapper.OrdersApiToOrderDataMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 @ExtendWith(MockitoExtension.class)
-public class OrdersApiClientServiceTest {
+class OrdersApiClientServiceTest {
     private static final String ORDER_URL = "/orders/1234";
     private static final String ORDER_URL_INCORRECT = "/bad-orders/url";
     private static final String ORDER_ETAG = "abCxYz0324";
@@ -79,7 +80,7 @@ public class OrdersApiClientServiceTest {
     }
 
     @Test
-    void getOrderDataThrowsNonRetryableExceptionForIncorrectUri() throws Exception {
+    void getOrderDataThrowsNonRetryableExceptionForOrderNotFound() throws Exception {
         // Given
         when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateOrderResourceHandler()).thenReturn(privateOrderResourceHandler);
@@ -95,7 +96,7 @@ public class OrdersApiClientServiceTest {
     }
 
     @Test
-    void getOrderDataThrowsRetryableExceptionForServerError() throws Exception {
+    void getOrderDataThrowsRetryableExceptionForOrderServerError() throws Exception {
         // Given
         when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.privateOrderResourceHandler()).thenReturn(privateOrderResourceHandler);
@@ -108,5 +109,21 @@ public class OrdersApiClientServiceTest {
 
         // When
         Assertions.assertThrows(ApiException.class, executable);
+    }
+
+    @Test
+    void getOrderDataThrowsRetryableExceptionForInvalidURI() throws Exception {
+        // Given
+        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
+        when(internalApiClient.privateOrderResourceHandler()).thenReturn(privateOrderResourceHandler);
+        when(privateOrderResourceHandler.getOrder(ORDER_URL_INCORRECT)).thenReturn(ordersGet);
+        when(ordersGet.execute()).thenThrow(URIValidationException.class);
+
+        // Then
+        Executable executable = () -> serviceUnderTest.getOrderData(ORDER_URL_INCORRECT);
+
+        // When
+        NonRetryableException exception = Assertions.assertThrows(NonRetryableException.class, executable);
+        assertThat(exception.getMessage(), is("Invalid order URI /bad-orders/url"));
     }
 }
