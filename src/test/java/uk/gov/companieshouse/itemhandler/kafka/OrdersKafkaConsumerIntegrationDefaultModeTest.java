@@ -51,8 +51,6 @@ class OrdersKafkaConsumerIntegrationDefaultModeTest {
     @Value("${spring.kafka.bootstrap-servers}")
     private String brokerAddresses;
     @Autowired
-    private SerializerFactory serializerFactory;
-    @Autowired
     private OrdersKafkaProducer kafkaProducer;
 
     private KafkaMessageListenerContainer<String, OrderReceived> container;

@@ -4,7 +4,7 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>312</x>
+      <x>696</x>
       <y>96</y>
       <w>616</w>
       <h>80</h>
@@ -21,7 +21,7 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>320</x>
+      <x>704</x>
       <y>248</y>
       <w>600</w>
       <h>96</h>
@@ -39,7 +39,7 @@
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>600</x>
+      <x>984</x>
       <y>168</y>
       <w>24</w>
       <h>96</h>
@@ -50,9 +50,9 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>184</x>
+      <x>608</x>
       <y>408</y>
-      <w>512</w>
+      <w>504</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>&lt;&lt;service&gt;&gt;
@@ -67,7 +67,7 @@ uk.gov.companieshouse.itemhandler.service::OrdersApiClientService
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>464</x>
+      <x>880</x>
       <y>336</y>
       <w>24</w>
       <h>88</h>
@@ -78,7 +78,7 @@ uk.gov.companieshouse.itemhandler.service::OrdersApiClientService
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>752</x>
+      <x>1136</x>
       <y>408</y>
       <w>376</w>
       <h>88</h>
@@ -95,7 +95,7 @@ OrderRouterService
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>792</x>
+      <x>1176</x>
       <y>336</y>
       <w>24</w>
       <h>88</h>
@@ -106,7 +106,7 @@ OrderRouterService
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1056</x>
+      <x>1440</x>
       <y>104</y>
       <w>288</w>
       <h>56</h>
@@ -120,7 +120,7 @@ Message
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>920</x>
+      <x>1304</x>
       <y>128</y>
       <w>152</w>
       <h>24</h>
@@ -131,7 +131,7 @@ Message
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1064</x>
+      <x>1448</x>
       <y>16</y>
       <w>216</w>
       <h>40</h>
@@ -143,7 +143,7 @@ OrderReceived</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1168</x>
+      <x>1552</x>
       <y>48</y>
       <w>24</w>
       <h>80</h>
@@ -154,7 +154,7 @@ OrderReceived</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1360</x>
+      <x>1744</x>
       <y>112</y>
       <w>208</w>
       <h>48</h>
@@ -166,7 +166,7 @@ MessageHeaders</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1288</x>
+      <x>1672</x>
       <y>128</y>
       <w>88</w>
       <h>24</h>
@@ -177,7 +177,7 @@ MessageHeaders</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1624</x>
+      <x>2008</x>
       <y>64</y>
       <w>184</w>
       <h>72</h>
@@ -192,7 +192,7 @@ kafka_offset &lt;= 0</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1560</x>
+      <x>1944</x>
       <y>88</y>
       <w>80</w>
       <h>64</h>
@@ -203,7 +203,7 @@ kafka_offset &lt;= 0</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1376</x>
+      <x>1760</x>
       <y>0</y>
       <w>320</w>
       <h>64</h>
@@ -216,7 +216,7 @@ kafka-models:1.0.17</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1272</x>
+      <x>1656</x>
       <y>16</y>
       <w>120</w>
       <h>32</h>
@@ -227,8 +227,8 @@ kafka-models:1.0.17</panel_attributes>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>0</x>
-      <y>104</y>
+      <x>192</x>
+      <y>88</y>
       <w>208</w>
       <h>64</h>
     </coordinates>
@@ -239,7 +239,7 @@ kafka-models:1.0.17</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1360</x>
+      <x>1744</x>
       <y>384</y>
       <w>200</w>
       <h>48</h>
@@ -253,7 +253,7 @@ bg=yellow</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1360</x>
+      <x>1744</x>
       <y>480</y>
       <w>200</w>
       <h>48</h>
@@ -267,7 +267,7 @@ bg=yellow</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1456</x>
+      <x>1840</x>
       <y>424</y>
       <w>24</w>
       <h>72</h>
@@ -278,7 +278,7 @@ bg=yellow</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>784</x>
+      <x>1168</x>
       <y>600</y>
       <w>312</w>
       <h>72</h>
@@ -293,7 +293,7 @@ ItemType
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>936</x>
+      <x>1320</x>
       <y>664</y>
       <w>24</w>
       <h>88</h>
@@ -304,7 +304,7 @@ ItemType
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>784</x>
+      <x>1168</x>
       <y>736</y>
       <w>312</w>
       <h>72</h>
@@ -318,7 +318,7 @@ EmailService
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>936</x>
+      <x>1320</x>
       <y>800</y>
       <w>24</w>
       <h>224</h>
@@ -329,7 +329,7 @@ EmailService
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>776</x>
+      <x>1160</x>
       <y>1008</y>
       <w>424</w>
       <h>72</h>
@@ -346,7 +346,7 @@ EmailSendMessageProducer
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1072</x>
+      <x>1456</x>
       <y>904</y>
       <w>264</w>
       <h>32</h>
@@ -357,7 +357,7 @@ EmailSendMessageProducer
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1080</x>
+      <x>1464</x>
       <y>800</y>
       <w>24</w>
       <h>120</h>
@@ -368,7 +368,7 @@ EmailSendMessageProducer
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1128</x>
+      <x>1512</x>
       <y>840</y>
       <w>144</w>
       <h>24</h>
@@ -379,7 +379,7 @@ EmailSendMessageProducer
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1192</x>
+      <x>1576</x>
       <y>856</y>
       <w>24</w>
       <h>64</h>
@@ -390,7 +390,7 @@ EmailSendMessageProducer
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1360</x>
+      <x>1744</x>
       <y>824</y>
       <w>136</w>
       <h>56</h>
@@ -401,7 +401,7 @@ EmailSendMessageProducer
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>1240</x>
+      <x>1624</x>
       <y>688</y>
       <w>352</w>
       <h>112</h>
@@ -418,7 +418,7 @@ MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>992</x>
+      <x>1376</x>
       <y>1072</y>
       <w>24</w>
       <h>304</h>
@@ -429,7 +429,7 @@ MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>680</x>
+      <x>1064</x>
       <y>1360</y>
       <w>736</w>
       <h>64</h>
@@ -444,7 +444,7 @@ EmailSendKafkaProducer
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1064</x>
+      <x>1448</x>
       <y>1128</y>
       <w>432</w>
       <h>72</h>
@@ -460,7 +460,7 @@ EmailSendMessageFactory
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1152</x>
+      <x>1536</x>
       <y>1072</y>
       <w>24</w>
       <h>72</h>
@@ -471,7 +471,7 @@ EmailSendMessageFactory
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1112</x>
+      <x>1496</x>
       <y>1256</y>
       <w>328</w>
       <h>48</h>
@@ -483,7 +483,7 @@ Message</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1272</x>
+      <x>1656</x>
       <y>1192</y>
       <w>88</w>
       <h>80</h>
@@ -495,7 +495,7 @@ Message</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1272</x>
+      <x>1656</x>
       <y>1296</y>
       <w>24</w>
       <h>80</h>
@@ -507,7 +507,7 @@ Message</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>400</x>
+      <x>784</x>
       <y>1160</y>
       <w>328</w>
       <h>216</h>
@@ -518,7 +518,7 @@ Message</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>760</x>
+      <x>1144</x>
       <y>1192</y>
       <w>24</w>
       <h>184</h>
@@ -529,7 +529,7 @@ Message</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>504</x>
+      <x>888</x>
       <y>1120</y>
       <w>456</w>
       <h>80</h>
@@ -546,7 +546,7 @@ KafkaProducer/
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>24</x>
+      <x>408</x>
       <y>1120</y>
       <w>384</w>
       <h>64</h>
@@ -561,7 +561,7 @@ bg=gray</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>400</x>
+      <x>784</x>
       <y>1136</y>
       <w>120</w>
       <h>24</h>
@@ -572,7 +572,7 @@ bg=gray</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>936</x>
+      <x>1320</x>
       <y>488</y>
       <w>24</w>
       <h>128</h>
@@ -583,7 +583,7 @@ bg=gray</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1560</x>
+      <x>1944</x>
       <y>1376</y>
       <w>240</w>
       <h>40</h>
@@ -596,7 +596,7 @@ kafka.SendKafkaMessageException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1408</x>
+      <x>1792</x>
       <y>1376</y>
       <w>168</w>
       <h>32</h>
@@ -608,7 +608,7 @@ kafka.SendKafkaMessageException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1560</x>
+      <x>1944</x>
       <y>1280</y>
       <w>248</w>
       <h>40</h>
@@ -621,7 +621,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1672</x>
+      <x>2056</x>
       <y>1312</y>
       <w>24</w>
       <h>80</h>
@@ -632,7 +632,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1264</x>
+      <x>1648</x>
       <y>840</y>
       <w>112</w>
       <h>24</h>
@@ -643,7 +643,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1088</x>
+      <x>1472</x>
       <y>744</y>
       <w>168</w>
       <h>24</h>
@@ -654,7 +654,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1040</x>
+      <x>1424</x>
       <y>344</y>
       <w>248</w>
       <h>40</h>
@@ -667,7 +667,7 @@ exception.RetryableException</panel_attributes>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1040</x>
+      <x>1424</x>
       <y>232</y>
       <w>160</w>
       <h>72</h>
@@ -677,13 +677,14 @@ exception.RetryableException</panel_attributes>
 OK
 SERVICE_UNAVAILABLE
 SERVICE_ERROR
+bg=green
 </panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>912</x>
+      <x>1296</x>
       <y>248</y>
       <w>144</w>
       <h>32</h>
@@ -695,7 +696,7 @@ SERVICE_ERROR
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>896</x>
+      <x>1280</x>
       <y>168</y>
       <w>160</w>
       <h>88</h>
@@ -707,7 +708,7 @@ SERVICE_ERROR
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>912</x>
+      <x>1296</x>
       <y>312</y>
       <w>144</w>
       <h>64</h>
@@ -715,5 +716,146 @@ SERVICE_ERROR
     <panel_attributes>lt=&lt;-
 &lt;&lt;uses&gt;&gt;</panel_attributes>
     <additional_attributes>160.0;60.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>192</x>
+      <y>256</y>
+      <w>392</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse
+--
++newBuilder(): Builder
++getOrderUri(): String
++getStatus(): Status
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>576</x>
+      <y>288</y>
+      <w>144</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;160.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>184</x>
+      <y>536</y>
+      <w>376</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+/Visitable/
+--
++ accept(Visitor visitor, Message&lt;OrderReceived&gt; message) : void
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>216</x>
+      <y>672</y>
+      <w>328</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+/Visitor/
+--
++ serviceOk(Message&lt;OrderReceived&gt; message) : void
++ serviceUnavailable(Message&lt;OrderReceived&gt; message) : void
++ serviceError(Message&lt;OrderReceived&gt; message) : void
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>208</x>
+      <y>400</y>
+      <w>336</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+Status
+--
+enum {OK, SERVICE_UNAVAILABLE, SERVICE_ERROR}
+bg=green</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>472</y>
+      <w>24</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>336</y>
+      <w>24</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>192</x>
+      <y>832</y>
+      <w>360</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.kafka::OrderProcessResponseHandler
+--
++serviceOk(Message&lt;OrderReceived&gt; message): void
++serviceUnavailable(Message&lt;OrderReceived&gt; message): void
++serviceError(Message&lt;OrderReceived&gt; message): void
+bg=cyan
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>760</y>
+      <w>24</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>368</x>
+      <y>600</y>
+      <w>24</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
   </element>
 </diagram>

@@ -24,7 +24,7 @@ public class OrderProcessResponse {
         return status;
     }
 
-    public enum Status implements Accept {
+    public enum Status implements Visitable {
         OK {
             @Override
             public void accept(Visitor visitor, Message<OrderReceived> message) {
@@ -43,7 +43,7 @@ public class OrderProcessResponse {
         }
     }
 
-    public interface Accept {
+    public interface Visitable {
         void accept(Visitor visitor, Message<OrderReceived> message);
     }
 
