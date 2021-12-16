@@ -39,8 +39,8 @@ public class OrderProcessorService {
      * @return OrderProcessStatus of this operation
      */
     public OrderProcessResponse processOrderReceived(final String orderUri) {
-        OrderProcessResponse.Builder orderStatusBuilder = OrderProcessResponse.newBuilder();
-        orderStatusBuilder.withOrderUri(orderUri);
+        OrderProcessResponse.Builder responseBuilder = OrderProcessResponse.newBuilder();
+        responseBuilder.withOrderUri(orderUri);
 
         Map<String, Object> logMap = createLogMap();
         logIfNotNull(logMap, ORDER_URI, orderUri);
@@ -50,17 +50,17 @@ public class OrderProcessorService {
             logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
             getLogger().info("Processing order received", logMap);
             orderRouter.routeOrder(order);
-            orderStatusBuilder.withStatus(OrderProcessResponse.Status.OK);
+            responseBuilder.withStatus(OrderProcessResponse.Status.OK);
         } catch (RetryableException exception) {
             String msg = String.format("Service unavailable %s", exception.getMessage());
             getLogger().info(msg, logMap);
-            orderStatusBuilder.withStatus(OrderProcessResponse.Status.SERVICE_UNAVAILABLE);
+            responseBuilder.withStatus(OrderProcessResponse.Status.SERVICE_UNAVAILABLE);
         } catch (NonRetryableException exception) {
             String msg = String.format("Service error %s", exception.getMessage());
             getLogger().info(msg, logMap);
-            orderStatusBuilder.withStatus(OrderProcessResponse.Status.SERVICE_ERROR);
+            responseBuilder.withStatus(OrderProcessResponse.Status.SERVICE_ERROR);
         }
 
-        return orderStatusBuilder.build();
+        return responseBuilder.build();
     }
 }

@@ -18,6 +18,10 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFER
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMap;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
+/**
+ * TODO: remove
+ * @deprecated
+ */
 @Service
 public class ItemKafkaProducer extends KafkaProducer {
 
@@ -43,7 +47,7 @@ public class ItemKafkaProducer extends KafkaProducer {
         final Map<String, Object> logMap = createLogMap();
         logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
         logIfNotNull(logMap, ITEM_ID, itemId);
-        LOGGER.info("Sending message to kafka topic", logMap);
+        LOGGER.info("Sending message to kafka", logMap);
 
         final Future<RecordMetadata> recordMetadataFuture = getChKafkaProducer().sendAndReturnFuture(message);
         asyncResponseLogger.accept(recordMetadataFuture.get());

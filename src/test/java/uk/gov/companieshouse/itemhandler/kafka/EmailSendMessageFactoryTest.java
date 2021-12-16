@@ -34,10 +34,10 @@ class EmailSendMessageFactoryTest {
     @Test
     void createMessageSuccessfullyCreatesMessage() throws Exception {
         // Given
-        EmailSendMessageFactory messageFactory = new EmailSendMessageFactory(serializerFactory);
+        MessageSerialiserFactory messageFactory = new MessageSerialiserFactory(serializerFactory, EmailSend.class);
 
         // When
-        Message message = messageFactory.createMessage(createEmailSend(), ORDER_REF);
+        Message message = messageFactory.createMessage(createEmailSend(), TOPIC);
         String actualContent = new String(message.getValue());
 
         // Then

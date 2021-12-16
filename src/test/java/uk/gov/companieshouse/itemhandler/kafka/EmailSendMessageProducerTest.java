@@ -32,6 +32,8 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFEREN
 
 /**
  * Unit tests the {@link EmailSendMessageProducer} class.
+ *
+ * TODO: rework LoggingUtils and implement using JUnit5
  */
 @RunWith(PowerMockRunner.class)
 @ExtendWith(MockitoExtension.class)
@@ -42,15 +44,16 @@ public class EmailSendMessageProducerTest {
     private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
     private static final int PARTITION_VALUE = 0;
+    private static final String EMAIL_SEND_TOPIC = "email-send";
 
     @InjectMocks
     private EmailSendMessageProducer messageProducerUnderTest;
 
     @Mock
-    private EmailSendMessageFactory emailSendMessageFactory;
+    private MessageSerialiserFactory emailSendMessageFactory;
 
     @Mock
-    private EmailSendKafkaProducer emailSendKafkaProducer;
+    private MessageProducer messageProducer;
 
     @Mock
     private Message message;
@@ -69,13 +72,13 @@ public class EmailSendMessageProducerTest {
     void sendMessageDelegatesMessageCreation() throws Exception {
 
         // Given
-        when(emailSendMessageFactory.createMessage(emailSend, ORDER_REFERENCE)).thenReturn(message);
+        when(emailSendMessageFactory.createMessage(emailSend, EMAIL_SEND_TOPIC)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(emailSend, ORDER_REFERENCE);
+        messageProducerUnderTest.sendMessage(emailSend, EMAIL_SEND_TOPIC);
 
         // Then
-        verify(emailSendMessageFactory).createMessage(emailSend, ORDER_REFERENCE);
+        verify(emailSendMessageFactory).createMessage(emailSend, EMAIL_SEND_TOPIC);
 
     }
 
@@ -84,13 +87,13 @@ public class EmailSendMessageProducerTest {
     void sendMessageDelegatesMessageSending() throws Exception {
 
         // Given
-        when(emailSendMessageFactory.createMessage(emailSend, ORDER_REFERENCE)).thenReturn(message);
+        when(emailSendMessageFactory.createMessage(emailSend, EMAIL_SEND_TOPIC)).thenReturn(message);
 
         // When
-        messageProducerUnderTest.sendMessage(emailSend, ORDER_REFERENCE);
+        messageProducerUnderTest.sendMessage(emailSend, EMAIL_SEND_TOPIC);
 
         // Then
-        verify(emailSendKafkaProducer).sendMessage(eq(message), eq(ORDER_REFERENCE), any(Consumer.class));
+        verify(messageProducer).sendMessage(eq(message), any(Consumer.class));
 
     }
 
@@ -103,7 +106,7 @@ public class EmailSendMessageProducerTest {
         // Given
         mockStatic(LoggingUtils.class);
 
-        when(emailSendMessageFactory.createMessage(emailSend, ORDER_REFERENCE)).thenReturn(message);
+        when(emailSendMessageFactory.createMessage(emailSend, EMAIL_SEND_TOPIC)).thenReturn(message);
         when(message.getTopic()).thenReturn(TOPIC_NAME);
 
         // When
@@ -139,7 +142,7 @@ public class EmailSendMessageProducerTest {
     private void verifyLoggingBeforeMessageSendingIsAdequate() {
 
         PowerMockito.verifyStatic(LoggingUtils.class);
-        LoggingUtils.logWithOrderReference("Sending message to kafka producer", ORDER_REFERENCE);
+        LoggingUtils.logWithOrderReference("Sending message to kafka", ORDER_REFERENCE);
 
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(TOPIC), eq(TOPIC_NAME));
@@ -154,7 +157,7 @@ public class EmailSendMessageProducerTest {
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
 
-        verify(logger).info(eq("Message sent to Kafka topic"), any(Map.class));
+        verify(logger).info(eq("Message sent to Kafka"), any(Map.class));
 
     }
 

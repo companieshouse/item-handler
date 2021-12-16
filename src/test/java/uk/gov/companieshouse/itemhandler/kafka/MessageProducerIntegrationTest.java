@@ -14,20 +14,20 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-class OrdersMessageProducerIntegrationTest {
+class MessageProducerIntegrationTest {
     private static final String ORDER_URI = "/order/ORDER-12345";
     private static final String ORDER_TOPIC = "order-received";
 
     @Autowired
-    OrdersKafkaProducer kafkaProducerUnderTest;
+    MessageProducer messageProducer;
 
     @Autowired
-    OrdersKafkaConsumer kafkaConsumer;
+    OrderMessageConsumer orderMessageConsumer;
 
     @Autowired
     TestOrdersMessageConsumer testOrdersMessageConsumer;
@@ -63,7 +63,7 @@ class OrdersMessageProducerIntegrationTest {
         int count = 0;
         do {
             messages = testOrdersMessageConsumer.pollConsumerGroup();
-            kafkaProducerUnderTest.sendMessage(kafkaConsumer.createRetryMessage(ORDER_URI, ORDER_TOPIC));
+            messageProducer.sendMessage(orderMessageConsumer.createRetryMessage(ORDER_URI, ORDER_TOPIC));
             count++;
         } while(messages.isEmpty() && count < 15);
 

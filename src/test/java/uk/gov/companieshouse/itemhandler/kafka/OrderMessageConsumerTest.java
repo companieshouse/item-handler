@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.apache.avro.generic.IndexedRecord;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +31,7 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @ExtendWith(MockitoExtension.class)
-class OrdersKafkaConsumerTest {
+class OrderMessageConsumerTest {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_KEY = "order-received";
@@ -39,9 +40,9 @@ class OrdersKafkaConsumerTest {
 
     @Spy
     @InjectMocks
-    private OrdersKafkaConsumer ordersKafkaConsumer;
+    private OrderMessageConsumer ordersKafkaConsumer;
     @Mock
-    private OrdersKafkaProducer ordersKafkaProducer;
+    private MessageProducer messageProducer;
     @Mock
     private SerializerFactory serializerFactory;
     @Mock
@@ -76,9 +77,9 @@ class OrdersKafkaConsumerTest {
     @Test
     void createRetryMessageBuildsMessageSuccessfully() {
         // Given & When
-        OrdersKafkaConsumer consumerUnderTest =
-                new OrdersKafkaConsumer(new SerializerFactory(),
-                        new OrdersKafkaProducer(),
+        OrderMessageConsumer consumerUnderTest =
+                new OrderMessageConsumer(new SerializerFactory(),
+                        new MessageProducer(),
                         new KafkaListenerEndpointRegistry(),
                         orderProcessorService,
                         orderProcessResponseHandler);
@@ -86,7 +87,7 @@ class OrdersKafkaConsumerTest {
                 ORDER_RECEIVED_TOPIC);
         byte[] actualMessageRawValue = actualMessage.getValue();
         // Then
-        OrderReceivedDeserializer<org.apache.avro.generic.IndexedRecord> deserializer = new OrderReceivedDeserializer<>();
+        MessageDeserializer<IndexedRecord> deserializer = new MessageDeserializer<>();
         String actualOrderReceived = (String) deserializer.deserialize(ORDER_RECEIVED_TOPIC,
                 actualMessageRawValue).get(0);
         Assert.assertThat(actualOrderReceived, Matchers.is(ORDER_RECEIVED_URI));
@@ -103,7 +104,7 @@ class OrdersKafkaConsumerTest {
                 ORDER_RECEIVED_TOPIC,
                 ORDER_RECEIVED_TOPIC_RETRY);
         // Then
-        verify(ordersKafkaProducer, times(1)).sendMessage(any());
+        verify(messageProducer, times(1)).sendMessage(any());
     }
 
     @Test
@@ -146,7 +147,7 @@ class OrdersKafkaConsumerTest {
                 ORDER_RECEIVED_TOPIC_RETRY,
                 ORDER_RECEIVED_TOPIC_ERROR);
         // Then
-        verify(ordersKafkaProducer, times(1)).sendMessage(any());
+        verify(messageProducer, times(1)).sendMessage(any());
     }
 
     @Test

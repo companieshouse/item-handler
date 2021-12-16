@@ -12,12 +12,12 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @Service
 class OrderProcessResponseHandler implements OrderProcessResponse.Visitor {
 
-    private final OrdersKafkaMessageProducer messageProducer;
+    private final OrderMessageProducer messageProducer;
     private final ResponseHandlerConfig config;
     private final Logger logger;
 
     @Autowired
-    public OrderProcessResponseHandler(OrdersKafkaMessageProducer messageProducer, ResponseHandlerConfig config, Logger logger) {
+    public OrderProcessResponseHandler(OrderMessageProducer messageProducer, ResponseHandlerConfig config, Logger logger) {
         this.messageProducer = messageProducer;
         this.config = config;
         this.logger = logger;

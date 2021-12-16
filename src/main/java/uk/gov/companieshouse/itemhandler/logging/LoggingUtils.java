@@ -79,7 +79,7 @@ public class LoggingUtils {
     public static Map<String, Object> logWithOrderReference(String logMessage,
             String orderReference) {
         Map<String, Object> logMap = createLogMapWithOrderReference(orderReference);
-        LOGGER.info(logMessage, logMap);
+        LOGGER.debug(logMessage, logMap); // TODO: investigate log level needed
         return logMap;
     }
 
@@ -87,7 +87,7 @@ public class LoggingUtils {
             String logMessage, String orderReference) {
         Map<String, Object> logMap = createLogMapWithKafkaMessage(message);
         logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
-        LOGGER.info(logMessage, logMap);
+        LOGGER.debug(logMessage, logMap);
         return logMap;
     }
 

@@ -184,7 +184,7 @@ public class ItemMessageProducerTest {
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
 
-        verify(logger).info(eq("Sending message to kafka producer"), any(Map.class));
+        verify(logger).info(eq("Sending message to kafka"), any(Map.class));
 
     }
 

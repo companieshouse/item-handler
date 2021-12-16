@@ -19,7 +19,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
  * @param <T>
  */
 @Component
-public class OrderReceivedDeserializer<T extends IndexedRecord> implements Deserializer<T> {
+public class MessageDeserializer<T extends IndexedRecord> implements Deserializer<T> {
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
     @SuppressWarnings("unchecked")

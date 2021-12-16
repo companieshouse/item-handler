@@ -29,7 +29,7 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @Service
-public class OrdersKafkaConsumer implements ConsumerSeekAware {
+public class OrderMessageConsumer implements ConsumerSeekAware {
 
     private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
@@ -49,16 +49,16 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
     private boolean errorConsumerEnabled;
     private final SerializerFactory serializerFactory;
-    private final OrdersKafkaProducer kafkaProducer;
+    private final MessageProducer kafkaProducer;
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
 
-    public OrdersKafkaConsumer(SerializerFactory serializerFactory,
-                               OrdersKafkaProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
-                               final OrderProcessorService orderProcessorService,
-                               final OrderProcessResponseHandler orderProcessResponseHandler) {
+    public OrderMessageConsumer(SerializerFactory serializerFactory,
+                                MessageProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
+                                final OrderProcessorService orderProcessorService,
+                                final OrderProcessResponseHandler orderProcessResponseHandler) {
         this.serializerFactory = serializerFactory;
         this.kafkaProducer = kafkaProducer;
         this.registry = registry;
@@ -263,7 +263,7 @@ public class OrdersKafkaConsumer implements ConsumerSeekAware {
         Map<String, Object> props = new HashMap();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserializer.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 

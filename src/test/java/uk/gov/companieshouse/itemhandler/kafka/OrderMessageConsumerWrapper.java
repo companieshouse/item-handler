@@ -26,7 +26,7 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION
 @DirtiesContext
 @Aspect
 @Service
-public class OrdersKafkaConsumerWrapper {
+public class OrderMessageConsumerWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private CountDownLatch latch = new CountDownLatch(1);
     private String orderUri;
@@ -39,9 +39,9 @@ public class OrdersKafkaConsumerWrapper {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
     private static final String ORDER_RECEIVED_KEY_RETRY = ORDER_RECEIVED_TOPIC_RETRY;
     @Autowired
-    private OrdersKafkaProducer ordersKafkaProducer;
+    private MessageProducer messageProducer;
     @Autowired
-    private OrdersKafkaConsumer ordersKafkaConsumer;
+    private OrderMessageConsumer ordersKafkaConsumer;
     @Autowired
     private SerializerFactory serializerFactory;
 
@@ -51,7 +51,7 @@ public class OrdersKafkaConsumerWrapper {
      * @param message
      * @throws Exception
      */
-    @Before(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.processOrderReceived(..)) && args(message)")
+    @Before(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrderMessageConsumer.processOrderReceived(..)) && args(message)")
     public void beforeOrderProcessed(final Message message) throws Exception {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @Before triggered");
         if (this.testType != CHConsumerType.MAIN_CONSUMER) {
@@ -65,7 +65,7 @@ public class OrdersKafkaConsumerWrapper {
      * @param x
      * @throws Throwable
      */
-    @AfterThrowing(pointcut = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..))", throwing = "x")
+    @AfterThrowing(pointcut = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrderMessageConsumer.*(..))", throwing = "x")
     public void orderProcessedException(final Exception x) throws Throwable {
         LOGGER.info("OrdersKafkaConsumer.processOrderReceived() @AfterThrowing triggered");
 
@@ -76,7 +76,7 @@ public class OrdersKafkaConsumerWrapper {
      * emulates receiving of message from kafka topics
      * @param message
      */
-    @After(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrdersKafkaConsumer.*(..)) && args(message)")
+    @After(value = "execution(* uk.gov.companieshouse.itemhandler.kafka.OrderMessageConsumer.*(..)) && args(message)")
     public void afterOrderProcessed(final Message message){
         LOGGER.info("OrdersKafkaConsumer.processOrderReceivedRetry() @After triggered");
         this.orderUri = "" + message.getPayload();
@@ -91,11 +91,11 @@ public class OrdersKafkaConsumerWrapper {
             throws ExecutionException, InterruptedException, SerializationException {
 
         if (this.testType == CHConsumerType.MAIN_CONSUMER) {
-            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+            messageProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
         } else if (this.testType == CHConsumerType.RETRY_CONSUMER) {
-            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
+            messageProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
         } else if (this.testType == CHConsumerType.ERROR_CONSUMER) {
-            ordersKafkaProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
+            messageProducer.sendMessage(createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
         }
     }
 

@@ -36,6 +36,8 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFEREN
 
 /**
  * Unit tests the {@link ItemKafkaProducer} class.
+ * TODO: rework LoggerUtils & Junit5
+ * @deprecated
  */
 @RunWith(PowerMockRunner.class)
 @ExtendWith(MockitoExtension.class)
@@ -122,7 +124,7 @@ public class ItemKafkaProducerTest {
         PowerMockito.verifyStatic(LoggingUtils.class);
         LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID));
 
-        verify(logger).info(eq("Sending message to kafka topic"), any(Map.class));
+        verify(logger).info(eq("Sending message to kafka"), any(Map.class));
 
     }
 

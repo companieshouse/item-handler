@@ -34,9 +34,9 @@ class ItemMessageProducerIntegrationTest {
     @Configuration
     @ComponentScan(basePackageClasses = ItemMessageProducerIntegrationTest.class,
                    excludeFilters = {@ComponentScan.Filter(type = ASSIGNABLE_TYPE,
-                                                           value = OrdersKafkaConsumerWrapper.class),
+                                                           value = OrderMessageConsumerWrapper.class),
                                      @ComponentScan.Filter(type = ASSIGNABLE_TYPE,
-                                                           value = OrdersKafkaConsumer.class)})
+                                                           value = OrderMessageConsumer.class)})
     public static class Config {
         @Bean
         public SerializerFactory getSerializerFactory() {
@@ -45,7 +45,7 @@ class ItemMessageProducerIntegrationTest {
 
         @Bean
         public ItemMessageProducer itemMessageProducerUnderTest() {
-            return new ItemMessageProducer(getItemMessageFactory(), getItemKafkaProducer());
+            return new ItemMessageProducer(getItemMessageFactory(), getOrdersKafkaProducer());
         }
 
         @Bean
@@ -54,8 +54,8 @@ class ItemMessageProducerIntegrationTest {
         }
 
         @Bean
-        public ItemKafkaProducer getItemKafkaProducer() {
-            return new ItemKafkaProducer();
+        public MessageProducer getOrdersKafkaProducer() {
+            return new MessageProducer();
         }
 
         @Bean

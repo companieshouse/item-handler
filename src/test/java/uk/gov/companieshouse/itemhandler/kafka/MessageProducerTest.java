@@ -19,10 +19,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class EmailSendKafkaProducerTest {
+class MessageProducerTest {
 
     @Spy
-    private EmailSendKafkaProducer emailSendKafkaProducer;
+    private MessageProducer messageProducer;
 
     @Mock
     private CHKafkaProducer kafkaProducer;
@@ -39,12 +39,12 @@ class EmailSendKafkaProducerTest {
     @Test
     void testThrowNonRetryableExceptionIfExecutionException() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(emailSendKafkaProducer).getChKafkaProducer();
+        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
         when(result.get()).thenThrow(new ExecutionException("an error occurred", null));
 
         //when
-        Executable executable = () -> emailSendKafkaProducer.sendMessage(message, "ORD-123456-123456", a -> {});
+        Executable executable = () -> messageProducer.sendMessage(message, a -> {});
 
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
@@ -54,12 +54,12 @@ class EmailSendKafkaProducerTest {
     @Test
     void testThrowNonRetryableExceptionIfInterruptedException() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(emailSendKafkaProducer).getChKafkaProducer();
+        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
         when(result.get()).thenThrow(new InterruptedException("an error occurred"));
 
         //when
-        Executable executable = () -> emailSendKafkaProducer.sendMessage(message, "ORD-123456-123456", a -> {});
+        Executable executable = () -> messageProducer.sendMessage(message, a -> {});
 
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
@@ -69,12 +69,12 @@ class EmailSendKafkaProducerTest {
     @Test
     void testProduceEmailSendMessage() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(emailSendKafkaProducer).getChKafkaProducer();
+        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
         when(result.get()).thenReturn(recordMetadata);
 
         //when
-        Executable executable = () -> emailSendKafkaProducer.sendMessage(message, "ORD-123456-123456", a -> assertSame(recordMetadata, a));
+        Executable executable = () -> messageProducer.sendMessage(message, a -> assertSame(recordMetadata, a));
 
         //then
         assertDoesNotThrow(executable);

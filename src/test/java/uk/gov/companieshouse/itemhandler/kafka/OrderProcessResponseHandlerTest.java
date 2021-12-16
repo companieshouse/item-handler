@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,7 +25,7 @@ class OrderProcessResponseHandlerTest {
     private OrderProcessResponseHandler responseHandler;
 
     @Mock
-    private OrdersKafkaMessageProducer messageProducer;
+    private OrderMessageProducer messageProducer;
 
     @Mock
     private Logger logger;
