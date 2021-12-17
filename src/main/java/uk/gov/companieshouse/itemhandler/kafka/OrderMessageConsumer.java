@@ -49,18 +49,15 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
     private boolean errorConsumerEnabled;
     private final SerializerFactory serializerFactory;
-    private final MessageProducer kafkaProducer;
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
 
-    public OrderMessageConsumer(SerializerFactory serializerFactory,
-                                MessageProducer kafkaProducer, KafkaListenerEndpointRegistry registry,
+    public OrderMessageConsumer(SerializerFactory serializerFactory, KafkaListenerEndpointRegistry registry,
                                 final OrderProcessorService orderProcessorService,
                                 final OrderProcessResponseHandler orderProcessResponseHandler) {
         this.serializerFactory = serializerFactory;
-        this.kafkaProducer = kafkaProducer;
         this.registry = registry;
         this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
@@ -211,49 +208,49 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         LoggingUtils.getLogger().info("Order received message processing completed", logMap);
     }
 
-    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {
-        Map<String, Object> logMap = LoggingUtils.createLogMap();
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.CURRENT_TOPIC, currentTopic);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.NEXT_TOPIC, nextTopic);
-        LoggingUtils.getLogger().info(String.format(
-                "Republishing message: \"%1$s\" received from topic: \"%2$s\" to topic: \"%3$s\"",
-                orderUri, currentTopic, nextTopic), logMap);
-        try {
-            kafkaProducer.sendMessage(createRetryMessage(orderUri, nextTopic));
-        } catch (ExecutionException | InterruptedException e) {
-            LoggingUtils.getLogger().error(String.format("Error sending message: \"%1$s\" to topic: \"%2$s\"",
-                    orderUri, nextTopic), e, logMap);
-            if (e instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
+//    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {
+//        Map<String, Object> logMap = LoggingUtils.createLogMap();
+//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
+//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.CURRENT_TOPIC, currentTopic);
+//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.NEXT_TOPIC, nextTopic);
+//        LoggingUtils.getLogger().info(String.format(
+//                "Republishing message: \"%1$s\" received from topic: \"%2$s\" to topic: \"%3$s\"",
+//                orderUri, currentTopic, nextTopic), logMap);
+//        try {
+//            kafkaProducer.sendMessage(createRetryMessage(orderUri, nextTopic));
+//        } catch (ExecutionException | InterruptedException e) {
+//            LoggingUtils.getLogger().error(String.format("Error sending message: \"%1$s\" to topic: \"%2$s\"",
+//                    orderUri, nextTopic), e, logMap);
+//            if (e instanceof InterruptedException) {
+//                Thread.currentThread().interrupt();
+//            }
+//        }
+//    }
 
-    protected Message createRetryMessage(String orderUri, String topic) {
-        final Message message = new Message();
-        AvroSerializer serializer =
-                serializerFactory.getGenericRecordSerializer(OrderReceived.class);
-        OrderReceived orderReceived = new OrderReceived();
-        orderReceived.setOrderUri(orderUri.trim());
-
-        message.setKey(ORDER_RECEIVED_KEY_RETRY);
-        try {
-            message.setValue(serializer.toBinary(orderReceived));
-        } catch (SerializationException e) {
-            Map<String, Object> logMap = LoggingUtils.createLogMap();
-            LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
-            LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, topic);
-            LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
-            LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
-                    orderUri, topic), e, logMap);
-            throw new ApplicationSerialisationException("Failed to serialise message");
-        }
-        message.setTopic(topic);
-        message.setTimestamp(new Date().getTime());
-
-        return message;
-    }
+//    protected Message createRetryMessage(String orderUri, String topic) {
+//        final Message message = new Message();
+//        AvroSerializer serializer =
+//                serializerFactory.getGenericRecordSerializer(OrderReceived.class);
+//        OrderReceived orderReceived = new OrderReceived();
+//        orderReceived.setOrderUri(orderUri.trim());
+//
+//        message.setKey(ORDER_RECEIVED_KEY_RETRY);
+//        try {
+//            message.setValue(serializer.toBinary(orderReceived));
+//        } catch (SerializationException e) {
+//            Map<String, Object> logMap = LoggingUtils.createLogMap();
+//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
+//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, topic);
+//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
+//            LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
+//                    orderUri, topic), e, logMap);
+//            throw new ApplicationSerialisationException("Failed to serialise message");
+//        }
+//        message.setTopic(topic);
+//        message.setTimestamp(new Date().getTime());
+//
+//        return message;
+//    }
 
     private static void updateErrorRecoveryOffset(long offset) {
         errorRecoveryOffset = offset;

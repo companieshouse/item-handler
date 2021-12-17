@@ -2,6 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
@@ -24,6 +25,7 @@ class MessageProducerIntegrationTest {
     private static final String ORDER_TOPIC = "order-received";
 
     @Autowired
+    @Qualifier("defaultMessageProducer")
     MessageProducer messageProducer;
 
     @Autowired
@@ -62,8 +64,14 @@ class MessageProducerIntegrationTest {
         testOrdersMessageConsumer.connect();
         int count = 0;
         do {
+            OrderReceived orderReceived = new OrderReceived();
+            orderReceived.setOrderUri(ORDER_URI);
             messages = testOrdersMessageConsumer.pollConsumerGroup();
-            messageProducer.sendMessage(orderMessageConsumer.createRetryMessage(ORDER_URI, ORDER_TOPIC));
+            Message message = new Message();
+            message.setTopic("order-received");
+            message.setKey("key");
+            message.setValue(serializerFactory.getSpecificRecordSerializer(OrderReceived.class).toBinary(orderReceived));
+            messageProducer.sendMessage(message);
             count++;
         } while(messages.isEmpty() && count < 15);
 

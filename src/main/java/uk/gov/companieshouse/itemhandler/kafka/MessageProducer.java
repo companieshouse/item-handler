@@ -3,22 +3,26 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.logging.LogMessageBuilder;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.producer.ProducerConfig;
+import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import uk.gov.companieshouse.logging.Logger;
 
-@Service
-final class MessageProducer extends KafkaProducer {
+public final class MessageProducer {
 
-    private Logger logger;
+    private final CHKafkaProducer kafkaProducer;
+    private final Logger logger;
 
-    public MessageProducer(Logger logger) {
+    @Autowired
+    public MessageProducer(CHKafkaProducer kafkaProducer, Logger logger) {
+        this.kafkaProducer = kafkaProducer;
         this.logger = logger;
     }
 
@@ -29,9 +33,12 @@ final class MessageProducer extends KafkaProducer {
      * @throws InterruptedException
      */
     public void sendMessage(final Message message) throws ExecutionException, InterruptedException {
-        Map<String, Object> logMap = LoggingUtils.createLogMapWithKafkaMessage(message);
-        LoggingUtils.getLogger().info("Sending message to kafka", logMap);
-        getChKafkaProducer().send(message);
+        LogMessageBuilder.builder(logger)
+                .addContext(LoggingUtils.TOPIC, message.getTopic())
+                .addContext(LoggingUtils.PARTITION, message.getPartition())
+                .addContext(LoggingUtils.OFFSET, message.getOffset())
+                .logDebug("Sending message to kafka");
+        kafkaProducer.send(message);
     }
 
     /**
@@ -44,17 +51,12 @@ final class MessageProducer extends KafkaProducer {
      */
     public void sendMessage(final Message message, Consumer<RecordMetadata> callback) {
         try {
-            final Future<RecordMetadata> recordMetadataFuture = getChKafkaProducer().sendAndReturnFuture(message);
+            final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.sendAndReturnFuture(message);
             callback.accept(recordMetadataFuture.get());
         } catch (InterruptedException | ExecutionException e) {
             String msg = String.format("Unexpected Kafka error: %s", e.getMessage());
             logger.error(msg, e);
             throw new NonRetryableException(msg);
         }
-    }
-
-    @Override
-    protected void modifyProducerConfig(final ProducerConfig producerConfig) {
-        producerConfig.setRequestTimeoutMilliseconds(3000);
     }
 }

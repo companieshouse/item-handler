@@ -10,6 +10,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -36,6 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 
+//TODO: integration tests should cover whole application, not specific components
 @SpringBootTest
 @EmbeddedKafka
 @TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
@@ -50,6 +52,8 @@ class OrderMessageConsumerIntegrationDefaultModeTest {
     @Value("${spring.kafka.bootstrap-servers}")
     private String brokerAddresses;
     @Autowired
+    @Qualifier("defaultMessageProducer")
+    //TODO: Replace instances of message producer in test with standard Kafka producer
     private MessageProducer kafkaProducer;
 
     private KafkaMessageListenerContainer<String, OrderReceived> container;

@@ -78,52 +78,52 @@ class OrderMessageConsumerTest {
         };
     }
 
-    @Test
-    void createRetryMessageBuildsMessageSuccessfully() {
-        // Given & When
-        OrderMessageConsumer consumerUnderTest =
-                new OrderMessageConsumer(new SerializerFactory(),
-                        new MessageProducer(logger),
-                        new KafkaListenerEndpointRegistry(),
-                        orderProcessorService,
-                        orderProcessResponseHandler);
-        Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI,
-                ORDER_RECEIVED_TOPIC);
-        byte[] actualMessageRawValue = actualMessage.getValue();
-        // Then
-        MessageDeserializer<IndexedRecord> deserializer = new MessageDeserializer<>();
-        String actualOrderReceived = (String) deserializer.deserialize(ORDER_RECEIVED_TOPIC,
-                actualMessageRawValue).get(0);
-        Assert.assertThat(actualOrderReceived, Matchers.is(ORDER_RECEIVED_URI));
-    }
+//    @Test
+//    void createRetryMessageBuildsMessageSuccessfully() {
+//        // Given & When
+//        OrderMessageConsumer consumerUnderTest =
+//                new OrderMessageConsumer(new SerializerFactory(),
+//                        new MessageProducer(logger),
+//                        new KafkaListenerEndpointRegistry(),
+//                        orderProcessorService,
+//                        orderProcessResponseHandler);
+//        Message actualMessage = consumerUnderTest.createRetryMessage(ORDER_RECEIVED_URI,
+//                ORDER_RECEIVED_TOPIC);
+//        byte[] actualMessageRawValue = actualMessage.getValue();
+//        // Then
+//        MessageDeserializer<IndexedRecord> deserializer = new MessageDeserializer<>();
+//        String actualOrderReceived = (String) deserializer.deserialize(ORDER_RECEIVED_TOPIC,
+//                actualMessageRawValue).get(0);
+//        Assert.assertThat(actualOrderReceived, Matchers.is(ORDER_RECEIVED_URI));
+//    }
 
-    @Test
-    void republishMessageToRetryTopicRunsSuccessfully()
-            throws ExecutionException, InterruptedException, SerializationException {
-        // Given & When
-        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(
-                serializer);
-        when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
-                ORDER_RECEIVED_TOPIC,
-                ORDER_RECEIVED_TOPIC_RETRY);
-        // Then
-        verify(messageProducer, times(1)).sendMessage(any());
-    }
+//    @Test
+//    void republishMessageToRetryTopicRunsSuccessfully()
+//            throws ExecutionException, InterruptedException, SerializationException {
+//        // Given & When
+//        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(
+//                serializer);
+//        when(serializer.toBinary(any())).thenReturn(new byte[4]);
+//        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
+//                ORDER_RECEIVED_TOPIC,
+//                ORDER_RECEIVED_TOPIC_RETRY);
+//        // Then
+//        verify(messageProducer, times(1)).sendMessage(any());
+//    }
 
-    @Test
-    void republishMessageToRetryTopicThrowsSerializationException() throws SerializationException {
-        // Given & When
-        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(
-                serializer);
-        when(serializer.toBinary(any())).thenThrow(SerializationException.class);
-        ApplicationSerialisationException
-                exception = assertThrows(ApplicationSerialisationException.class,
-                () -> ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
-                        ORDER_RECEIVED_TOPIC,
-                        ORDER_RECEIVED_TOPIC_RETRY));
-        Assertions.assertEquals("Failed to serialise message", exception.getMessage());
-    }
+//    @Test
+//    void republishMessageToRetryTopicThrowsSerializationException() throws SerializationException {
+//        // Given & When
+//        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(
+//                serializer);
+//        when(serializer.toBinary(any())).thenThrow(SerializationException.class);
+//        ApplicationSerialisationException
+//                exception = assertThrows(ApplicationSerialisationException.class,
+//                () -> ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
+//                        ORDER_RECEIVED_TOPIC,
+//                        ORDER_RECEIVED_TOPIC_RETRY));
+//        Assertions.assertEquals("Failed to serialise message", exception.getMessage());
+//    }
 
 //    @Test
 //    void republishMessageSuccessfullyCalledForFirstMainMessageOnRetryableErrorException()
@@ -141,18 +141,18 @@ class OrderMessageConsumerTest {
 //        assertEquals(ORDER_RECEIVED_TOPIC_RETRY, nextTopicArgument.getValue());
 //    }
 
-    @Test
-    void republishMessageToErrorTopicRunsSuccessfully()
-            throws ExecutionException, InterruptedException, SerializationException {
-        // Given & When
-        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
-        when(serializer.toBinary(any())).thenReturn(new byte[4]);
-        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
-                ORDER_RECEIVED_TOPIC_RETRY,
-                ORDER_RECEIVED_TOPIC_ERROR);
-        // Then
-        verify(messageProducer, times(1)).sendMessage(any());
-    }
+//    @Test
+//    void republishMessageToErrorTopicRunsSuccessfully()
+//            throws ExecutionException, InterruptedException, SerializationException {
+//        // Given & When
+//        when(serializerFactory.getGenericRecordSerializer(OrderReceived.class)).thenReturn(serializer);
+//        when(serializer.toBinary(any())).thenReturn(new byte[4]);
+//        ordersKafkaConsumer.republishMessageToTopic(ORDER_RECEIVED_URI,
+//                ORDER_RECEIVED_TOPIC_RETRY,
+//                ORDER_RECEIVED_TOPIC_ERROR);
+//        // Then
+//        verify(messageProducer, times(1)).sendMessage(any());
+//    }
 
     @Test
     void responseHandlerServiceUnavailableCalledWhenOrderServiceReturnsOk() {

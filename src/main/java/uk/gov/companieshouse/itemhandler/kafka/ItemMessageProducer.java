@@ -17,7 +17,6 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
-@Service
 public class ItemMessageProducer {
     private static final Logger LOGGER = LoggingUtils.getLogger();
     private final ItemMessageFactory itemMessageFactory;

@@ -12,7 +12,6 @@ import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
-@Service
 public class OrderMessageProducer {
 
     private final Logger logger;

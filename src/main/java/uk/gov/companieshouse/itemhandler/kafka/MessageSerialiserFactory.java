@@ -13,7 +13,6 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import java.util.Date;
 import uk.gov.companieshouse.logging.Logger;
 
-@Service
 public class MessageSerialiserFactory<T extends GenericRecord> {
 	private static final Logger LOGGER = LoggingUtils.getLogger();
 	private final SerializerFactory serializerFactory;

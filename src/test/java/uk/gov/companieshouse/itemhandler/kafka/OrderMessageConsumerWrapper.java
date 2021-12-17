@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION
 @DirtiesContext
 @Aspect
 @Service
+//TODO: Replace with MockServer/WireMock - shouldn't be altering implementation logic
 public class OrderMessageConsumerWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE);
     private CountDownLatch latch = new CountDownLatch(1);
@@ -39,6 +41,7 @@ public class OrderMessageConsumerWrapper {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
     private static final String ORDER_RECEIVED_KEY_RETRY = ORDER_RECEIVED_TOPIC_RETRY;
     @Autowired
+    @Qualifier("defaultMessageProducer")
     private MessageProducer messageProducer;
     @Autowired
     private OrderMessageConsumer ordersKafkaConsumer;
@@ -99,6 +102,7 @@ public class OrderMessageConsumerWrapper {
         }
     }
 
+    //TODO: produces a stub object; shouldn't be declared in consumer wrapper
     public uk.gov.companieshouse.kafka.message.Message createMessage(String orderUri, String topic) throws SerializationException {
         final uk.gov.companieshouse.kafka.message.Message message = new uk.gov.companieshouse.kafka.message.Message();
         AvroSerializer serializer = serializerFactory.getGenericRecordSerializer(OrderReceived.class);

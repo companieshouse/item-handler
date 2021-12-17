@@ -5,10 +5,17 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import uk.gov.companieshouse.itemhandler.kafka.MessageDeserializer;
+import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.kafka.*;
+import uk.gov.companieshouse.kafka.producer.Acks;
+import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
+import uk.gov.companieshouse.kafka.producer.ProducerConfig;
+import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 import java.util.HashMap;
@@ -30,6 +37,69 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, OrderReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactoryMessage());
         return factory;
+    }
+
+    @Bean
+    CHKafkaProducer defaultKafkaProducer(ProducerConfig defaultProducerConfig) {
+        return new CHKafkaProducer(defaultProducerConfig);
+    }
+
+    @Bean
+    CHKafkaProducer chdKafkaProducer(ProducerConfig chdProducerConfig) {
+        return new CHKafkaProducer(chdProducerConfig);
+    }
+
+    @Bean
+    @Scope("prototype")
+    ProducerConfig defaultProducerConfig() {
+        ProducerConfig config = new ProducerConfig();
+        config.setBrokerAddresses(bootstrapServers.split(","));
+        config.setRoundRobinPartitioner(true);
+        config.setAcks(Acks.WAIT_FOR_ALL);
+        config.setRetries(10);
+        return config;
+    }
+
+    @Bean
+    ProducerConfig chdProducerConfig() {
+        ProducerConfig config = defaultProducerConfig();
+        config.setMaxBlockMilliseconds(10000);
+        return config;
+    }
+
+    @Bean
+    MessageProducer defaultMessageProducer(CHKafkaProducer defaultKafkaProducer, Logger logger) {
+        return new MessageProducer(defaultKafkaProducer, logger);
+    }
+
+    @Bean
+    MessageProducer chdMessageProducer(CHKafkaProducer chdKafkaProducer, Logger logger) {
+        return new MessageProducer(chdKafkaProducer, logger);
+    }
+
+    @Bean
+    OrderMessageProducer orderMessageProducer(MessageSerialiserFactory<OrderReceived> orderReceivedMessageSerialiserFactory, MessageProducer defaultMessageProducer, Logger logger) {
+        return new OrderMessageProducer(orderReceivedMessageSerialiserFactory, defaultMessageProducer, logger);
+    }
+
+    @Bean
+    ItemMessageProducer itemMessageProducer(ItemMessageFactory itemMessageFactory, MessageProducer chdMessageProducer) {
+        return new ItemMessageProducer(itemMessageFactory, chdMessageProducer);
+    }
+
+    @Bean
+    EmailSendMessageProducer emailSendMessageProducer(MessageSerialiserFactory<EmailSend> emailSendMessageSerialiserFactory, MessageProducer defaultMessageProducer) {
+        return new EmailSendMessageProducer(emailSendMessageSerialiserFactory, defaultMessageProducer);
+    }
+
+    @Bean
+    MessageSerialiserFactory<EmailSend> emailSendMessageSerialiserFactory(SerializerFactory serializerFactory) {
+        return new MessageSerialiserFactory<>(serializerFactory, EmailSend.class);
+    }
+
+    @Bean
+    MessageSerialiserFactory<OrderReceived> orderReceivedMessageSerialiserFactory(SerializerFactory serializerFactory) {
+        return new MessageSerialiserFactory<>(serializerFactory, OrderReceived.class);
     }
 
     private Map<String, Object> consumerConfigs() {

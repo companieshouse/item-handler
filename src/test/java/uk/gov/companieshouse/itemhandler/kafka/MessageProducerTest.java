@@ -4,12 +4,13 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.logging.Logger;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -21,7 +22,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class MessageProducerTest {
 
-    @Spy
+    @InjectMocks
     private MessageProducer messageProducer;
 
     @Mock
@@ -36,12 +37,15 @@ class MessageProducerTest {
     @Mock
     private RecordMetadata recordMetadata;
 
+    @Mock
+    private Logger logger;
+
     @Test
     void testThrowNonRetryableExceptionIfExecutionException() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
+        ExecutionException expectedException = new ExecutionException("an error occurred", null);
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
-        when(result.get()).thenThrow(new ExecutionException("an error occurred", null));
+        when(result.get()).thenThrow(expectedException);
 
         //when
         Executable executable = () -> messageProducer.sendMessage(message, a -> {});
@@ -49,14 +53,15 @@ class MessageProducerTest {
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
         assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
+        verify(logger).error("Unexpected Kafka error: an error occurred", expectedException);
     }
 
     @Test
     void testThrowNonRetryableExceptionIfInterruptedException() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
+        InterruptedException expectedException = new InterruptedException("an error occurred");
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
-        when(result.get()).thenThrow(new InterruptedException("an error occurred"));
+        when(result.get()).thenThrow(expectedException);
 
         //when
         Executable executable = () -> messageProducer.sendMessage(message, a -> {});
@@ -64,12 +69,12 @@ class MessageProducerTest {
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
         assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
+        verify(logger).error("Unexpected Kafka error: an error occurred", expectedException);
     }
 
     @Test
-    void testProduceEmailSendMessage() throws ExecutionException, InterruptedException {
+    void testSendMessage() throws ExecutionException, InterruptedException {
         //given
-        doReturn(kafkaProducer).when(messageProducer).getChKafkaProducer();
         when(kafkaProducer.sendAndReturnFuture(any())).thenReturn(result);
         when(result.get()).thenReturn(recordMetadata);
 

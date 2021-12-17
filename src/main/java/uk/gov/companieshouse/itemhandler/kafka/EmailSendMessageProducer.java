@@ -12,7 +12,6 @@ import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
-@Service
 public class EmailSendMessageProducer {
 
     private static final Logger LOGGER = LoggingUtils.getLogger();
