@@ -2,10 +2,9 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CountDownLatch;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
@@ -17,14 +16,10 @@ import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
@@ -43,6 +38,12 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
             APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static long errorRecoveryOffset = 0L;
     private static final int MAX_RETRY_ATTEMPTS = 3;
+
+    private static CountDownLatch eventLatch = new CountDownLatch(0);
+
+    public static void setEventLatch(CountDownLatch eventLatch) {
+        OrderMessageConsumer.eventLatch = eventLatch;
+    }
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -260,7 +261,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         Map<String, Object> props = new HashMap();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 

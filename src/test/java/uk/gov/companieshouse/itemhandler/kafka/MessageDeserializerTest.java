@@ -14,7 +14,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @ExtendWith(MockitoExtension.class)
 public class MessageDeserializerTest {
     @InjectMocks
-    private MessageDeserializer deserializer;
+    private MessageDeserialiser deserializer;
     @Mock
     private BinaryDecoder binaryDecoder;
     @Mock

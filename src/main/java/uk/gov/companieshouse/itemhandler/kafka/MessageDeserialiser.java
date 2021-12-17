@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import org.apache.avro.generic.IndexedRecord;
@@ -11,35 +12,36 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.orders.OrderReceived;
 
 /**
  * OrderReceived deserializer based on apache kafka Deserializer interface
  *
  * @param <T>
  */
-@Component
-public class MessageDeserializer<T extends IndexedRecord> implements Deserializer<T> {
+public class MessageDeserialiser<T extends IndexedRecord> implements Deserializer<T> {
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
-    @SuppressWarnings("unchecked")
+    private final Class<T> requiredType;
+
+    public MessageDeserialiser(Class<T> requiredType) {
+        this.requiredType = requiredType;
+    }
+
     @Override
     public T deserialize(String topic, byte[] data) {
-        T object;
         try {
             Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
-            DatumReader<OrderReceived> reader = new ReflectDatumReader<>(OrderReceived.class);
-            object = (T) reader.read(null, decoder);
-        } catch (Exception e) {
+            DatumReader<T> reader = new ReflectDatumReader<>(requiredType);
+            return reader.read(null, decoder);
+        } catch (IOException e) {
             String msg = String.format(
                     "Message data [%s] from topic [%s] cannot be deserialized: %s",
                     Arrays.toString(data),
                     topic,
                     e.getMessage());
             LOGGER.error(msg, e);
-            object = null;
+            return null;
         }
-        return object;
     }
 
     @Override

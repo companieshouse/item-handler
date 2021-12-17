@@ -76,7 +76,7 @@ class OrderMessageConsumerIntegrationDefaultModeTest {
     private void setUpTestKafkaOrdersConsumer() {
         final Map<String, Object> consumerProperties = new HashMap<>();
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, MessageDeserializer.class);
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
         consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_NAME);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses);
 

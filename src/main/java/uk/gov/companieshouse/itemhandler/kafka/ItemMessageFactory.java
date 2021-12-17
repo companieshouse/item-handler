@@ -31,7 +31,7 @@ public class ItemMessageFactory {
 
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
-    private static final String CHD_ITEM_ORDERED_TOPIC = "chd-item-ordered";
+    public static final String CHD_ITEM_ORDERED_TOPIC = "chd-item-ordered";
 
     private static final String ZERO_POSTAGE_COST = "0";
     private static final boolean NO_POSTAL_DELIVERY = false;

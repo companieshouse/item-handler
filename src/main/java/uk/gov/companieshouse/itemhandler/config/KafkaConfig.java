@@ -29,7 +29,7 @@ public class KafkaConfig {
     @Bean
     public ConsumerFactory<String, OrderReceived> consumerFactoryMessage() {
         return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(),
-                new MessageDeserializer<>());
+                new MessageDeserialiser<>(OrderReceived.class));
     }
 
     @Bean
@@ -106,7 +106,7 @@ public class KafkaConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
 
         return props;
     }

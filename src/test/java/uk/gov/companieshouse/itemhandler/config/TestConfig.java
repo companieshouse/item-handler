@@ -5,8 +5,13 @@ import org.springframework.context.annotation.Bean;
 import uk.gov.companieshouse.kafka.deserialization.DeserializerFactory;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 
+/**
+ * TODO: not needed?
+ * @deprecated
+ */
 @TestConfiguration
 public class TestConfig {
+
     @Bean
     DeserializerFactory deserializerFactory() {
         return new DeserializerFactory();

@@ -28,26 +28,26 @@ public class EmailService {
 
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
-    private static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certificate-order-confirmation";
-    private static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certificate_order_confirmation_email";
-    private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certified-copy-order-confirmation";
-    private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
-    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.missing-image-delivery-order-confirmation";
-    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "missing_image_delivery_order_confirmation_email";
-    private static final String ITEM_TYPE_CERTIFICATE = "certificate";
-    private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
-    private static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+    public static final String ITEM_TYPE_CERTIFICATE = "certificate";
+    public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
+    public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
      */
-    private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
+    public static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
     /** Convenient return type. */
     private static class OrderConfirmationAndEmail {
@@ -124,7 +124,6 @@ public class EmailService {
                 confirmation.setTo(certificateOrderRecipient);
                 email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
                 email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
