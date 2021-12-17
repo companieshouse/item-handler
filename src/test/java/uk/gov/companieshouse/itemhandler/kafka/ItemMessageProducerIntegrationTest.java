@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -10,11 +11,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.util.TestUtils;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 import java.util.List;
@@ -30,7 +33,6 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFEREN
 @DirtiesContext
 @EmbeddedKafka
 class ItemMessageProducerIntegrationTest {
-
     @Configuration
     @ComponentScan(basePackageClasses = ItemMessageProducerIntegrationTest.class,
                    excludeFilters = {@ComponentScan.Filter(type = ASSIGNABLE_TYPE,
@@ -44,8 +46,8 @@ class ItemMessageProducerIntegrationTest {
         }
 
         @Bean
-        public ItemMessageProducer itemMessageProducerUnderTest() {
-            return new ItemMessageProducer(getItemMessageFactory(), getOrdersKafkaProducer());
+        public ItemMessageProducer itemMessageProducerUnderTest(MessageProducer messageProducer) {
+            return new ItemMessageProducer(getItemMessageFactory(), messageProducer);
         }
 
         @Bean
@@ -54,8 +56,8 @@ class ItemMessageProducerIntegrationTest {
         }
 
         @Bean
-        public MessageProducer getOrdersKafkaProducer() {
-            return new MessageProducer();
+        public MessageProducer messageProducerProducer(Logger logger) {
+            return new MessageProducer(logger);
         }
 
         @Bean
@@ -66,6 +68,12 @@ class ItemMessageProducerIntegrationTest {
         @Bean
         public ItemMessageFactory getMessageFactory() {
             return new ItemMessageFactory(getSerializerFactory(), getObjectMapper());
+        }
+
+        @Bean
+        public Logger logger() {
+            // TODO: make logging utils a Spring Bean
+            return LoggingUtils.getLogger();
         }
     }
 

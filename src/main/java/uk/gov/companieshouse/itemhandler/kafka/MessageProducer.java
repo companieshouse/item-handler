@@ -15,7 +15,12 @@ import uk.gov.companieshouse.logging.Logger;
 
 @Service
 final class MessageProducer extends KafkaProducer {
-    private static final Logger LOGGER = LoggingUtils.getLogger();
+
+    private Logger logger;
+
+    public MessageProducer(Logger logger) {
+        this.logger = logger;
+    }
 
     /**
      * Sends message to Kafka topic
@@ -43,7 +48,7 @@ final class MessageProducer extends KafkaProducer {
             callback.accept(recordMetadataFuture.get());
         } catch (InterruptedException | ExecutionException e) {
             String msg = String.format("Unexpected Kafka error: %s", e.getMessage());
-            LOGGER.error(msg, e);
+            logger.error(msg, e);
             throw new NonRetryableException(msg);
         }
     }

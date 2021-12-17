@@ -22,12 +22,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @ExtendWith(MockitoExtension.class)
@@ -51,6 +53,8 @@ class OrderMessageConsumerTest {
     private OrderProcessorService orderProcessorService;
     @Mock
     private OrderProcessResponseHandler orderProcessResponseHandler;
+    @Mock
+    private Logger logger;
 
     private static org.springframework.messaging.Message<OrderReceived> createTestMessage(String receivedTopic) {
         return new org.springframework.messaging.Message<OrderReceived>() {
@@ -79,7 +83,7 @@ class OrderMessageConsumerTest {
         // Given & When
         OrderMessageConsumer consumerUnderTest =
                 new OrderMessageConsumer(new SerializerFactory(),
-                        new MessageProducer(),
+                        new MessageProducer(logger),
                         new KafkaListenerEndpointRegistry(),
                         orderProcessorService,
                         orderProcessResponseHandler);

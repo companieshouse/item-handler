@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
@@ -16,15 +15,17 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @Service
 public class OrderMessageProducer {
 
-    private static final Logger LOGGER = LoggingUtils.getLogger();
+    private final Logger logger;
 
     private final MessageSerialiserFactory<OrderReceived> messageSerialiserFactory;
     private final MessageProducer messageProducer;
 
     public OrderMessageProducer(MessageSerialiserFactory<OrderReceived> messageSerialiserFactory,
-                                MessageProducer messageProducer) {
+                                MessageProducer messageProducer,
+                                Logger logger) {
         this.messageSerialiserFactory = messageSerialiserFactory;
         this.messageProducer = messageProducer;
+        this.logger = logger;
     }
 
     public void sendMessage(OrderReceived payload, String topic) {
@@ -37,13 +38,15 @@ public class OrderMessageProducer {
 
     /**
      * Logs the order reference, topic, partition and offset for the item message produced to a Kafka topic.
+     *
      * @param orderReference the order reference
      * @param recordMetadata the metadata for a record that has been acknowledged by the server for the message produced
      */
     private void logOffsetFollowingSendIngOfMessage(final String orderReference,
-                                            final RecordMetadata recordMetadata) {
-        final Map<String, Object> logMapCallback =  createLogMapWithAcknowledgedKafkaMessage(recordMetadata);
+                                                    final RecordMetadata recordMetadata) {
+        final Map<String, Object> logMapCallback = createLogMapWithAcknowledgedKafkaMessage(
+                recordMetadata);
         logIfNotNull(logMapCallback, ORDER_REFERENCE_NUMBER, orderReference);
-        LOGGER.info("Message sent to Kafka topic", logMapCallback);
+        logger.info("Message sent to Kafka topic", logMapCallback);
     }
 }
