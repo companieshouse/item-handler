@@ -12,14 +12,17 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import uk.gov.companieshouse.itemhandler.kafka.KafkaTopics;
 import uk.gov.companieshouse.itemhandler.kafka.MessageDeserialiser;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
+import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @TestConfiguration
 public class EmbeddedKafkaBrokerConfiguration {
@@ -30,13 +33,24 @@ public class EmbeddedKafkaBrokerConfiguration {
 
     @Bean
     @Scope("prototype")
-    KafkaConsumer<String, email_send> myConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+    KafkaConsumer<String, email_send> emailSendConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, ""+new Random().nextInt());
         return new KafkaConsumer<>(props, new StringDeserializer(), new MessageDeserialiser<>(email_send.class));
+    }
+
+    @Bean
+    @Scope("prototype")
+    KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, ""+new Random().nextInt());
+        return new KafkaConsumer<>(props, new StringDeserializer(), new MessageDeserialiser<>(ChdItemOrdered.class));
     }
 
     @Bean

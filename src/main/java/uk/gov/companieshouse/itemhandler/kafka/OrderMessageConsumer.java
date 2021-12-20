@@ -26,18 +26,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @Service
 public class OrderMessageConsumer implements ConsumerSeekAware {
 
-    private static final String ORDER_RECEIVED_TOPIC = "order-received";
-    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
-    private static final String ORDER_RECEIVED_KEY_RETRY = ORDER_RECEIVED_TOPIC_RETRY;
-    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
-    private static final String ORDER_RECEIVED_GROUP =
-            APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC;
-    private static final String ORDER_RECEIVED_GROUP_RETRY =
-            APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY;
-    private static final String ORDER_RECEIVED_GROUP_ERROR =
-            APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR;
     private static long errorRecoveryOffset = 0L;
-    private static final int MAX_RETRY_ATTEMPTS = 3;
 
     private static CountDownLatch eventLatch = new CountDownLatch(0);
 
@@ -49,20 +38,28 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     private String bootstrapServers;
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
     private boolean errorConsumerEnabled;
+    @Value("kafka.topics.order-received-notification-error-group")
+    private String errorGroup;
+    @Value("kafka.topics.order-received-notification-error")
+    private String errorTopic;
+
     private final SerializerFactory serializerFactory;
     private final KafkaListenerEndpointRegistry registry;
     private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
+    private final Map<String, Object> consumerConfigsError;
 
     public OrderMessageConsumer(SerializerFactory serializerFactory, KafkaListenerEndpointRegistry registry,
                                 final OrderProcessorService orderProcessorService,
-                                final OrderProcessResponseHandler orderProcessResponseHandler) {
+                                final OrderProcessResponseHandler orderProcessResponseHandler,
+                                Map<String, Object> consumerConfigsError) {
         this.serializerFactory = serializerFactory;
         this.registry = registry;
         this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
+        this.consumerConfigsError = consumerConfigsError;
     }
 
     /**
@@ -70,8 +67,9 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
      * 
      * @param message
      */
-    @KafkaListener(id = ORDER_RECEIVED_GROUP, groupId = ORDER_RECEIVED_GROUP,
-            topics = ORDER_RECEIVED_TOPIC,
+    @KafkaListener(id = "#{'${kafka.topics.order-received_group}'}",
+            groupId = "#{'${kafka.topics.order-received_group}'}",
+            topics = "#{'${kafka.topics.order-received}'}",
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
@@ -83,8 +81,9 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
      * 
      * @param message
      */
-    @KafkaListener(id = ORDER_RECEIVED_GROUP_RETRY, groupId = ORDER_RECEIVED_GROUP_RETRY,
-            topics = ORDER_RECEIVED_TOPIC_RETRY,
+    @KafkaListener(id = "#{'${kafka.topics.order-received-notification-retry-group}'}",
+            groupId = "#{'${kafka.topics.order-received-notification-retry-group}'}",
+            topics = "#{'${kafka.topics.order-received-notification-retry}'}",
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedRetry(
@@ -102,23 +101,24 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
      * 
      * @param message
      */
-    @KafkaListener(id = ORDER_RECEIVED_GROUP_ERROR, groupId = ORDER_RECEIVED_GROUP_ERROR,
-            topics = ORDER_RECEIVED_TOPIC_ERROR,
+    @KafkaListener(id = "#{'${kafka.topics.order-received-notification-error-group}'}",
+            groupId = "#{'${kafka.topics.order-received-notification-error-group}'}",
+            topics = "#{'${kafka.topics.order-received-notification-error}'}",
             autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedError(
             org.springframework.messaging.Message<OrderReceived> message) {
-//        long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
-//        if (offset <= errorRecoveryOffset) {
-//            handleMessage(message);
-//        } else {
-//            Map<String, Object> logMap = LoggingUtils.createLogMap();
-//            logMap.put(LoggingUtils.ORDER_RECEIVED_GROUP_ERROR, errorRecoveryOffset);
-//            logMap.put(LoggingUtils.TOPIC, ORDER_RECEIVED_TOPIC_ERROR);
-//            LoggingUtils.getLogger().info("Pausing error consumer as error recovery offset reached.",
-//                    logMap);
-//            registry.getListenerContainer(ORDER_RECEIVED_GROUP_ERROR).pause();
-//        }
+        long offset = Long.parseLong("" + message.getHeaders().get("kafka_offset"));
+        if (offset <= errorRecoveryOffset) {
+            handleMessage(message);
+        } else {
+            Map<String, Object> logMap = LoggingUtils.createLogMap();
+            logMap.put(errorGroup, errorRecoveryOffset);
+            logMap.put(LoggingUtils.TOPIC, errorTopic);
+            LoggingUtils.getLogger().info("Pausing error consumer as error recovery offset reached.",
+                    logMap);
+            registry.getListenerContainer(errorGroup).pause();
+        }
     }
 
     /**
@@ -137,6 +137,8 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
         // Handle response
         response.getStatus().accept(orderProcessResponseHandler, message);
+        // Trigger countdown latch
+        eventLatch.countDown();
     }
 
     /**
@@ -257,17 +259,6 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         errorRecoveryOffset = offset;
     }
 
-    private Map<String, Object> errorConsumerConfigs() {
-        Map<String, Object> props = new HashMap();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, ORDER_RECEIVED_GROUP_ERROR);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        return props;
-    }
-
     /**
      * Sets `errorRecoveryOffset` to latest topic offset (error topic) minus 1, before error
      * consumer starts. This helps the error consumer to stop consuming messages when all messages
@@ -281,7 +272,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
             ConsumerSeekCallback consumerSeekCallback) {
         if (errorConsumerEnabled) {
             try (KafkaConsumer<String, String> consumer =
-                    new KafkaConsumer<>(errorConsumerConfigs())) {
+                    new KafkaConsumer<>(consumerConfigsError)) {
                 final Map<TopicPartition, Long> topicPartitionsMap =
                         consumer.endOffsets(map.keySet());
                 map.forEach((topic, action) -> {
