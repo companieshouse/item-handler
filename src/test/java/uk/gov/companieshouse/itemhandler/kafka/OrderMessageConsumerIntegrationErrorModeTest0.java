@@ -85,6 +85,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest0 {
         client = new MockServerClient(container.getHost(), container.getServerPort());
         eventLatch = new CountDownLatch(1);
         OrderMessageConsumer.setEventLatch(eventLatch);
+        OrderMessageConsumer.setErrorRecoveryOffset(0);
     }
 
     @AfterAll
@@ -114,10 +115,11 @@ public class OrderMessageConsumerIntegrationErrorModeTest0 {
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
-        orderReceivedProducer.send(new ProducerRecord<>(
+        ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
-                getOrderReceived())).get();
+                getOrderReceived());
+        orderReceivedProducer.send(producerRecord).get();
         eventLatch.await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()

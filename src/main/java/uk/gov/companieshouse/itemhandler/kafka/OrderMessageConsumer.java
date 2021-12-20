@@ -1,14 +1,10 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.APPLICATION_NAMESPACE;
-
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
+import java.util.function.Supplier;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -45,7 +41,6 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 
     private final SerializerFactory serializerFactory;
     private final KafkaListenerEndpointRegistry registry;
-    private final Map<String, Integer> retryCount;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Map<String, Object> consumerConfigsError;
@@ -53,13 +48,12 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     public OrderMessageConsumer(SerializerFactory serializerFactory, KafkaListenerEndpointRegistry registry,
                                 final OrderProcessorService orderProcessorService,
                                 final OrderProcessResponseHandler orderProcessResponseHandler,
-                                Map<String, Object> consumerConfigsError) {
+                                Supplier<Map<String, Object>> consumerConfigsErrorSupplier) {
         this.serializerFactory = serializerFactory;
         this.registry = registry;
-        this.retryCount = new HashMap<>();
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
-        this.consumerConfigsError = consumerConfigsError;
+        this.consumerConfigsError = consumerConfigsErrorSupplier.get();
     }
 
     /**
@@ -172,15 +166,6 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 //        }
     }
 
-    /**
-     * Resets retryCount for message identified by key `counterKey`
-     * 
-     * @param counterKey
-     */
-    private void resetRetryCount(String counterKey) {
-        retryCount.remove(counterKey);
-    }
-
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message,
             String orderUri) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
@@ -255,7 +240,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 //        return message;
 //    }
 
-    private static void updateErrorRecoveryOffset(long offset) {
+    public static void setErrorRecoveryOffset(long offset) {
         errorRecoveryOffset = offset;
     }
 
@@ -276,7 +261,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
                 final Map<TopicPartition, Long> topicPartitionsMap =
                         consumer.endOffsets(map.keySet());
                 map.forEach((topic, action) -> {
-                    updateErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
+                    setErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
                     LoggingUtils.getLogger()
                             .info(String.format("Setting Error Consumer Recovery Offset to '%1$d'",
                                     errorRecoveryOffset));
