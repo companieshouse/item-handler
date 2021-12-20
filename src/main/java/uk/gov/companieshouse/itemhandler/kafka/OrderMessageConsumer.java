@@ -104,7 +104,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     @KafkaListener(id = "#{'${kafka.topics.order-received-notification-error-group}'}",
             groupId = "#{'${kafka.topics.order-received-notification-error-group}'}",
             topics = "#{'${kafka.topics.order-received-notification-error}'}",
-            autoStartup = "${uk.gov.companieshouse.item-handler.error-consumer}",
+            autoStartup = "#{${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedError(
             org.springframework.messaging.Message<OrderReceived> message) {

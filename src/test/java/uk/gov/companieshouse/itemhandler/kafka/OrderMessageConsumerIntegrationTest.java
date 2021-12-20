@@ -233,41 +233,6 @@ class OrderMessageConsumerIntegrationTest {
     }
 
     @Test
-    void testConsumesCertificateOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
-        //given
-        client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
-                        .withMethod(HttpMethod.GET.toString()))
-                .respond(response()
-                        .withStatusCode(HttpStatus.OK.value())
-                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .withBody(JsonBody.json(IOUtils.resourceToString(
-                                "/fixtures/certified-certificate.json",
-                                StandardCharsets.UTF_8))));
-        TestEnvironmentSetupHelper.setEnvironmentVariable("uk.gov.companieshouse.item-handler.error-consumer", "true");
-
-        // when
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
-        orderReceivedProducer.send(new ProducerRecord<>(
-                kafkaTopics.getOrderReceivedNotificationError(),
-                kafkaTopics.getOrderReceivedNotificationError(),
-                getOrderReceived())).get();
-        eventLatch.await(30, TimeUnit.SECONDS);
-        email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
-                .iterator()
-                .next()
-                .value();
-
-        // then
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
-    }
-
-    @Test
     void testConsumesCertifiedDocumentOrderReceivedFromRetryTopic() throws ExecutionException, InterruptedException, IOException {
     }
 
