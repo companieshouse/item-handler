@@ -50,7 +50,6 @@ class OrderMessageConsumerIntegrationTest {
     public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static MockServerContainer container;
     private MockServerClient client;
-    private CountDownLatch eventLatch;
 
     @Autowired
     private EmbeddedKafkaBroker embeddedKafkaBroker;
@@ -66,6 +65,9 @@ class OrderMessageConsumerIntegrationTest {
 
     @Autowired
     private KafkaTopics kafkaTopics;
+
+    @Autowired
+    private OrderMessageConsumer orderMessageConsumer;
 
     @BeforeAll
     static void before() {
@@ -93,8 +95,6 @@ class OrderMessageConsumerIntegrationTest {
     @BeforeEach
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
-        eventLatch = new CountDownLatch(1);
-        OrderMessageConsumer.setEventLatch(eventLatch);
     }
 
     @AfterEach
@@ -121,7 +121,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        eventLatch.await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -154,7 +154,7 @@ class OrderMessageConsumerIntegrationTest {
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        eventLatch.await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -170,7 +170,7 @@ class OrderMessageConsumerIntegrationTest {
     }
 
     @Test
-    void testConsumesMissingImageDeliveryOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+    void testConsumesMissingImageDeliveryFromOrderReceivedAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException {
         // given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -187,7 +187,7 @@ class OrderMessageConsumerIntegrationTest {
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        eventLatch.await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -217,7 +217,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
-        eventLatch.await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -234,18 +234,36 @@ class OrderMessageConsumerIntegrationTest {
 
     @Test
     void testConsumesCertifiedDocumentOrderReceivedFromRetryTopic() throws ExecutionException, InterruptedException, IOException {
-    }
+        //given
+        client.when(request()
+                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/certified-copy.json",
+                                StandardCharsets.UTF_8))));
 
-    @Test
-    void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
-    }
+        // when
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceivedNotificationRetry(),
+                kafkaTopics.getOrderReceivedNotificationRetry(),
+                getOrderReceived())).get();
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
+                .iterator()
+                .next()
+                .value();
 
-    @Test
-    void testConsumesMissingImageDeliveryOrderReceivedFromRetryTopic() throws ExecutionException, InterruptedException, IOException {
-    }
-
-    @Test
-    void testConsumesMissingImageDeliveryOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
+        // then
+        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertNotNull(actual.getMessageId());
+        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                actual.getMessageType());
+        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
+        assertNotNull(actual.getData());
     }
 
     @Test

@@ -26,15 +26,15 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 
     private static long errorRecoveryOffset = 0L;
 
-    private static CountDownLatch startupLatch;
-    private static CountDownLatch eventLatch;
+    private CountDownLatch startupLatch = new CountDownLatch(1);
+    private CountDownLatch eventLatch = new CountDownLatch(1);
 
-    public static void setStartupLatch(CountDownLatch startupLatch) {
-        OrderMessageConsumer.startupLatch = startupLatch;
+    public CountDownLatch getStartupLatch() {
+        return startupLatch;
     }
 
-    public static void setEventLatch(CountDownLatch eventLatch) {
-        OrderMessageConsumer.eventLatch = eventLatch;
+    public CountDownLatch getEventLatch() {
+        return eventLatch;
     }
 
     @Value("${spring.kafka.bootstrap-servers}")
@@ -149,6 +149,7 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         LoggingUtils.getLogger().info("'order-received' message received", logMap);
     }
 
+    // TODO: make sure logging behaviour is captured
     protected void logMessageProcessingFailureRecoverable(
             org.springframework.messaging.Message<OrderReceived> message, int attempt,
             Exception exception) {
@@ -188,7 +189,6 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     public void onPartitionsAssigned(Map<TopicPartition, Long> map,
             ConsumerSeekCallback consumerSeekCallback) {
         if (errorConsumerEnabled) {
-            // Synchronise on startup latch
             synchroniseOn(startupLatch, 30);
             try (KafkaConsumer<String, String> consumer =
                     new KafkaConsumer<>(consumerConfigsError)) {
