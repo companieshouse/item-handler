@@ -12,12 +12,10 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import uk.gov.companieshouse.itemhandler.kafka.KafkaTopics;
 import uk.gov.companieshouse.itemhandler.kafka.MessageDeserialiser;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -36,10 +34,12 @@ public class EmbeddedKafkaBrokerConfiguration {
     KafkaConsumer<String, email_send> emailSendConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, ""+new Random().nextInt());
-        return new KafkaConsumer<>(props, new StringDeserializer(), new MessageDeserialiser<>(email_send.class));
+        // TODO: remove props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        // props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "" + new Random().nextInt());
+        return new KafkaConsumer<>(props,
+                new StringDeserializer(),
+                new MessageDeserialiser<>(email_send.class));
     }
 
     @Bean
@@ -47,10 +47,12 @@ public class EmbeddedKafkaBrokerConfiguration {
     KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, ""+new Random().nextInt());
-        return new KafkaConsumer<>(props, new StringDeserializer(), new MessageDeserialiser<>(ChdItemOrdered.class));
+        // TODO: remove props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        // props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "" + new Random().nextInt());
+        return new KafkaConsumer<>(props,
+                new StringDeserializer(),
+                new MessageDeserialiser<>(ChdItemOrdered.class));
     }
 
     @Bean
@@ -64,7 +66,8 @@ public class EmbeddedKafkaBrokerConfiguration {
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new KafkaProducer<>(config, new StringSerializer(), (topic, data) -> {
             try {
-                return new SerializerFactory().getSpecificRecordSerializer(type).toBinary(data); //creates a leading space
+                return new SerializerFactory().getSpecificRecordSerializer(type)
+                        .toBinary(data); //creates a leading space
             } catch (SerializationException e) {
                 throw new RuntimeException(e);
             }

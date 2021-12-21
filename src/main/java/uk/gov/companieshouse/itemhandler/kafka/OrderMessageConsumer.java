@@ -1,7 +1,10 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static java.util.Objects.isNull;
+
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
@@ -12,11 +15,10 @@ import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.RetryableException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
-import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @Service
@@ -24,7 +26,12 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 
     private static long errorRecoveryOffset = 0L;
 
-    private static CountDownLatch eventLatch = new CountDownLatch(0);
+    private static CountDownLatch startupLatch;
+    private static CountDownLatch eventLatch;
+
+    public static void setStartupLatch(CountDownLatch startupLatch) {
+        OrderMessageConsumer.startupLatch = startupLatch;
+    }
 
     public static void setEventLatch(CountDownLatch eventLatch) {
         OrderMessageConsumer.eventLatch = eventLatch;
@@ -39,17 +46,15 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     @Value("kafka.topics.order-received-notification-error")
     private String errorTopic;
 
-    private final SerializerFactory serializerFactory;
     private final KafkaListenerEndpointRegistry registry;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Map<String, Object> consumerConfigsError;
 
-    public OrderMessageConsumer(SerializerFactory serializerFactory, KafkaListenerEndpointRegistry registry,
+    public OrderMessageConsumer(KafkaListenerEndpointRegistry registry,
                                 final OrderProcessorService orderProcessorService,
                                 final OrderProcessResponseHandler orderProcessResponseHandler,
                                 Supplier<Map<String, Object>> consumerConfigsErrorSupplier) {
-        this.serializerFactory = serializerFactory;
         this.registry = registry;
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
@@ -131,39 +136,10 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
         // Handle response
         response.getStatus().accept(orderProcessResponseHandler, message);
-        // Trigger countdown latch
-        eventLatch.countDown();
-    }
-
-    /**
-     * Retries a message that failed processing with a `RetryableException`. Checks which topic
-     * the message was received from and whether any retry attempts remain. The message is published
-     * to the next topic for failover processing, if retries match or exceed `MAX_RETRY_ATTEMPTS`.
-     * 
-     * @param message
-     * @param orderReceivedUri
-     * @param receivedTopic
-     * @param ex
-     */
-    private void retryMessage(org.springframework.messaging.Message<OrderReceived> message,
-            String orderReceivedUri, String receivedTopic, RetryableException ex) {
-//        String nextTopic = (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-//                || receivedTopic.equals(ORDER_RECEIVED_TOPIC_ERROR)) ? ORDER_RECEIVED_TOPIC_RETRY
-//                        : ORDER_RECEIVED_TOPIC_ERROR;
-//        String counterKey = receivedTopic + "-" + orderReceivedUri;
-//
-//        if (receivedTopic.equals(ORDER_RECEIVED_TOPIC)
-//                || retryCount.getOrDefault(counterKey, 1) >= MAX_RETRY_ATTEMPTS) {
-//            republishMessageToTopic(orderReceivedUri, receivedTopic, nextTopic);
-//            if (!receivedTopic.equals(ORDER_RECEIVED_TOPIC)) {
-//                resetRetryCount(counterKey);
-//            }
-//        } else {
-//            retryCount.put(counterKey, retryCount.getOrDefault(counterKey, 1) + 1);
-//            logMessageProcessingFailureRecoverable(message, retryCount.get(counterKey), ex);
-//            // retry
-//            handleMessage(message);
-//        }
+        // Notify event latch
+        if (!isNull(eventLatch)) {
+            eventLatch.countDown();
+        }
     }
 
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message,
@@ -196,50 +172,6 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         LoggingUtils.getLogger().info("Order received message processing completed", logMap);
     }
 
-//    protected void republishMessageToTopic(String orderUri, String currentTopic, String nextTopic) {
-//        Map<String, Object> logMap = LoggingUtils.createLogMap();
-//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.CURRENT_TOPIC, currentTopic);
-//        LoggingUtils.logIfNotNull(logMap, LoggingUtils.NEXT_TOPIC, nextTopic);
-//        LoggingUtils.getLogger().info(String.format(
-//                "Republishing message: \"%1$s\" received from topic: \"%2$s\" to topic: \"%3$s\"",
-//                orderUri, currentTopic, nextTopic), logMap);
-//        try {
-//            kafkaProducer.sendMessage(createRetryMessage(orderUri, nextTopic));
-//        } catch (ExecutionException | InterruptedException e) {
-//            LoggingUtils.getLogger().error(String.format("Error sending message: \"%1$s\" to topic: \"%2$s\"",
-//                    orderUri, nextTopic), e, logMap);
-//            if (e instanceof InterruptedException) {
-//                Thread.currentThread().interrupt();
-//            }
-//        }
-//    }
-
-//    protected Message createRetryMessage(String orderUri, String topic) {
-//        final Message message = new Message();
-//        AvroSerializer serializer =
-//                serializerFactory.getGenericRecordSerializer(OrderReceived.class);
-//        OrderReceived orderReceived = new OrderReceived();
-//        orderReceived.setOrderUri(orderUri.trim());
-//
-//        message.setKey(ORDER_RECEIVED_KEY_RETRY);
-//        try {
-//            message.setValue(serializer.toBinary(orderReceived));
-//        } catch (SerializationException e) {
-//            Map<String, Object> logMap = LoggingUtils.createLogMap();
-//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.MESSAGE, orderUri);
-//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.TOPIC, topic);
-//            LoggingUtils.logIfNotNull(logMap, LoggingUtils.OFFSET, message.getOffset());
-//            LoggingUtils.getLogger().error(String.format("Error serializing message: \"%1$s\" for topic: \"%2$s\"",
-//                    orderUri, topic), e, logMap);
-//            throw new ApplicationSerialisationException("Failed to serialise message");
-//        }
-//        message.setTopic(topic);
-//        message.setTimestamp(new Date().getTime());
-//
-//        return message;
-//    }
-
     public static void setErrorRecoveryOffset(long offset) {
         errorRecoveryOffset = offset;
     }
@@ -256,6 +188,8 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     public void onPartitionsAssigned(Map<TopicPartition, Long> map,
             ConsumerSeekCallback consumerSeekCallback) {
         if (errorConsumerEnabled) {
+            // Synchronise on startup latch
+            synchroniseOn(startupLatch, 30);
             try (KafkaConsumer<String, String> consumer =
                     new KafkaConsumer<>(consumerConfigsError)) {
                 final Map<TopicPartition, Long> topicPartitionsMap =
@@ -279,5 +213,20 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     public void onIdleContainer(Map<TopicPartition, Long> map,
             ConsumerSeekCallback consumerSeekCallback) {
         // Do nothing as not required for this implementation
+    }
+
+    private void synchroniseOn(CountDownLatch countDownLatch, int waitPeriodSeconds) {
+        if (isNull(countDownLatch)) {
+            return;
+        }
+        try {
+            if (!countDownLatch.await(waitPeriodSeconds, TimeUnit.SECONDS)) {
+                throw new NonRetryableException("Timed out waiting for latch to count down");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LoggingUtils.getLogger().error("Interrupted", e);
+            throw new NonRetryableException(e);
+        }
     }
 }

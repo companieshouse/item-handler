@@ -1,146 +1,142 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
+import email.email_send;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.model.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.listener.ContainerProperties;
-import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.MessageListener;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.ContainerTestUtils;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
-import uk.gov.companieshouse.kafka.consumer.resilience.CHConsumerType;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
+import org.testcontainers.containers.MockServerContainer;
+import org.testcontainers.utility.DockerImageName;
+import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
+import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.orders.OrderReceived;
 
 @SpringBootTest
 @DirtiesContext
-@EmbeddedKafka
-@TestPropertySource(properties={"uk.gov.companieshouse.item-handler.error-consumer=true"})
-@TestMethodOrder(MethodOrderer.Alphanumeric.class)
-class OrderMessageConsumerIntegrationErrorModeTest {
-    private static final String ORDER_RECEIVED_TOPIC = "order-received";
-    private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
-    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
-    private static final String CONSUMER_GROUP_MAIN_RETRY = "order-received-main-retry";
-    private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    private static final String ORDER_RECEIVED_MESSAGE_JSON = "{\"order_uri\": \"/order/ORDER-12345\", \"attempt\": 0}";
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String brokerAddresses;
-    @Autowired
-    private SerializerFactory serializerFactory;
-    @Autowired
-    @Qualifier("defaultMessageProducer")
-    private MessageProducer kafkaProducer;
+@Import(EmbeddedKafkaBrokerConfiguration.class)
+@TestPropertySource(locations = "classpath:application.properties",
+        properties = {"uk.gov.companieshouse.item-handler.error-consumer=true"})
+public class OrderMessageConsumerIntegrationErrorModeTest {
 
-    private KafkaMessageListenerContainer<String, String> container;
-
-    private BlockingQueue<ConsumerRecord<String, String>> records;
+    public static final String ORDER_REFERENCE_NUMBER = "87654321";
+    public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
+    private static MockServerContainer container;
+    private MockServerClient client;
+    private CountDownLatch startupLatch;
+    private CountDownLatch eventLatch;
+    @Autowired
+    private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
-    private OrderMessageConsumerWrapper consumerWrapper;
+    private KafkaConsumer<String, email_send> emailSendConsumer;
 
-    @BeforeEach
-    public void setUp() {
-        setUpTestKafkaOrdersConsumer();
+    @Autowired
+    private KafkaProducer<String, OrderReceived> orderReceivedProducer;
+
+    @Autowired
+    private KafkaTopics kafkaTopics;
+
+    @BeforeAll
+    static void before() {
+        container = new MockServerContainer(DockerImageName.parse(
+                "jamesdbloom/mockserver:mockserver-5.5.4"));
+        container.start();
+        TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
+        TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
     }
 
-    @AfterEach
-    public void tearDown() {
+    @AfterAll
+    static void after() {
         container.stop();
     }
 
-    private void setUpTestKafkaOrdersConsumer() {
-        final Map<String, Object> consumerProperties = new HashMap<>();
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.GROUP_ID_CONFIG, CONSUMER_GROUP_MAIN_RETRY);
-        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, brokerAddresses);
+    private static OrderReceived getOrderReceived() {
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setOrderUri(ORDER_NOTIFICATION_REFERENCE);
+        return orderReceived;
+    }
 
-        final DefaultKafkaConsumerFactory<String, String> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProperties);
+    @BeforeEach
+    void setup() {
+        client = new MockServerClient(container.getHost(), container.getServerPort());
+        startupLatch = new CountDownLatch(1);
+        OrderMessageConsumer.setStartupLatch(startupLatch);
+        eventLatch = new CountDownLatch(1);
+        OrderMessageConsumer.setEventLatch(eventLatch);
+    }
 
-        final ContainerProperties containerProperties = new ContainerProperties(
-                new String[]{ORDER_RECEIVED_TOPIC, ORDER_RECEIVED_TOPIC_RETRY, ORDER_RECEIVED_TOPIC_ERROR});
-
-        container = new KafkaMessageListenerContainer<>(consumerFactory, containerProperties);
-
-        records = new LinkedBlockingQueue<>();
-
-        container.setupMessageListener((MessageListener<String, String>) record -> {
-                    records.add(record);
-                });
-
-        container.start();
-
-        ContainerTestUtils.waitForAssignment(container, 0);
+    @AfterEach
+    void teardown() {
+        client.reset();
     }
 
     @Test
-    @DisplayName("order-received topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    void testOrdersConsumerReceivesOrderReceivedMessage1() throws InterruptedException, ExecutionException, SerializationException {
-        // When
-        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC));
+    void testConsumesCertificateOrderReceivedFromErrorTopic() throws
+            ExecutionException, InterruptedException,
+            IOException {
+        //given
+        client.when(request()
+                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/certified-certificate.json",
+                                StandardCharsets.UTF_8))));
 
-        // Then
-        verifyProcessOrderReceivedNotInvoked(CHConsumerType.MAIN_CONSUMER);
-    }
+        // when
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
+                kafkaTopics.getEmailSend());
+        ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
+                kafkaTopics.getOrderReceivedNotificationError(),
+                kafkaTopics.getOrderReceivedNotificationError(),
+                getOrderReceived());
+        orderReceivedProducer.send(producerRecord).get();
+        startupLatch.countDown();
+        eventLatch.await(30, TimeUnit.SECONDS);
+        email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
+                .iterator()
+                .next()
+                .value();
 
-    @Test
-    @DisplayName("order-received-retry topic consumer does not receive message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER)is true")
-    void testOrdersConsumerReceivesOrderReceivedMessage2Retry() throws InterruptedException, SerializationException, ExecutionException {
-        // When
-        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_RETRY));
-
-        // Then
-        verifyProcessOrderReceivedNotInvoked(CHConsumerType.RETRY_CONSUMER);
-    }
-
-    private void verifyProcessOrderReceivedNotInvoked(CHConsumerType type) throws InterruptedException {
-        consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(3000, TimeUnit.MILLISECONDS);
-        final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, isEmptyOrNullString());
-    }
-
-    @Test
-    @DisplayName("order-received-error topic consumer receives message when 'error-consumer' (env var IS_ERROR_QUEUE_CONSUMER) is true")
-    void testOrdersConsumerReceivesOrderReceivedMessage3Error() throws InterruptedException, ExecutionException, SerializationException {
-        // When
-        kafkaProducer.sendMessage(consumerWrapper.createMessage(ORDER_RECEIVED_URI, ORDER_RECEIVED_TOPIC_ERROR));
-
-        // Then
-        verifyProcessOrderReceivedInvoked(CHConsumerType.ERROR_CONSUMER);
-    }
-
-    private void verifyProcessOrderReceivedInvoked(CHConsumerType type) throws InterruptedException {
-        consumerWrapper.setTestType(type);
-        consumerWrapper.getLatch().await(6000, TimeUnit.MILLISECONDS);
-        final String processedOrderUri = consumerWrapper.getOrderUri();
-        assertThat(processedOrderUri, is(equalTo(ORDER_RECEIVED_MESSAGE_JSON)));
+        // then
+        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertNotNull(actual.getMessageId());
+        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                actual.getMessageType());
+        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
+        assertNotNull(actual.getData());
     }
 }
