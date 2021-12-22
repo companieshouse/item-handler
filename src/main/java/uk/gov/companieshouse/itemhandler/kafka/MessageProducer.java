@@ -20,7 +20,6 @@ public final class MessageProducer {
     private final CHKafkaProducer kafkaProducer;
     private final Logger logger;
 
-    @Autowired
     public MessageProducer(CHKafkaProducer kafkaProducer, Logger logger) {
         this.kafkaProducer = kafkaProducer;
         this.logger = logger;

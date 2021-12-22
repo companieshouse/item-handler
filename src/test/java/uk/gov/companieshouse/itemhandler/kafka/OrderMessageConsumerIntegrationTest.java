@@ -267,6 +267,10 @@ class OrderMessageConsumerIntegrationTest {
     }
 
     @Test
+    void testConsumesMissingImageDeliveryOrderReceivedFromRetryTopic() throws ExecutionException, InterruptedException, IOException {
+    }
+
+    @Test
     void testPublishesOrderReceivedToRetryTopicWhenOrdersApiIsUnavailable() throws ExecutionException, InterruptedException, IOException {
 
     }
@@ -278,6 +282,11 @@ class OrderMessageConsumerIntegrationTest {
 
     @Test
     void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException, IOException {
+
+    }
+
+    @Test
+    void testLogAnErrorWhenOrderReceivedCannotBeDeserialised() throws ExecutionException, InterruptedException, IOException {
 
     }
 }

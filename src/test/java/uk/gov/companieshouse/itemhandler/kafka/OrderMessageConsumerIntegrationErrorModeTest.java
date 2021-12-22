@@ -12,7 +12,9 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -107,7 +109,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     @Test
     void testConsumesCertificateOrderReceivedFromErrorTopic() throws
             ExecutionException, InterruptedException,
-            IOException {
+            IOException, TimeoutException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -127,7 +129,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getStartupLatch().countDown();
+        orderMessageConsumer.getStartupPhaser().awaitAdvanceInterruptibly(1, 30, TimeUnit.SECONDS);
         orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
@@ -144,7 +146,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
+    void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -164,7 +166,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getStartupLatch().countDown();
+        orderMessageConsumer.getStartupPhaser().awaitAdvanceInterruptibly(1, 30, TimeUnit.SECONDS);
         orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
@@ -181,7 +183,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException {
+    void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -201,7 +203,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getStartupLatch().countDown();
+        orderMessageConsumer.getStartupPhaser().awaitAdvanceInterruptibly(1, 30, TimeUnit.SECONDS);
         orderMessageConsumer.getEventLatch().await(60, TimeUnit.SECONDS);
 
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))

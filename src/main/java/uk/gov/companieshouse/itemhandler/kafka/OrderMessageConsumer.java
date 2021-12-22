@@ -4,7 +4,9 @@ import static java.util.Objects.isNull;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
@@ -26,11 +28,15 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
 
     private static long errorRecoveryOffset = 0L;
 
-    private CountDownLatch startupLatch = new CountDownLatch(1);
+    private Phaser startupPhaser = new Phaser(2);
     private CountDownLatch eventLatch = new CountDownLatch(1);
 
-    public CountDownLatch getStartupLatch() {
-        return startupLatch;
+    public void setStartupPhaser(Phaser startupPhaser) {
+        this.startupPhaser = startupPhaser;
+    }
+
+    public Phaser getStartupPhaser() {
+        return startupPhaser;
     }
 
     public CountDownLatch getEventLatch() {
@@ -189,12 +195,12 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
     public void onPartitionsAssigned(Map<TopicPartition, Long> map,
             ConsumerSeekCallback consumerSeekCallback) {
         if (errorConsumerEnabled) {
-            synchroniseOn(startupLatch, 30);
             try (KafkaConsumer<String, String> consumer =
                     new KafkaConsumer<>(consumerConfigsError)) {
                 final Map<TopicPartition, Long> topicPartitionsMap =
                         consumer.endOffsets(map.keySet());
                 map.forEach((topic, action) -> {
+                    // TODO: make error recovery offset thread safe
                     setErrorRecoveryOffset(topicPartitionsMap.get(topic) - 1);
                     LoggingUtils.getLogger()
                             .info(String.format("Setting Error Consumer Recovery Offset to '%1$d'",
@@ -215,15 +221,13 @@ public class OrderMessageConsumer implements ConsumerSeekAware {
         // Do nothing as not required for this implementation
     }
 
-    private void synchroniseOn(CountDownLatch countDownLatch, int waitPeriodSeconds) {
-        if (isNull(countDownLatch)) {
+    private void rendezvous(Phaser phaser, int waitPeriodSeconds) {
+        if (isNull(phaser)) {
             return;
         }
         try {
-            if (!countDownLatch.await(waitPeriodSeconds, TimeUnit.SECONDS)) {
-                throw new NonRetryableException("Timed out waiting for latch to count down");
-            }
-        } catch (InterruptedException e) {
+            phaser.awaitAdvanceInterruptibly(1, waitPeriodSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException | TimeoutException e) {
             Thread.currentThread().interrupt();
             LoggingUtils.getLogger().error("Interrupted", e);
             throw new NonRetryableException(e);
