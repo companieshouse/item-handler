@@ -268,11 +268,79 @@ class OrderMessageConsumerIntegrationTest {
 
     @Test
     void testConsumesMissingImageDeliveryOrderReceivedFromRetryTopic() throws ExecutionException, InterruptedException, IOException {
+        // given
+        client.when(request()
+                .withPath(ORDER_NOTIFICATION_REFERENCE)
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/missing-image-delivery.json",
+                                StandardCharsets.UTF_8))));
+
+        // when
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceivedNotificationRetry(),
+                kafkaTopics.getOrderReceivedNotificationRetry(),
+                getOrderReceived())).get();
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
+                .iterator()
+                .next()
+                .value();
+
+        // then
+        assertEquals("ORD-123123-123123", actual.getReference());
+        assertNotNull(actual.getItem());
     }
 
     @Test
     void testPublishesOrderReceivedToRetryTopicWhenOrdersApiIsUnavailable() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                .withPath(ORDER_NOTIFICATION_REFERENCE)
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.NOT_FOUND.value()));
 
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+
+        // sync so that retry consumer does not consume early
+
+        client.when(request()
+                .withPath(ORDER_NOTIFICATION_REFERENCE)
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/certified-certificate.json",
+                                StandardCharsets.UTF_8))));
+
+        // when
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
+
+        // sync so that retry consumer has completed and app has published email onto email send
+        // topic
+        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
+                .iterator()
+                .next()
+                .value();
+
+        // then
+        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertNotNull(actual.getMessageId());
+        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                actual.getMessageType());
+        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
+        assertNotNull(actual.getData());
     }
 
     @Test
