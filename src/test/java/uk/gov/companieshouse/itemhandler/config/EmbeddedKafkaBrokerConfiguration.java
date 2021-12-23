@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.config;
 
 import email.email_send;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import uk.gov.companieshouse.itemhandler.kafka.BadOrderReceived;
 import uk.gov.companieshouse.itemhandler.kafka.MessageDeserialiser;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -72,6 +74,11 @@ public class EmbeddedKafkaBrokerConfiguration {
     @Bean
     KafkaProducer<String, OrderReceived> myProducer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         return createProducer(bootstrapServers, OrderReceived.class);
+    }
+
+    @Bean
+    KafkaProducer<String, BadOrderReceived> serializableKafkaProducer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+        return createProducer(bootstrapServers, BadOrderReceived.class);
     }
 
     private <T extends SpecificRecord> KafkaProducer<String, T> createProducer(String bootstrapServers, Class<T> type) {

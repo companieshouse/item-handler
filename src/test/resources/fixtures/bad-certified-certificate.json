@@ -1,0 +1,85 @@
+{
+  "payment_reference": "F00DFACE",
+  "etag": "F00DFACE",
+  "delivery_details": {
+    "country": "Great Britain",
+    "forename": "Forename",
+    "locality": "Locality",
+    "postal_code": "AB01 1XY",
+    "region": "Region",
+    "surname": "Surname",
+    "address_line_1": "Address Line 1",
+    "address_line_2": "Address Line 2"
+  },
+  "items": [
+    {
+      "id": "CRT-123123-123123",
+      "company_name": "COMPANY LIMITED",
+      "company_number": "12345678",
+      "description": "certificate for company 12345678",
+      "description_identifier": "certificate",
+      "description_values": {
+        "certificate": "certificate for company 12345678",
+        "company_number": "12345678"
+      },
+      "item_costs": [
+        {
+          "discount_applied": "0",
+          "item_cost": "15",
+          "calculated_cost": "15",
+          "product_type": "certificate"
+        }
+      ],
+      "item_options": {
+        "delivery_method": "postal",
+        "delivery_timescale": "standard",
+        "forename": "Forename",
+        "surname": "Surname",
+        "certificate_type": "incorporation-with-all-name-changes",
+        "director_details": {
+          "include_address": true,
+          "include_appointment_date": false,
+          "include_basic_information": true,
+          "include_country_of_residence": true,
+          "include_dob_type": "partial",
+          "include_nationality": true,
+          "include_occupation": true
+        },
+        "registered_office_address_details": {
+          "include_address_records_type": "all",
+          "include_dates": false
+        },
+        "secretary_details": {
+          "include_address": false,
+          "include_appointment_date": true,
+          "include_basic_information": true
+        },
+        "new_field_that_shouldnt_exist": {
+          "include_me": true
+        }
+      },
+      "etag": "F00DFACE",
+      "kind": "item#certificate",
+      "links": {
+        "self": "/orderable/certificates/CRT-123123-123123"
+      },
+      "quantity": 1,
+      "item_uri": "/orderable/certificates/CRT-123123-123123",
+      "status": "unknown",
+      "postage_cost": "0",
+      "total_item_cost": "15",
+      "postal_delivery": true
+    }
+  ],
+  "kind": "order",
+  "total_order_cost": "15",
+  "reference": "ORD-123123-123123",
+  "ordered_at": "2021-01-01T00:00:00.000",
+  "ordered_by": {
+    "email": "demo@ch.gov.uk",
+    "id": "F00DFACE"
+  },
+  "links": {
+    "self": "/orders/ORD-123123-123123"
+  }
+}

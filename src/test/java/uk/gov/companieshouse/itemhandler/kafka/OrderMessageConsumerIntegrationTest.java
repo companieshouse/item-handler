@@ -26,8 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,6 +71,9 @@ class OrderMessageConsumerIntegrationTest {
     private KafkaProducer<String, OrderReceived> orderReceivedProducer;
 
     @Autowired
+    private KafkaProducer<String, BadOrderReceived> badOrderReceivedKafkaProducer;
+
+    @Autowired
     private KafkaTopics kafkaTopics;
 
     @Autowired
@@ -110,6 +111,12 @@ class OrderMessageConsumerIntegrationTest {
     private static OrderReceived getOrderReceived() {
         OrderReceived orderReceived = new OrderReceived();
         orderReceived.setOrderUri(ORDER_NOTIFICATION_REFERENCE);
+        return orderReceived;
+    }
+
+    private static BadOrderReceived getBadOrderReceived() {
+        BadOrderReceived orderReceived = new BadOrderReceived();
+        orderReceived.setOrderUri2(ORDER_NOTIFICATION_REFERENCE);
         return orderReceived;
     }
 
@@ -437,6 +444,29 @@ class OrderMessageConsumerIntegrationTest {
 
     @Test
     void testLogAnErrorWhenOrderReceivedCannotBeDeserialised() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/certified-certificate.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
 
+        // when
+        badOrderReceivedKafkaProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getBadOrderReceived())).get();
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+
+        // then
+        verify(orderProcessResponseHandler).serviceError(any());
+        verify(logger).error(argumentCaptor.capture(), anyMap());
+        assertEquals("order-received message processing failed with a "
+                + "non-recoverable exception", argumentCaptor.getValue());
     }
 }
