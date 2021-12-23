@@ -1,5 +1,8 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static java.util.Objects.isNull;
+
+import java.util.concurrent.CountDownLatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ class OrderProcessResponseHandler implements OrderProcessResponse.Visitor {
     private final OrderMessageProducer messageProducer;
     private final ResponseHandlerConfig config;
     private final Logger logger;
+    private CountDownLatch postPublishToErrorTopicLatch;
 
     @Autowired
     public OrderProcessResponseHandler(OrderMessageProducer messageProducer, ResponseHandlerConfig config, Logger logger) {
@@ -43,6 +47,14 @@ class OrderProcessResponseHandler implements OrderProcessResponse.Visitor {
         logger.error("order-received message processing failed with a non-recoverable exception", LoggingUtils.getMessageHeadersAsMap(message));
     }
 
+    CountDownLatch getPostPublishToErrorTopicLatch() {
+        return postPublishToErrorTopicLatch;
+    }
+
+    void setPostPublishToErrorTopicLatch(CountDownLatch postPublishToErrorTopicLatch) {
+        this.postPublishToErrorTopicLatch = postPublishToErrorTopicLatch;
+    }
+
     private void publishToRetryTopic(Message<OrderReceived> message, OrderReceived payload) {
         logger.info("order-received message processing failed with a recoverable exception", LoggingUtils.getMessageHeadersAsMap(message));
         payload.setAttempt(payload.getAttempt() + 1);
@@ -53,5 +65,8 @@ class OrderProcessResponseHandler implements OrderProcessResponse.Visitor {
         logger.info("order-received message processing failed; maximum number of retry attempts exceeded", LoggingUtils.getMessageHeadersAsMap(message));
         payload.setAttempt(0);
         messageProducer.sendMessage(payload, config.getErrorTopic());
+        if (!isNull(postPublishToErrorTopicLatch)) {
+            postPublishToErrorTopicLatch.countDown();
+        }
     }
 }

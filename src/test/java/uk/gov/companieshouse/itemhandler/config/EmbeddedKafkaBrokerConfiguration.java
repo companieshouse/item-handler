@@ -44,6 +44,20 @@ public class EmbeddedKafkaBrokerConfiguration {
 
     @Bean
     @Scope("prototype")
+    KafkaConsumer<String, OrderReceived> orderReceivedConsumer(@Value("${spring.kafka"
+            + ".bootstrap-servers}") String bootstrapServers) {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        // TODO: remove props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        // props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "" + new Random().nextInt());
+        return new KafkaConsumer<>(props,
+                new StringDeserializer(),
+                new MessageDeserialiser<>(OrderReceived.class));
+    }
+
+    @Bean
+    @Scope("prototype")
     KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);

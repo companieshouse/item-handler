@@ -2,6 +2,9 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.verify;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -21,10 +24,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,6 +45,7 @@ import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
@@ -68,6 +77,18 @@ class OrderMessageConsumerIntegrationTest {
 
     @Autowired
     private OrderMessageConsumer orderMessageConsumer;
+
+    @Autowired
+    private KafkaConsumer<String, OrderReceived> orderReceivedConsumer;
+
+    @SpyBean
+    private OrderProcessResponseHandler orderProcessResponseHandler;
+
+    @SpyBean
+    private Logger logger;
+
+    @Captor
+    private ArgumentCaptor<String> argumentCaptor;
 
     @BeforeAll
     static void before() {
@@ -358,13 +379,60 @@ class OrderMessageConsumerIntegrationTest {
     }
 
     @Test
-    void testPublishesOrderReceivedToErrorTopicAfterMaxRetryAttempts() throws ExecutionException, InterruptedException, IOException {
+    void testPublishesOrderReceivedToErrorTopicAfterMaxRetryAttempts() throws ExecutionException, InterruptedException {
+        //given
+        client.when(request()
+                .withPath(ORDER_NOTIFICATION_REFERENCE)
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()));
 
+        orderProcessResponseHandler.setPostPublishToErrorTopicLatch(new CountDownLatch(1));
+
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+
+        // when
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(orderReceivedConsumer,
+                kafkaTopics.getOrderReceivedNotificationError());
+
+        // sync so that retry consumer has completed and app has published email onto email send
+        // topic
+        orderProcessResponseHandler.getPostPublishToErrorTopicLatch().await(30, TimeUnit.SECONDS);
+        OrderReceived actual = orderReceivedConsumer.poll(Duration.ofSeconds(15))
+                .iterator()
+                .next()
+                .value();
+
+        // then
+        assertEquals(ORDER_NOTIFICATION_REFERENCE, actual.getOrderUri());
+        assertEquals(0, actual.getAttempt());
     }
 
     @Test
     void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                .withPath(ORDER_NOTIFICATION_REFERENCE)
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.NOT_FOUND.value()));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
 
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+
+        // then
+        verify(orderProcessResponseHandler).serviceError(any());
+        verify(logger).error(argumentCaptor.capture(), anyMap());
+        assertEquals("order-received message processing failed with a "
+                + "non-recoverable exception", argumentCaptor.getValue());
     }
 
     @Test
