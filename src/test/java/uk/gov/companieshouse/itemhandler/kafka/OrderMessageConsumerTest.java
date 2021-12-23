@@ -8,25 +8,15 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import org.apache.avro.generic.IndexedRecord;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.messaging.MessageHeaders;
-import uk.gov.companieshouse.itemhandler.exception.ApplicationSerialisationException;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.logging.Logger;
@@ -42,7 +32,7 @@ class OrderMessageConsumerTest {
 
     @Spy
     @InjectMocks
-    private OrderMessageConsumer ordersKafkaConsumer;
+    private OrderMessageHandler orderMessageHandler;
     @Mock
     private MessageProducer messageProducer;
     @Mock
@@ -163,7 +153,7 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
         verify(orderProcessResponseHandler, times(1)).serviceOk(any());
@@ -178,7 +168,7 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
         verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
@@ -193,7 +183,7 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        ordersKafkaConsumer.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
         verify(orderProcessResponseHandler, times(1)).serviceError(any());
