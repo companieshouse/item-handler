@@ -9,6 +9,7 @@ import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
@@ -113,6 +114,7 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
@@ -120,7 +122,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -147,13 +149,14 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -180,13 +183,14 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -209,6 +213,8 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostRetryEventLatch(new CountDownLatch(1));
+
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
@@ -216,7 +222,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostRetryEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -243,6 +249,7 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostRetryEventLatch(new CountDownLatch(1));
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
@@ -250,7 +257,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostRetryEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -277,6 +284,7 @@ class OrderMessageConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
+        orderMessageConsumer.setPostRetryEventLatch(new CountDownLatch(1));
 
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
@@ -284,7 +292,7 @@ class OrderMessageConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostRetryEventLatch().await(30, TimeUnit.SECONDS);
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -302,15 +310,20 @@ class OrderMessageConsumerIntegrationTest {
                 .withPath(ORDER_NOTIFICATION_REFERENCE)
                 .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
-                        .withStatusCode(HttpStatus.NOT_FOUND.value()));
+                        .withStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()));
+
+        orderMessageConsumer.setPreRetryEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostRetryEventLatch(new CountDownLatch(1));
 
         orderReceivedProducer.send(new ProducerRecord<>(
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
 
         // sync so that retry consumer does not consume early
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        client.reset();
 
         client.when(request()
                 .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -322,12 +335,14 @@ class OrderMessageConsumerIntegrationTest {
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
 
+        orderMessageConsumer.getPreRetryEventLatch().countDown();
+
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // sync so that retry consumer has completed and app has published email onto email send
         // topic
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostRetryEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
