@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @Service
@@ -17,48 +18,49 @@ public class OrderMessageConsumer {
     private CountDownLatch preRetryEventLatch;
     private CountDownLatch postOrderReceivedEventLatch;
     private CountDownLatch postRetryEventLatch;
+    private final Logger logger;
 
-    public OrderMessageConsumer(KafkaListenerEndpointRegistry registry, OrderMessageHandler orderReceivedProcessor) {
+    public OrderMessageConsumer(KafkaListenerEndpointRegistry registry, OrderMessageHandler orderReceivedProcessor, Logger logger) {
         this.registry = registry;
         this.orderReceivedProcessor = orderReceivedProcessor;
+        this.logger = logger;
     }
 
-    public CountDownLatch getPreRetryEventLatch() {
+    CountDownLatch getPreRetryEventLatch() {
         return preRetryEventLatch;
     }
 
-    public void setPreRetryEventLatch(CountDownLatch countDownLatch) {
+    void setPreRetryEventLatch(CountDownLatch countDownLatch) {
         this.preRetryEventLatch = countDownLatch;
     }
 
-    public CountDownLatch getPostOrderReceivedEventLatch() {
+    CountDownLatch getPostOrderReceivedEventLatch() {
         return postOrderReceivedEventLatch;
     }
 
-    public void setPostOrderReceivedEventLatch(CountDownLatch postOrderReceivedEventLatch) {
+    void setPostOrderReceivedEventLatch(CountDownLatch postOrderReceivedEventLatch) {
         this.postOrderReceivedEventLatch = postOrderReceivedEventLatch;
     }
 
-    public CountDownLatch getPostRetryEventLatch() {
+    CountDownLatch getPostRetryEventLatch() {
         return postRetryEventLatch;
     }
 
-    public void setPostRetryEventLatch(CountDownLatch postRetryEventLatch) {
+    void setPostRetryEventLatch(CountDownLatch postRetryEventLatch) {
         this.postRetryEventLatch = postRetryEventLatch;
     }
 
     /**
      * Main listener/consumer. Calls `handleMessage` method to process received message.
      *
-     * @param message
+     * @param message received
      */
     @KafkaListener(id = "#{'${kafka.topics.order-received_group}'}",
             groupId = "#{'${kafka.topics.order-received_group}'}",
             topics = "#{'${kafka.topics.order-received}'}",
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message)
-            throws InterruptedException {
+    public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
         orderReceivedProcessor.handleMessage(message);
         if (!isNull(postOrderReceivedEventLatch)) {
             postOrderReceivedEventLatch.countDown();
@@ -68,7 +70,7 @@ public class OrderMessageConsumer {
     /**
      * Retry (`-retry`) listener/consumer. Calls `handleMessage` method to process received message.
      *
-     * @param message
+     * @param message received
      */
     @KafkaListener(id = "#{'${kafka.topics.order-received-notification-retry-group}'}",
             groupId = "#{'${kafka.topics.order-received-notification-retry-group}'}",
@@ -78,8 +80,8 @@ public class OrderMessageConsumer {
     public void processOrderReceivedRetry(
             org.springframework.messaging.Message<OrderReceived> message)
             throws InterruptedException {
-        if (!isNull(preRetryEventLatch)) {
-            preRetryEventLatch.await(30, TimeUnit.SECONDS);
+        if (!isNull(preRetryEventLatch) && !preRetryEventLatch.await(30, TimeUnit.SECONDS)) {
+            logger.debug("preRetryEvent latch timed out");
         }
         orderReceivedProcessor.handleMessage(message);
         if (!isNull(postRetryEventLatch)) {

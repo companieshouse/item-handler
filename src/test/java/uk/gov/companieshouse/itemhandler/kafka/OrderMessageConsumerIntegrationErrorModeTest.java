@@ -11,15 +11,12 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -99,7 +96,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     @BeforeEach
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
-        orderMessageConsumer.setEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
     }
 
@@ -127,7 +124,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
                 kafkaTopics.getEmailSend());
         orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
-        orderMessageConsumer.setEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
@@ -137,7 +134,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         orderMessageConsumer.getStartupLatch().countDown();
         //orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
         //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -169,7 +166,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
                 kafkaTopics.getEmailSend());
         orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
-        orderMessageConsumer.setEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
@@ -178,7 +175,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
         orderMessageConsumer.getStartupLatch().countDown();
         //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -210,7 +207,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer,
                 kafkaTopics.getChdItemOrdered());
         orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
-        orderMessageConsumer.setEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
@@ -220,7 +217,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         orderMessageConsumer.getStartupLatch().countDown();
         //orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
         //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
-        orderMessageConsumer.getEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
 
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()

@@ -4,7 +4,6 @@ import static java.util.Objects.isNull;
 
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -32,7 +31,7 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Map<String, Object> consumerConfigsError;
-    private CountDownLatch eventLatch;
+    private CountDownLatch postOrderReceivedEventLatch;
     private CountDownLatch startupLatch;
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -53,16 +52,16 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
         this.consumerConfigsError = consumerConfigsErrorSupplier.get();
     }
 
-    public CountDownLatch getEventLatch() {
-        return eventLatch;
+    public CountDownLatch getPostOrderReceivedEventLatch() {
+        return postOrderReceivedEventLatch;
     }
 
     public CountDownLatch getStartupLatch() {
         return startupLatch;
     }
 
-    public void setEventLatch(CountDownLatch eventLatch) {
-        this.eventLatch = eventLatch;
+    public void setPostOrderReceivedEventLatch(CountDownLatch postOrderReceivedEventLatch) {
+        this.postOrderReceivedEventLatch = postOrderReceivedEventLatch;
     }
 
     public void setStartupLatch(CountDownLatch startupLatch) {
@@ -99,6 +98,9 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
                             logMap);
             registry.getListenerContainer(errorGroup).pause();
         }
+        if (!isNull(postOrderReceivedEventLatch)) {
+            postOrderReceivedEventLatch.countDown();
+        }
     }
 
     /**
@@ -118,9 +120,6 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
         // Handle response
         response.getStatus().accept(orderProcessResponseHandler, message);
         // Notify event latch
-        if (!isNull(eventLatch)) {
-            eventLatch.countDown();
-        }
     }
 
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message,
@@ -172,22 +171,13 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
     public void onPartitionsAssigned(Map<TopicPartition, Long> map,
                                      ConsumerSeekCallback consumerSeekCallback) {
         if (errorConsumerEnabled) {
-            if (!isNull(startupLatch)) {
-                try {
-                    startupLatch.await(30, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
             try (KafkaConsumer<String, String> consumer =
                          new KafkaConsumer<>(consumerConfigsError)) {
                 final Map<TopicPartition, Long> topicPartitionsMap =
                         consumer.endOffsets(map.keySet());
                 map.forEach((topic, action) -> {
                     long offset = topicPartitionsMap.get(topic);
-                    if (offset > 0) {
                         setErrorRecoveryOffset(offset - 1);
-                    }
                     LoggingUtils.getLogger()
                             .info(String.format(
                                     "Setting Error Consumer Recovery Offset to '%1$d'",
