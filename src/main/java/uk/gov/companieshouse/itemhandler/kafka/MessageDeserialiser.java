@@ -9,7 +9,6 @@ import org.apache.avro.io.Decoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
 
