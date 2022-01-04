@@ -2,7 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.generic.IndexedRecord;
 import org.apache.avro.io.DatumReader;
 import org.apache.avro.io.Decoder;
@@ -32,7 +32,7 @@ public class MessageDeserialiser<T extends IndexedRecord> implements Deserialize
             Decoder decoder = DecoderFactory.get().binaryDecoder(data, null);
             DatumReader<T> reader = new ReflectDatumReader<>(requiredType);
             return reader.read(null, decoder);
-        } catch (IOException e) {
+        } catch (IOException | AvroRuntimeException e) {
             String msg = String.format(
                     "Message data [%s] from topic [%s] cannot be deserialized: %s",
                     Arrays.toString(data),
@@ -41,15 +41,5 @@ public class MessageDeserialiser<T extends IndexedRecord> implements Deserialize
             LOGGER.error(msg, e);
             return null;
         }
-    }
-
-    @Override
-    public void close() {
-        // No-op
-    }
-
-    @Override
-    public void configure(Map<String, ?> arg0, boolean arg1) {
-        // No-op
     }
 }

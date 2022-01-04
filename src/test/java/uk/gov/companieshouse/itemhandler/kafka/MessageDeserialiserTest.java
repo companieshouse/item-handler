@@ -9,10 +9,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class MessageDeserialiserTest {
-
     @Test
     void deserializeReturnsNullIfMessageCannotBeDeserialised() {
         assertNull(new MessageDeserialiser<>(email_send.class).deserialize("email-send",
                 "Test data".getBytes()));
     }
+
+    //TODO: positive test for successful deserialisation
 }

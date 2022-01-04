@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
@@ -37,9 +39,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory(ConsumerFactory<String, OrderReceived> consumerFactoryMessage) {
         ConcurrentKafkaListenerContainerFactory<String, OrderReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactoryMessage());
+        factory.setConsumerFactory(consumerFactoryMessage);
+        factory.setErrorHandler(new SeekToCurrentErrorHandler(new FixedBackOff(0, 0)));
         return factory;
     }
 
@@ -114,16 +117,14 @@ public class KafkaConfig {
 
     @Bean
     Supplier<Map<String, Object>> consumerConfigsErrorSupplier() {
-        final Map<String, Object> props = new HashMap();
+        final Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserialiser.class);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, orderReceivedErrorGroup);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
-        return () -> {
-            return props;
-        };
+        return () -> props;
     }
 
     private Map<String, Object> consumerConfigs() {

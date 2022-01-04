@@ -42,7 +42,6 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @SpringBootTest
-@DirtiesContext
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
         properties = {"uk.gov.companieshouse.item-handler.error-consumer=true"})
@@ -106,6 +105,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
+    @DirtiesContext
     void testConsumesCertificateOrderReceivedFromErrorTopic() throws
             ExecutionException, InterruptedException,
             IOException, TimeoutException {
@@ -150,6 +150,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
+    @DirtiesContext
     void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         //given
         client.when(request()
@@ -191,6 +192,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
+    @DirtiesContext
     void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException, TimeoutException {
         //given
         client.when(request()
