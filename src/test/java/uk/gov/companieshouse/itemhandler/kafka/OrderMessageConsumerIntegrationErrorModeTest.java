@@ -12,7 +12,6 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -42,6 +41,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
         properties = {"uk.gov.companieshouse.item-handler.error-consumer=true"})
@@ -79,6 +79,8 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
         TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
+        OrderMessageErrorConsumer.setPrePostConstructLatch(new CountDownLatch(1));
+        OrderMessageErrorConsumer.setPostConstructLatch(new CountDownLatch(1));
     }
 
     @AfterAll
@@ -96,7 +98,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
         orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
-        orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostConstructLatch(new CountDownLatch(1));
     }
 
     @AfterEach
@@ -105,10 +107,9 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
     }
 
     @Test
-    @DirtiesContext
     void testConsumesCertificateOrderReceivedFromErrorTopic() throws
             ExecutionException, InterruptedException,
-            IOException, TimeoutException {
+            IOException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -123,15 +124,14 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
                 kafkaTopics.getEmailSend());
-        orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostConstructLatch(new CountDownLatch(1));
         orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
-        orderMessageConsumer.getStartupLatch().countDown();
+        orderMessageConsumer.getPostConstructLatch().countDown();
         //orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
         //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
         orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
@@ -151,7 +151,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
 
     @Test
     @DirtiesContext
-    void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException, TimeoutException {
+    void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -163,19 +163,21 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
 
+        orderMessageConsumer.setPreOrderReceivedEventLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
+
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
                 kafkaTopics.getEmailSend());
-        orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
-        orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
+
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
-        orderMessageConsumer.getStartupLatch().countDown();
-        //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
+        OrderMessageErrorConsumer.getPrePostConstructLatch().countDown();
+        OrderMessageErrorConsumer.getPostConstructLatch().await(30, TimeUnit.SECONDS);
+        orderMessageConsumer.getPreOrderReceivedEventLatch().countDown();
         orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
@@ -193,7 +195,7 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
 
     @Test
     @DirtiesContext
-    void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException, TimeoutException {
+    void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -208,15 +210,14 @@ public class OrderMessageConsumerIntegrationErrorModeTest {
         // when
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer,
                 kafkaTopics.getChdItemOrdered());
-        orderMessageConsumer.setStartupLatch(new CountDownLatch(1));
+        orderMessageConsumer.setPostConstructLatch(new CountDownLatch(1));
         orderMessageConsumer.setPostOrderReceivedEventLatch(new CountDownLatch(1));
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
                 kafkaTopics.getOrderReceivedNotificationError(),
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
-        orderMessageConsumer.getStartupLatch().countDown();
+        orderMessageConsumer.getPostConstructLatch().countDown();
         //orderMessageConsumer.getConsumerSeekCallback().seekToEnd("order-received-notification-error", 1);
         //orderMessageConsumer.getStartupLatch().await(30, TimeUnit.SECONDS);
         orderMessageConsumer.getPostOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);

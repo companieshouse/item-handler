@@ -2,16 +2,18 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import static java.util.Objects.isNull;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import javax.annotation.PostConstruct;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
-import org.springframework.kafka.listener.ConsumerSeekAware;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Header;
@@ -22,17 +24,18 @@ import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @Service
-public class OrderMessageErrorConsumer implements ConsumerSeekAware {
+public class OrderMessageErrorConsumer {
 
-    private static final AtomicReference<ConsumerSeekCallback> consumerSeekCallback = new AtomicReference<>();
     private static final AtomicReference<Long> errorRecoveryOffset = new AtomicReference<>(0L);
+    private static CountDownLatch prePostConstructLatch;
+    private static CountDownLatch postConstructLatch;
 
     private final KafkaListenerEndpointRegistry registry;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Map<String, Object> consumerConfigsError;
+    private CountDownLatch preOrderReceivedEventLatch;
     private CountDownLatch postOrderReceivedEventLatch;
-    private CountDownLatch startupLatch;
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
@@ -52,20 +55,36 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
         this.consumerConfigsError = consumerConfigsErrorSupplier.get();
     }
 
+    public static CountDownLatch getPrePostConstructLatch() {
+        return prePostConstructLatch;
+    }
+
+    public static void setPrePostConstructLatch(CountDownLatch prePostConstructLatch) {
+        OrderMessageErrorConsumer.prePostConstructLatch = prePostConstructLatch;
+    }
+
+    public static CountDownLatch getPostConstructLatch() {
+        return postConstructLatch;
+    }
+
+    public static void setPostConstructLatch(CountDownLatch postConstructLatch) {
+        OrderMessageErrorConsumer.postConstructLatch = postConstructLatch;
+    }
+
+    public CountDownLatch getPreOrderReceivedEventLatch() {
+        return preOrderReceivedEventLatch;
+    }
+
+    public void setPreOrderReceivedEventLatch(CountDownLatch preOrderReceivedEventLatch) {
+        this.preOrderReceivedEventLatch = preOrderReceivedEventLatch;
+    }
+
     public CountDownLatch getPostOrderReceivedEventLatch() {
         return postOrderReceivedEventLatch;
     }
 
-    public CountDownLatch getStartupLatch() {
-        return startupLatch;
-    }
-
     public void setPostOrderReceivedEventLatch(CountDownLatch postOrderReceivedEventLatch) {
         this.postOrderReceivedEventLatch = postOrderReceivedEventLatch;
-    }
-
-    public void setStartupLatch(CountDownLatch startupLatch) {
-        this.startupLatch = startupLatch;
     }
 
     /**
@@ -85,7 +104,11 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceivedError(
             org.springframework.messaging.Message<OrderReceived> message,
-            @Header(KafkaHeaders.OFFSET) Long offset) {
+            @Header(KafkaHeaders.OFFSET) Long offset) throws InterruptedException {
+
+        if (!isNull(preOrderReceivedEventLatch)) {
+            preOrderReceivedEventLatch.await(30, TimeUnit.SECONDS);
+        }
 
         if (offset <= errorRecoveryOffset.get()) {
             handleMessage(message);
@@ -164,41 +187,26 @@ public class OrderMessageErrorConsumer implements ConsumerSeekAware {
      * consumer starts. This helps the error consumer to stop consuming messages when all messages
      * up to `errorRecoveryOffset` are processed.
      *
-     * @param map                  map of topics and partitions
-     * @param consumerSeekCallback callback that allows a consumers offset position to be moved.
      */
-    @Override
-    public void onPartitionsAssigned(Map<TopicPartition, Long> map,
-                                     ConsumerSeekCallback consumerSeekCallback) {
+    @PostConstruct
+    public void postConstruct() throws InterruptedException {
         if (errorConsumerEnabled) {
+            if (!isNull(prePostConstructLatch)) {
+                prePostConstructLatch.await(30, TimeUnit.SECONDS);
+            }
             try (KafkaConsumer<String, String> consumer =
                          new KafkaConsumer<>(consumerConfigsError)) {
-                final Map<TopicPartition, Long> topicPartitionsMap =
-                        consumer.endOffsets(map.keySet());
-                map.forEach((topic, action) -> {
-                    long offset = topicPartitionsMap.get(topic);
-                        setErrorRecoveryOffset(offset - 1);
-                    LoggingUtils.getLogger()
+                TopicPartition topicPartition = new TopicPartition(errorTopic, 0);
+                consumer.assign(Collections.singleton(topicPartition));
+                setErrorRecoveryOffset(consumer.position(topicPartition) - 1);
+                LoggingUtils.getLogger()
                             .info(String.format(
                                     "Setting Error Consumer Recovery Offset to '%1$d'",
-                                    errorRecoveryOffset));
-                });
+                                    errorRecoveryOffset.get()));
+            }
+            if (!isNull(postConstructLatch)) {
+                postConstructLatch.countDown();
             }
         }
-    }
-
-    @Override
-    public void registerSeekCallback(ConsumerSeekCallback consumerSeekCallback) {
-        OrderMessageErrorConsumer.consumerSeekCallback.set(consumerSeekCallback);
-    }
-
-    @Override
-    public void onIdleContainer(Map<TopicPartition, Long> map,
-                                ConsumerSeekCallback consumerSeekCallback) {
-        // Do nothing as not required for this implementation
-    }
-
-    public ConsumerSeekCallback getConsumerSeekCallback() {
-        return consumerSeekCallback.get();
     }
 }
