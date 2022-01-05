@@ -29,7 +29,7 @@ class MessageProducerIntegrationTest {
     MessageProducer messageProducer;
 
     @Autowired
-    OrderMessageConsumer orderMessageConsumer;
+    OrderMessageDefaultConsumer orderMessageConsumer;
 
     @Autowired
     TestOrdersMessageConsumer testOrdersMessageConsumer;

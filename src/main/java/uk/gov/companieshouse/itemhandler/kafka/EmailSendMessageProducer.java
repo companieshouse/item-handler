@@ -6,7 +6,6 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNul
 
 import java.util.Map;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
@@ -17,10 +16,10 @@ public class EmailSendMessageProducer {
     private static final Logger LOGGER = LoggingUtils.getLogger();
     private static final String EMAIL_SEND_TOPIC = "email-send";
 
-    private final MessageSerialiserFactory emailSendAvroSerializer;
+    private final MessageSerialiserFactory<EmailSend> emailSendAvroSerializer;
     private final MessageProducer messageProducer;
 
-    public EmailSendMessageProducer(final MessageSerialiserFactory avroSerializer,
+    public EmailSendMessageProducer(final MessageSerialiserFactory<EmailSend> avroSerializer,
                                     final MessageProducer messageProducer) {
         this.emailSendAvroSerializer = avroSerializer;
         this.messageProducer = messageProducer;

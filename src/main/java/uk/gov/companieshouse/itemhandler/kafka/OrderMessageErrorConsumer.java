@@ -2,89 +2,45 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import static java.util.Objects.isNull;
 
-import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @Service
 public class OrderMessageErrorConsumer {
 
-    private static final AtomicReference<Long> errorRecoveryOffset = new AtomicReference<>(0L);
-    private static CountDownLatch prePostConstructLatch;
-    private static CountDownLatch postConstructLatch;
+    private static AtomicLong errorRecoveryOffset;
 
     private final KafkaListenerEndpointRegistry registry;
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
-    private final Map<String, Object> consumerConfigsError;
-    private CountDownLatch preOrderReceivedEventLatch;
-    private CountDownLatch postOrderReceivedEventLatch;
-    @Value("${spring.kafka.bootstrap-servers}")
-    private String bootstrapServers;
-    @Value("${uk.gov.companieshouse.item-handler.error-consumer}")
-    private boolean errorConsumerEnabled;
-    @Value("kafka.topics.order-received-notification-error-group")
+    private final Logger logger;
+
+    @Value("${kafka.topics.order-received-notification-error-group}")
     private String errorGroup;
-    @Value("kafka.topics.order-received-notification-error")
+    @Value("${kafka.topics.order-received-notification-error}")
     private String errorTopic;
 
     public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
                                      final OrderProcessorService orderProcessorService,
                                      final OrderProcessResponseHandler orderProcessResponseHandler,
-                                     Supplier<Map<String, Object>> consumerConfigsErrorSupplier) {
+                                     Logger logger) {
         this.registry = registry;
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
-        this.consumerConfigsError = consumerConfigsErrorSupplier.get();
-    }
-
-    public static CountDownLatch getPrePostConstructLatch() {
-        return prePostConstructLatch;
-    }
-
-    public static void setPrePostConstructLatch(CountDownLatch prePostConstructLatch) {
-        OrderMessageErrorConsumer.prePostConstructLatch = prePostConstructLatch;
-    }
-
-    public static CountDownLatch getPostConstructLatch() {
-        return postConstructLatch;
-    }
-
-    public static void setPostConstructLatch(CountDownLatch postConstructLatch) {
-        OrderMessageErrorConsumer.postConstructLatch = postConstructLatch;
-    }
-
-    public CountDownLatch getPreOrderReceivedEventLatch() {
-        return preOrderReceivedEventLatch;
-    }
-
-    public void setPreOrderReceivedEventLatch(CountDownLatch preOrderReceivedEventLatch) {
-        this.preOrderReceivedEventLatch = preOrderReceivedEventLatch;
-    }
-
-    public CountDownLatch getPostOrderReceivedEventLatch() {
-        return postOrderReceivedEventLatch;
-    }
-
-    public void setPostOrderReceivedEventLatch(CountDownLatch postOrderReceivedEventLatch) {
-        this.postOrderReceivedEventLatch = postOrderReceivedEventLatch;
+        this.logger = logger;
     }
 
     /**
@@ -102,13 +58,13 @@ public class OrderMessageErrorConsumer {
             topics = "#{'${kafka.topics.order-received-notification-error}'}",
             autoStartup = "#{${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceivedError(
+    public void processOrderReceived(
             org.springframework.messaging.Message<OrderReceived> message,
-            @Header(KafkaHeaders.OFFSET) Long offset) throws InterruptedException {
+            @Header(KafkaHeaders.OFFSET) Long offset,
+            @Header(KafkaHeaders.CONSUMER) KafkaConsumer<String, OrderReceived> consumer) throws InterruptedException {
 
-        if (!isNull(preOrderReceivedEventLatch)) {
-            preOrderReceivedEventLatch.await(30, TimeUnit.SECONDS);
-        }
+        // Configure recovery offset on first message received after application startup
+        configureErrorRecoveryOffset(consumer);
 
         if (offset <= errorRecoveryOffset.get()) {
             handleMessage(message);
@@ -116,13 +72,8 @@ public class OrderMessageErrorConsumer {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
             logMap.put(errorGroup, errorRecoveryOffset);
             logMap.put(LoggingUtils.TOPIC, errorTopic);
-            LoggingUtils.getLogger()
-                    .info("Pausing error consumer as error recovery offset reached.",
-                            logMap);
+            logger.info("Pausing error consumer as error recovery offset reached.", logMap);
             registry.getListenerContainer(errorGroup).pause();
-        }
-        if (!isNull(postOrderReceivedEventLatch)) {
-            postOrderReceivedEventLatch.countDown();
         }
     }
 
@@ -134,79 +85,35 @@ public class OrderMessageErrorConsumer {
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
         OrderReceived orderReceived = message.getPayload();
         String orderReceivedUri = orderReceived.getOrderUri();
-        MessageHeaders headers = message.getHeaders();
-        String receivedTopic = headers.get(KafkaHeaders.RECEIVED_TOPIC).toString();
         logMessageReceived(message, orderReceivedUri);
 
         // Process message
         OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
         // Handle response
         response.getStatus().accept(orderProcessResponseHandler, message);
-        // Notify event latch
     }
 
     protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message,
                                       String orderUri) {
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
         LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        LoggingUtils.getLogger().info("'order-received' message received", logMap);
-    }
-
-    // TODO: make sure logging behaviour is captured
-    protected void logMessageProcessingFailureRecoverable(
-            org.springframework.messaging.Message<OrderReceived> message, int attempt,
-            Exception exception) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        logMap.put(LoggingUtils.RETRY_ATTEMPT, attempt);
-        LoggingUtils.getLogger()
-                .error("'order-received' message processing failed with a recoverable exception",
-                        exception, logMap);
-    }
-
-    protected void logMessageProcessingFailureNonRecoverable(
-            org.springframework.messaging.Message<OrderReceived> message, Exception exception) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        LoggingUtils.getLogger()
-                .error("order-received message processing failed with a non-recoverable exception",
-                        exception, logMap);
-    }
-
-    private void logMessageProcessed(org.springframework.messaging.Message<OrderReceived> message,
-                                     String orderUri) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        LoggingUtils.getLogger().info("Order received message processing completed", logMap);
-    }
-
-    private void setErrorRecoveryOffset(long offset) {
-        errorRecoveryOffset.set(offset);
+        logger.info("'order-received' message received", logMap);
     }
 
     /**
-     * Sets `errorRecoveryOffset` to latest topic offset (error topic) minus 1, before error
-     * consumer starts. This helps the error consumer to stop consuming messages when all messages
-     * up to `errorRecoveryOffset` are processed.
-     *
+     * Lazily sets `errorRecoveryOffset` to last topic offset minus 1, before first message received
+     * is consumed. This helps the error consumer to stop consuming messages when all messages up to
+     * `errorRecoveryOffset` are processed.
      */
-    @PostConstruct
-    public void postConstruct() throws InterruptedException {
-        if (errorConsumerEnabled) {
-            if (!isNull(prePostConstructLatch)) {
-                prePostConstructLatch.await(30, TimeUnit.SECONDS);
-            }
-            try (KafkaConsumer<String, String> consumer =
-                         new KafkaConsumer<>(consumerConfigsError)) {
-                TopicPartition topicPartition = new TopicPartition(errorTopic, 0);
-                consumer.assign(Collections.singleton(topicPartition));
-                setErrorRecoveryOffset(consumer.position(topicPartition) - 1);
-                LoggingUtils.getLogger()
-                            .info(String.format(
-                                    "Setting Error Consumer Recovery Offset to '%1$d'",
-                                    errorRecoveryOffset.get()));
-            }
-            if (!isNull(postConstructLatch)) {
-                postConstructLatch.countDown();
-            }
+    private synchronized void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
+        if (!isNull(errorRecoveryOffset)) {
+            return;
         }
+        // Get the end offsets for the consumers partitions i.e. the last un-committed [non-consumed] offsets
+        // Note there should [will] only be one entry as this consumer is consuming from a single partition
+        Map<TopicPartition, Long> endOffsets = consumer.endOffsets(consumer.assignment());
+        Long endOffset = endOffsets.get(new TopicPartition(errorTopic, 0));
+        errorRecoveryOffset = new AtomicLong(endOffset - 1);
+        logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.get()));
     }
 }

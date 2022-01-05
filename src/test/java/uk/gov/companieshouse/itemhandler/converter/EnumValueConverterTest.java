@@ -7,7 +7,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.Assert.assertEquals;
 
 @ExtendWith(SpringExtension.class)
-public class EnumValueConverterTest {
+class EnumValueConverterTest {
 
     enum COLOUR {
         RED,
@@ -16,14 +16,14 @@ public class EnumValueConverterTest {
     }
 
     @Test
-    public void successfullyConvertsEnumsToKebabAndLowerCase() {
+    void successfullyConvertsEnumsToKebabAndLowerCase() {
         assertEquals("baby-blue", EnumValueNameConverter.convertEnumValueNameToJson(COLOUR.BABY_BLUE));
         assertEquals("red", EnumValueNameConverter.convertEnumValueNameToJson(COLOUR.RED));
         assertEquals("yellow", EnumValueNameConverter.convertEnumValueNameToJson(COLOUR.YELLOW));
     }
 
     @Test
-    public void successfullyConvertsKebabAndLowerCaseToEnum() {
+    void successfullyConvertsKebabAndLowerCaseToEnum() {
         assertEquals(COLOUR.BABY_BLUE.toString(), EnumValueNameConverter.convertEnumValueJsonToName("baby-blue"));
         assertEquals(COLOUR.RED.toString(), EnumValueNameConverter.convertEnumValueJsonToName("red"));
         assertEquals(COLOUR.YELLOW.toString(), EnumValueNameConverter.convertEnumValueJsonToName("yellow"));

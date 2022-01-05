@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertNull;
 
-public class FilingHistoryDescriptionProviderServiceTest {
+class FilingHistoryDescriptionProviderServiceTest {
     private static final String DESCRIPTION_KEY = "appoint-person-director-company-with-name-date";
     private static final Map<String, Object> DESCRIPTION_VALUES;
     private static final String EXPECTED_DESCRIPTION = "Appointment of Thomas David Wheare as a director on 12 February 2010";

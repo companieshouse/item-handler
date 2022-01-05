@@ -63,7 +63,7 @@ import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.MISSING_
 
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrdersApiToOrderDataMapperTest.Config.class)
-public class OrdersApiToOrderDataMapperTest {
+class OrdersApiToOrderDataMapperTest {
 
     @Configuration
     @ComponentScan(basePackageClasses = {OrdersApiToOrderDataMapperTest.class})
@@ -422,7 +422,7 @@ public class OrdersApiToOrderDataMapperTest {
     }
 
     @Test
-    public void ordersApiToOrderDataMapperTest(){
+    void ordersApiToOrderDataMapperTest(){
         OrdersApi ordersApi = new OrdersApi();
         ordersApi.setEtag(ORDER_ETAG);
         ordersApi.setKind(ORDER_KIND);

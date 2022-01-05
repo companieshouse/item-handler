@@ -1,18 +1,14 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.logging.LogMessageBuilder;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
-
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import uk.gov.companieshouse.logging.Logger;
 
 public final class MessageProducer {

@@ -10,7 +10,6 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNul
 
 import java.util.Map;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
