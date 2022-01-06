@@ -131,7 +131,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageDefaultConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
@@ -139,7 +139,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageDefaultConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -166,14 +166,14 @@ class OrderMessageDefaultConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageDefaultConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageDefaultConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -200,14 +200,14 @@ class OrderMessageDefaultConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageDefaultConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageDefaultConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
                 .next()
@@ -226,14 +226,14 @@ class OrderMessageDefaultConsumerIntegrationTest {
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.NOT_FOUND.value()));
-        orderMessageDefaultConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
-        orderMessageDefaultConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
 
         // then
         verify(orderProcessResponseHandler).serviceError(any());

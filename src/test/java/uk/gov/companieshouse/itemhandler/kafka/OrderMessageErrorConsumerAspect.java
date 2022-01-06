@@ -14,20 +14,38 @@ import uk.gov.companieshouse.logging.Logger;
 @Aspect
 @Component
 class OrderMessageErrorConsumerAspect {
-    private CountDownLatch preOrderConsumedEventLatch;
+    private CountDownLatch beforeProcessOrderReceivedEventLatch;
     private CountDownLatch postOrderConsumedEventLatch;
     private final Logger logger;
+
+    @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderMessageErrorConsumer.processOrderReceived(..))")
+    void processOrderReceived() {
+    }
+
+    @Before("processOrderReceived()")
+    void beforeProcessOrderReceived() throws InterruptedException {
+        if (!isNull(beforeProcessOrderReceivedEventLatch) && !beforeProcessOrderReceivedEventLatch.await(30, TimeUnit.SECONDS)) {
+            logger.debug("pre order consumed latch timed out");
+        }
+    }
+
+    @After("processOrderReceived()")
+    void afterProcessOrderReceived() {
+        if (!isNull(postOrderConsumedEventLatch)) {
+            postOrderConsumedEventLatch.countDown();
+        }
+    }
 
     OrderMessageErrorConsumerAspect(Logger logger) {
         this.logger = logger;
     }
 
-    CountDownLatch getPreOrderConsumedEventLatch() {
-        return preOrderConsumedEventLatch;
+    CountDownLatch getBeforeProcessOrderReceivedEventLatch() {
+        return beforeProcessOrderReceivedEventLatch;
     }
 
-    void setPreOrderConsumedEventLatch(CountDownLatch countDownLatch) {
-        this.preOrderConsumedEventLatch = countDownLatch;
+    void setBeforeProcessOrderReceivedEventLatch(CountDownLatch countDownLatch) {
+        this.beforeProcessOrderReceivedEventLatch = countDownLatch;
     }
 
     CountDownLatch getPostOrderConsumedEventLatch() {
@@ -36,23 +54,5 @@ class OrderMessageErrorConsumerAspect {
 
     void setPostOrderConsumedEventLatch(CountDownLatch postOrderConsumedEventLatch) {
         this.postOrderConsumedEventLatch = postOrderConsumedEventLatch;
-    }
-
-    @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderMessageErrorConsumer.processOrderReceived(..))")
-    void orderProcessReceived() {
-    }
-
-    @Before("orderProcessReceived()")
-    void triggerPreOrderConsumed() throws InterruptedException {
-        if (!isNull(preOrderConsumedEventLatch) && !preOrderConsumedEventLatch.await(30, TimeUnit.SECONDS)) {
-            logger.debug("pre order consumed latch timed out");
-        }
-    }
-
-    @After("orderProcessReceived()")
-    void triggerPostOrderConsumed() {
-        if (!isNull(postOrderConsumedEventLatch)) {
-            postOrderConsumedEventLatch.countDown();
-        }
     }
 }

@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.orders.OrderReceived;
 
@@ -23,7 +24,7 @@ public class OrderMessageDefaultConsumer {
             topics = "#{'${kafka.topics.order-received}'}",
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
-    public void processOrderReceived(org.springframework.messaging.Message<OrderReceived> message) {
+    public void processOrderReceived(Message<OrderReceived> message) {
         orderReceivedProcessor.handleMessage(message);
     }
 }

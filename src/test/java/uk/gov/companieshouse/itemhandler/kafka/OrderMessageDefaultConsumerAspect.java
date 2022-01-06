@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 class OrderMessageDefaultConsumerAspect {
-    private CountDownLatch postOrderConsumedEventLatch;
-
-    CountDownLatch getPostOrderConsumedEventLatch() {
-        return postOrderConsumedEventLatch;
-    }
-
-    void setPostOrderConsumedEventLatch(CountDownLatch postOrderConsumedEventLatch) {
-        this.postOrderConsumedEventLatch = postOrderConsumedEventLatch;
-    }
+    private CountDownLatch afterProcessOrderReceivedEventLatch;
 
     @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderMessageDefaultConsumer.processOrderReceived(..))")
-    void orderProcessReceived() {
+    void processOrderReceived() {
     }
 
-    @After("orderProcessReceived()")
-    void triggerPostOrderConsumed() {
-        if (!isNull(postOrderConsumedEventLatch)) {
-            postOrderConsumedEventLatch.countDown();
+    @After("processOrderReceived()")
+    void afterProcessOrderReceived() {
+        if (!isNull(afterProcessOrderReceivedEventLatch)) {
+            afterProcessOrderReceivedEventLatch.countDown();
         }
+    }
+
+    CountDownLatch getAfterProcessOrderReceivedEventLatch() {
+        return afterProcessOrderReceivedEventLatch;
+    }
+
+    void setAfterProcessOrderReceivedEventLatch(CountDownLatch afterProcessOrderReceivedEventLatch) {
+        this.afterProcessOrderReceivedEventLatch = afterProcessOrderReceivedEventLatch;
     }
 }

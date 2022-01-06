@@ -14,45 +14,45 @@ import uk.gov.companieshouse.logging.Logger;
 @Aspect
 @Component
 class OrderMessageRetryConsumerAspect {
-    private CountDownLatch preOrderConsumedEventLatch;
-    private CountDownLatch postOrderConsumedEventLatch;
+    private CountDownLatch beforeProcessOrderReceivedEventLatch;
+    private CountDownLatch afterProcessOrderReceivedEventLatch;
     private final Logger logger;
 
     OrderMessageRetryConsumerAspect(Logger logger) {
         this.logger = logger;
     }
 
-    CountDownLatch getPreOrderConsumedEventLatch() {
-        return preOrderConsumedEventLatch;
-    }
-
-    void setPreOrderConsumedEventLatch(CountDownLatch countDownLatch) {
-        this.preOrderConsumedEventLatch = countDownLatch;
-    }
-
-    CountDownLatch getPostOrderConsumedEventLatch() {
-        return postOrderConsumedEventLatch;
-    }
-
-    void setPostOrderConsumedEventLatch(CountDownLatch postOrderConsumedEventLatch) {
-        this.postOrderConsumedEventLatch = postOrderConsumedEventLatch;
-    }
-
     @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderMessageRetryConsumer.processOrderReceived(..))")
-    void orderProcessReceived() {
+    void processOrderReceived() {
     }
 
-    @Before("orderProcessReceived()")
-    void triggerPreOrderConsumed() throws InterruptedException {
-        if (!isNull(preOrderConsumedEventLatch) && !preOrderConsumedEventLatch.await(30, TimeUnit.SECONDS)) {
+    @Before("processOrderReceived()")
+    void beforeProcessOrderReceived() throws InterruptedException {
+        if (!isNull(beforeProcessOrderReceivedEventLatch) && !beforeProcessOrderReceivedEventLatch.await(30, TimeUnit.SECONDS)) {
             logger.debug("pre order consumed latch timed out");
         }
     }
 
-    @After("orderProcessReceived()")
-    void triggerPostOrderConsumed() {
-        if (!isNull(postOrderConsumedEventLatch)) {
-            postOrderConsumedEventLatch.countDown();
+    @After("processOrderReceived()")
+    void afterProcessOrderReceived() {
+        if (!isNull(afterProcessOrderReceivedEventLatch)) {
+            afterProcessOrderReceivedEventLatch.countDown();
         }
+    }
+
+    CountDownLatch getBeforeProcessOrderReceivedEventLatch() {
+        return beforeProcessOrderReceivedEventLatch;
+    }
+
+    void setBeforeProcessOrderReceivedEventLatch(CountDownLatch countDownLatch) {
+        this.beforeProcessOrderReceivedEventLatch = countDownLatch;
+    }
+
+    CountDownLatch getAfterProcessOrderReceivedEventLatch() {
+        return afterProcessOrderReceivedEventLatch;
+    }
+
+    void setAfterProcessOrderReceivedEventLatch(CountDownLatch afterProcessOrderReceivedEventLatch) {
+        this.afterProcessOrderReceivedEventLatch = afterProcessOrderReceivedEventLatch;
     }
 }

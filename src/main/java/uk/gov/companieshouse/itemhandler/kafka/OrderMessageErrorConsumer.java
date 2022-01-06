@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -59,9 +60,9 @@ public class OrderMessageErrorConsumer {
             autoStartup = "#{${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(
-            org.springframework.messaging.Message<OrderReceived> message,
+            Message<OrderReceived> message,
             @Header(KafkaHeaders.OFFSET) Long offset,
-            @Header(KafkaHeaders.CONSUMER) KafkaConsumer<String, OrderReceived> consumer) throws InterruptedException {
+            @Header(KafkaHeaders.CONSUMER) KafkaConsumer<String, OrderReceived> consumer) {
 
         // Configure recovery offset on first message received after application startup
         configureErrorRecoveryOffset(consumer);

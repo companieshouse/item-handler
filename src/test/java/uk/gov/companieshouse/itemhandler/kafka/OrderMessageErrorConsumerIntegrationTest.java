@@ -119,7 +119,7 @@ class OrderMessageErrorConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageErrorConsumerAspect.setPreOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageErrorConsumerAspect.setBeforeProcessOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageErrorConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
@@ -129,7 +129,7 @@ class OrderMessageErrorConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageErrorConsumerAspect.getPreOrderConsumedEventLatch().countDown();
+        orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
@@ -157,7 +157,7 @@ class OrderMessageErrorConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageErrorConsumerAspect.setPreOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageErrorConsumerAspect.setBeforeProcessOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageErrorConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
@@ -169,7 +169,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderReceivedProducer.send(producerRecord).get();
         orderReceivedProducer.send(producerRecord).get();
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageErrorConsumerAspect.getPreOrderConsumedEventLatch().countDown();
+        orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
         email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
                 .iterator()
@@ -197,7 +197,7 @@ class OrderMessageErrorConsumerIntegrationTest {
                         .withBody(JsonBody.json(IOUtils.resourceToString(
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
-        orderMessageErrorConsumerAspect.setPreOrderConsumedEventLatch(new CountDownLatch(1));
+        orderMessageErrorConsumerAspect.setBeforeProcessOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageErrorConsumerAspect.setPostOrderConsumedEventLatch(new CountDownLatch(1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
 
@@ -207,7 +207,7 @@ class OrderMessageErrorConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
-        orderMessageErrorConsumerAspect.getPreOrderConsumedEventLatch().countDown();
+        orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getPostOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
         ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
                 .iterator()

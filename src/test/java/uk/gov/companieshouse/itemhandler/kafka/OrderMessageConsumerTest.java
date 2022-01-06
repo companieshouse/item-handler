@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
