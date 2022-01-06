@@ -48,9 +48,14 @@ public final class MessageProducer {
         try {
             final Future<RecordMetadata> recordMetadataFuture = kafkaProducer.sendAndReturnFuture(message);
             callback.accept(recordMetadataFuture.get());
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (ExecutionException e) {
             String msg = String.format("Unexpected Kafka error: %s", e.getMessage());
             logger.error(msg, e);
+            throw new NonRetryableException(msg);
+        } catch (InterruptedException e) {
+            String msg = String.format("Unexpected Kafka error: %s", e.getMessage());
+            logger.error(msg, e);
+            Thread.currentThread().interrupt();
             throw new NonRetryableException(msg);
         }
     }
