@@ -9,7 +9,6 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.MISSING_IMAGE
 import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
 import java.util.function.Consumer;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,13 +30,9 @@ import uk.gov.companieshouse.logging.Logger;
 @SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
 public class ItemMessageProducerTest {
 
-    private static final long OFFSET_VALUE = 1L;
-    private static final String TOPIC_NAME = "topic";
-    private static final int PARTITION_VALUE = 0;
     private static final String COMPANY_NUMBER = "00006444";
     private static final String PAYMENT_REF = "payment-ref-xyz";
     private static final Item ITEM;
-    private static final RuntimeException KAFKA_EXCEPTION = new RuntimeException("Test exception");
     private static final OrderData ORDER;
 
     static {
@@ -60,41 +55,14 @@ public class ItemMessageProducerTest {
     private Message message;
 
     @Mock
-    private Logger logger;
-
-    @Mock
-    private RecordMetadata recordMetadata;
-
-    @Mock
     private MessageProducer messageProducer;
-
-//    /**
-//     * Utility method (hack) to allow us to change a private static final field.
-//     * See https://dzone.com/articles/how-to-change-private-static-final-fields
-//     *
-//     * @param clazz     the class holding the field
-//     * @param fieldName the name of the private static final field to set
-//     * @param value     the value to set the field to
-//     * @throws ReflectiveOperationException should something unexpected happen
-//     */
-//    private static void setFinalStaticField(Class<?> clazz, String fieldName, Object value)
-//            throws ReflectiveOperationException {
-//        final Field field = clazz.getDeclaredField(fieldName);
-//        field.setAccessible(true);
-//        final Field modifiers = Field.class.getDeclaredField("modifiers");
-//        modifiers.setAccessible(true);
-//        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-//        field.set(null, value);
-//    }
 
     @Test
     @DisplayName("sendMessage delegates message creation to ItemMessageFactory")
     void sendMessageDelegatesMessageCreation() {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER,
-                ORDER_REFERENCE,
-                MISSING_IMAGE_DELIVERY_ITEM_ID);
+        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // Then
         verify(itemMessageFactory).createMessage(ORDER);
@@ -183,5 +151,4 @@ public class ItemMessageProducerTest {
 //        verify(logger).info(eq("Message sent to Kafka topic"), any(Map.class));
 //
 //    }
-
 }

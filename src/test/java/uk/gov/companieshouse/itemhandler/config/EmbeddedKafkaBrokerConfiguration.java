@@ -74,22 +74,13 @@ public class EmbeddedKafkaBrokerConfiguration {
         return createProducer(bootstrapServers, OrderReceived.class);
     }
 
-    @Bean
-    KafkaProducer<String, String> serializableKafkaProducer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> config = new HashMap<>();
-        config.put(ProducerConfig.ACKS_CONFIG, "all");
-        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        return new KafkaProducer<>(config, new StringSerializer(), new StringSerializer());
-    }
-
     private <T extends SpecificRecord> KafkaProducer<String, T> createProducer(String bootstrapServers, Class<T> type) {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.ACKS_CONFIG, "all");
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new KafkaProducer<>(config, new StringSerializer(), (topic, data) -> {
             try {
-                return new SerializerFactory().getSpecificRecordSerializer(type)
-                        .toBinary(data); //creates a leading space
+                return new SerializerFactory().getSpecificRecordSerializer(type).toBinary(data); //creates a leading space
             } catch (SerializationException e) {
                 throw new RuntimeException(e);
             }
