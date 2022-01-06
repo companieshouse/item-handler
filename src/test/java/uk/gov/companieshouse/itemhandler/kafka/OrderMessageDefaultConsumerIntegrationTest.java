@@ -11,7 +11,6 @@ import static org.mockserver.model.HttpResponse.response;
 import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -122,7 +121,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
         orderReceivedProducer.close();
         emailSendConsumer.close();
         chsItemOrderedConsumer.close();
-        embeddedKafkaBroker.destroy();
     }
 
     @Test
@@ -146,10 +144,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send actual = emailSendConsumer.poll(Duration.ofSeconds(15))
-                .iterator()
-                .next()
-                .value();
+        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
+        email_send actual = consumerRecord.value();
 
         // then
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
@@ -212,10 +208,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ChdItemOrdered actual = chsItemOrderedConsumer.poll(Duration.ofSeconds(15))
-                .iterator()
-                .next()
-                .value();
+        ConsumerRecord<String, ChdItemOrdered> consumerRecord = KafkaTestUtils.getSingleRecord(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
+        ChdItemOrdered actual = consumerRecord.value();
 
         // then
         assertEquals("ORD-123123-123123", actual.getReference());
