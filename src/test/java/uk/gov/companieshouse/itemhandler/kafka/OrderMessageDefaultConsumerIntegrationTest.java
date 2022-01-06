@@ -48,7 +48,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @SpringBootTest
-@DirtiesContext
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
         properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
