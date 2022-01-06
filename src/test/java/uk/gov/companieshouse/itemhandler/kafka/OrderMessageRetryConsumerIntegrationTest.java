@@ -110,6 +110,11 @@ class OrderMessageRetryConsumerIntegrationTest {
     @AfterEach
     void teardown() {
         client.reset();
+        orderReceivedProducer.close();
+        orderReceivedConsumer.close();
+        emailSendConsumer.close();
+        chsItemOrderedConsumer.close();
+        embeddedKafkaBroker.destroy();
     }
 
     @Test

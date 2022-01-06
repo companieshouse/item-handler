@@ -117,6 +117,10 @@ class OrderMessageDefaultConsumerIntegrationTest {
     @AfterEach
     void teardown() {
         client.reset();
+        orderReceivedProducer.close();
+        emailSendConsumer.close();
+        chsItemOrderedConsumer.close();
+        embeddedKafkaBroker.destroy();
     }
 
     @Test

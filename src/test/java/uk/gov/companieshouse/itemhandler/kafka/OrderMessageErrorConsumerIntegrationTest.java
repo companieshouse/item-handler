@@ -103,6 +103,11 @@ class OrderMessageErrorConsumerIntegrationTest {
     @AfterEach
     void teardown() {
         client.reset();
+        orderReceivedProducer.close();
+        emailSendConsumer.close();
+        chsItemOrderedConsumer.close();
+        orderReceivedConsumer.close();
+        embeddedKafkaBroker.destroy();
     }
 
     @Test
