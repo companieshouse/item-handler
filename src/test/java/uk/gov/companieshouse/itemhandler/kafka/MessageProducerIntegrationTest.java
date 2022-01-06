@@ -2,6 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
@@ -14,20 +15,21 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @DirtiesContext
 @EmbeddedKafka
-class OrdersMessageProducerIntegrationTest {
+class MessageProducerIntegrationTest {
     private static final String ORDER_URI = "/order/ORDER-12345";
     private static final String ORDER_TOPIC = "order-received";
 
     @Autowired
-    OrdersKafkaProducer kafkaProducerUnderTest;
+    @Qualifier("defaultMessageProducer")
+    MessageProducer messageProducer;
 
     @Autowired
-    OrdersKafkaConsumer kafkaConsumer;
+    OrderMessageDefaultConsumer orderMessageConsumer;
 
     @Autowired
     TestOrdersMessageConsumer testOrdersMessageConsumer;
@@ -62,8 +64,14 @@ class OrdersMessageProducerIntegrationTest {
         testOrdersMessageConsumer.connect();
         int count = 0;
         do {
+            OrderReceived orderReceived = new OrderReceived();
+            orderReceived.setOrderUri(ORDER_URI);
             messages = testOrdersMessageConsumer.pollConsumerGroup();
-            kafkaProducerUnderTest.sendMessage(kafkaConsumer.createRetryMessage(ORDER_URI, ORDER_TOPIC));
+            Message message = new Message();
+            message.setTopic("order-received");
+            message.setKey("key");
+            message.setValue(serializerFactory.getSpecificRecordSerializer(OrderReceived.class).toBinary(orderReceived));
+            messageProducer.sendMessage(message);
             count++;
         } while(messages.isEmpty() && count < 15);
 

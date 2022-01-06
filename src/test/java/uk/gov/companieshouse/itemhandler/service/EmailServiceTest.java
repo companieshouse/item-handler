@@ -1,11 +1,24 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.kafka.common.errors.SerializationException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -15,27 +28,12 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /** Unit tests the {@link EmailService} class. */
 @ExtendWith(MockitoExtension.class)
@@ -88,14 +86,6 @@ class EmailServiceTest {
     private static class TestJsonProcessingException extends JsonProcessingException {
 
         protected TestJsonProcessingException(String msg) {
-            super(msg);
-        }
-    }
-
-    /** Extends {@link ExecutionException} so it can be instantiated in these tests. */
-    private static class TestExecutionException extends ExecutionException {
-
-        protected TestExecutionException(String msg) {
             super(msg);
         }
     }
@@ -198,7 +188,7 @@ class EmailServiceTest {
         when(order.getReference()).thenReturn("456");
 
         // When and then
-        assertThatExceptionOfType(ServiceException.class).isThrownBy(() ->
+        assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
                 emailServiceUnderTest.sendOrderConfirmation(order))
                 .withMessage("Unable to determine order confirmation type from description ID unknown!")
                 .withNoCause();
@@ -206,80 +196,22 @@ class EmailServiceTest {
     }
 
     @Test
-    @DisplayName("Propagates JsonProcessingException")
-    void propagatesJsonProcessingException() throws Exception  {
+    void propagatesNonRetryableExceptionWhenJsonProcessException() throws Exception  {
 
         // Given
         when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
         when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
+        when(order.getReference()).thenReturn("ORD-123456-123456");
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
 
-        // When and then
-        thenExceptionIsPropagated(JsonProcessingException.class);
-    }
+        // When
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(order);
 
-    @Test
-    @DisplayName("Propagates SerializationException")
-    void propagatesSerializationException() throws Exception  {
-        propagatesException(SerializationException::new, SerializationException.class);
-    }
-
-    @Test
-    @DisplayName("Propagates ExecutionException")
-    void propagatesExecutionException() throws Exception  {
-        propagatesException(TestExecutionException::new, ExecutionException.class);
-    }
-
-    @Test
-    @DisplayName("Propagates InterruptedException")
-    void propagatesInterruptedException() throws Exception  {
-        propagatesException(InterruptedException::new, InterruptedException.class);
-    }
-
-    /**
-     * Verifies that an exception thrown by {@link EmailSendMessageProducer#sendMessage(EmailSend, String)} is propagated by
-     * {@link EmailService#sendOrderConfirmation(OrderData)}.
-     * @param constructor the Exception constructor to use
-     * @param exception the class of the exception to be thrown
-     * @throws Exception should something unexpected happen
-     */
-    private void propagatesException(final Function<String, Exception> constructor,
-                                     final Class<? extends Throwable> exception) throws Exception {
-        // Given
-        givenSendMessageThrowsException(constructor);
-
-        // When and then
-        thenExceptionIsPropagated(exception);
-    }
-
-    /**
-     * Sets up mocks to throw the exception for which the constructor is provided when the service calls
-     * {@link EmailSendMessageProducer#sendMessage(EmailSend, String)}.
-     * @param constructor the Exception constructor to use
-     * @throws Exception should something unexpected happen
-     */
-    private void givenSendMessageThrowsException(final Function<String, Exception> constructor) throws Exception {
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-        doThrow(constructor.apply(TEST_EXCEPTION_MESSAGE)).when(producer).sendMessage(any(EmailSend.class), any(String.class));
-    }
-
-    /**
-     * Asserts that an exception of the type indicated is thrown by
-     * {@link EmailService#sendOrderConfirmation(OrderData)}.
-     * @param exception the class of the exception to be thrown
-     */
-    private void thenExceptionIsPropagated(final Class<? extends Throwable> exception) {
-        assertThatExceptionOfType(exception).isThrownBy(() ->
-        emailServiceUnderTest.sendOrderConfirmation(order))
-                .withMessage(TEST_EXCEPTION_MESSAGE)
-                .withNoCause();
+        // Then
+        NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
+        assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
     }
 
     /**
@@ -294,5 +226,4 @@ class EmailServiceTest {
         assertThat(createdAt.isAfter(intervalStart) || createdAt.isEqual(intervalStart), is(true));
         assertThat(createdAt.isBefore(intervalEnd) || createdAt.isEqual(intervalEnd), is(true));
     }
-
 }

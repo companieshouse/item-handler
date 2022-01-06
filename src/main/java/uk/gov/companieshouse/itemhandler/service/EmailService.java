@@ -7,19 +7,17 @@ import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
-import uk.gov.companieshouse.itemhandler.exception.ServiceException;
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.logging.Logger;
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Communicates with <code>chs-email-sender</code> via the <code>send-email</code> Kafka topic to
@@ -30,26 +28,26 @@ public class EmailService {
 
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
-    private static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certificate-order-confirmation";
-    private static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certificate_order_confirmation_email";
-    private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certified-copy-order-confirmation";
-    private static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
-    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
+    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.missing-image-delivery-order-confirmation";
-    private static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "missing_image_delivery_order_confirmation_email";
-    private static final String ITEM_TYPE_CERTIFICATE = "certificate";
-    private static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
-    private static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+    public static final String ITEM_TYPE_CERTIFICATE = "certificate";
+    public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
+    public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
      */
-    private static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
+    public static final String TOKEN_EMAIL_ADDRESS = "chs-orders@ch.gov.uk";
 
     /** Convenient return type. */
     private static class OrderConfirmationAndEmail {
@@ -65,7 +63,7 @@ public class EmailService {
     private final OrderDataToCertificateOrderConfirmationMapper orderToCertificateOrderConfirmationMapper;
     private final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper;
     private final ObjectMapper objectMapper;
-    private final EmailSendMessageProducer producer;
+    private final EmailSendMessageProducer emailSendProducer;
     private final FeatureOptions featureOptions;
 
     @Value("${certificate.order.confirmation.recipient}")
@@ -78,12 +76,12 @@ public class EmailService {
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
-            final ObjectMapper objectMapper, final EmailSendMessageProducer producer,
+            final ObjectMapper objectMapper, final EmailSendMessageProducer emailSendProducer,
             final FeatureOptions featureOptions) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
-        this.producer = producer;
+        this.emailSendProducer = emailSendProducer;
         this.featureOptions = featureOptions;
     }
 
@@ -91,25 +89,24 @@ public class EmailService {
      * Sends out a certificate or certified copy order confirmation email.
      *
      * @param order the order information used to compose the order confirmation email.
-     * @throws JsonProcessingException
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
      */
-    public void sendOrderConfirmation(final OrderData order)
-            throws JsonProcessingException, InterruptedException, ExecutionException, SerializationException {
-        final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
-        final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
-        final EmailSend email = orderConfirmationAndEmail.email;
-
-        email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
-        email.setMessageId(UUID.randomUUID().toString());
-        email.setData(objectMapper.writeValueAsString(confirmation));
-        email.setCreatedAt(LocalDateTime.now().toString());
-
-        String orderReference = confirmation.getOrderReferenceNumber();
-        LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-        producer.sendMessage(email, orderReference);
+    public void sendOrderConfirmation(final OrderData order) {
+        try {
+            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
+            final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
+            final EmailSend email = orderConfirmationAndEmail.email;
+            email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+            email.setMessageId(UUID.randomUUID().toString());
+            email.setData(objectMapper.writeValueAsString(confirmation));
+            email.setCreatedAt(LocalDateTime.now().toString());
+            String orderReference = confirmation.getOrderReferenceNumber();
+            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+            emailSendProducer.sendMessage(email, orderReference);
+        } catch (JsonProcessingException exception) {
+            String msg = String.format("Error converting order (%s) confirmation to JSON", order.getReference());
+            LOGGER.error(msg, exception);
+            throw new NonRetryableException(msg);
+        }
     }
 
     /**
@@ -127,7 +124,6 @@ public class EmailService {
                 confirmation.setTo(certificateOrderRecipient);
                 email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
                 email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
@@ -146,7 +142,7 @@ public class EmailService {
                 final String error = "Unable to determine order confirmation type from description ID " +
                         descriptionId + "!";
                 LOGGER.error(error, logMap);
-                throw new ServiceException(error);
+                throw new NonRetryableException(error);
         }
     }
 

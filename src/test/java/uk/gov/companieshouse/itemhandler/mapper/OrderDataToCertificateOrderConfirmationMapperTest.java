@@ -54,7 +54,7 @@ import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_P
  */
 @ExtendWith(SpringExtension.class)
 @SpringJUnitConfig(OrderDataToCertificateOrderConfirmationMapperTest.Config.class)
-public class OrderDataToCertificateOrderConfirmationMapperTest {
+class OrderDataToCertificateOrderConfirmationMapperTest {
 
     private static final String[] FULL_CERTIFICATE_INCLUDES = new String[]{
             "Statement of good standing",

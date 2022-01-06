@@ -12,14 +12,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @ExtendWith(MockitoExtension.class)
-public class HealthcheckControllerTest {
+class HealthcheckControllerTest {
 
     @InjectMocks
     private HealthcheckController controllerUnderTest;
 
     @Test
     @DisplayName("Health check confirms health with HTTP 200")
-    public void applicationHealthcheckRunsSuccessfully(){
+    void applicationHealthcheckRunsSuccessfully(){
         // When the health endpoint is polled
         final ResponseEntity<Void> response = controllerUnderTest.getHealthCheck();
 

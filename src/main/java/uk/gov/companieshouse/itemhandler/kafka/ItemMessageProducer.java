@@ -1,16 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.exception.RetryableErrorException;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
-import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.logging.Logger;
-
-import java.util.Map;
-
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.COMPANY_NUMBER;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
@@ -19,16 +8,23 @@ import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMa
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMapWithAcknowledgedKafkaMessage;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 
-@Service
+import java.util.Map;
+import org.apache.kafka.clients.producer.RecordMetadata;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.logging.Logger;
+
 public class ItemMessageProducer {
     private static final Logger LOGGER = LoggingUtils.getLogger();
     private final ItemMessageFactory itemMessageFactory;
-    private final ItemKafkaProducer itemKafkaProducer;
+    private final MessageProducer messageProducer;
 
     public ItemMessageProducer(final ItemMessageFactory itemMessageFactory,
-                               final ItemKafkaProducer itemKafkaProducer) {
+                               final MessageProducer messageProducer) {
         this.itemMessageFactory = itemMessageFactory;
-        this.itemKafkaProducer = itemKafkaProducer;
+        this.messageProducer = messageProducer;
     }
 
     /**
@@ -44,21 +40,14 @@ public class ItemMessageProducer {
 
         final Map<String, Object> logMap = createLogMap();
         populateChdMessageLogMap(order, logMap);
-        LOGGER.info("Sending message to kafka producer", logMap);
+        LOGGER.info("Sending message to kafka", logMap);
 
         final Message message = itemMessageFactory.createMessage(order);
-        try {
-            itemKafkaProducer.sendMessage(orderReference, itemId, message,
-                    recordMetadata ->
-                            logOffsetFollowingSendIngOfMessage(order, recordMetadata));
-        } catch (Exception e) {
-            final String errorMessage = String.format(
-                    "Kafka item message could not be sent for order reference %s item ID %s", orderReference, itemId);
-            logMap.put(LoggingUtils.EXCEPTION, e);
-            LOGGER.error(errorMessage, logMap);
-            // An error occurring during message production may be transient. Throw a retryable exception.
-            throw new RetryableErrorException(errorMessage, e);
-        }
+        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
+        logIfNotNull(logMap, ITEM_ID, itemId);
+        LOGGER.debug("Sending message to kafka", logMap);
+        messageProducer.sendMessage(message,
+                recordMetadata -> logOffsetFollowingSendIngOfMessage(order, recordMetadata));
     }
 
     /**

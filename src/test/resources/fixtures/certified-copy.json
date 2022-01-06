@@ -1,0 +1,79 @@
+{
+  "payment_reference": "F00DFACE",
+  "etag": "F00DFACE",
+  "delivery_details": {
+    "country": "Great Britain",
+    "forename": "Forename",
+    "locality": "Locality",
+    "postal_code": "AB01 1XY",
+    "region": "Region",
+    "surname": "Surname",
+    "address_line_1": "Address Line 1",
+    "address_line_2": "Address Line 2"
+  },
+  "items": [
+    {
+      "id": "CCD-123123-123123",
+      "company_name": "COMPANY LIMITED",
+      "company_number": "12345678",
+      "description": "certified copy for company 12345678",
+      "description_identifier": "certified-copy",
+      "description_values": {
+        "company_number": "12345678",
+        "certified-copy": "certified copy for company 12345678"
+      },
+      "item_costs": [
+        {
+          "discount_applied": "0",
+          "item_cost": "15",
+          "calculated_cost": "15",
+          "product_type": "certified-copy"
+        }
+      ],
+      "item_options": {
+        "delivery_method": "postal",
+        "delivery_timescale": "standard",
+        "filing_history_documents": [
+          {
+            "filing_history_date": "2021-01-01",
+            "filing_history_description": "capital-allotment-shares",
+            "filing_history_description_values": {
+              "date": "2021-01-01",
+              "capital": [
+                {
+                  "figure": "1",
+                  "currency": "GBP"
+                }
+              ]
+            },
+            "filing_history_id": "F00DFACE",
+            "filing_history_type": "SH01",
+            "filing_history_cost": "15"
+          }
+        ]
+      },
+      "etag": "F00DFACE",
+      "kind": "item#certified-copy",
+      "links": {
+        "self": "/orderable/certified-copies/CCD-123123-123123"
+      },
+      "quantity": 1,
+      "item_uri": "/orderable/certified-copies/CCD-123123-123123",
+      "status": "unknown",
+      "postage_cost": "0",
+      "total_item_cost": "15",
+      "postal_delivery": true
+    }
+  ],
+  "kind": "order",
+  "total_order_cost": "15",
+  "reference": "ORD-123123-123123",
+  "ordered_at": "2021-01-01T00:00:00.000",
+  "ordered_by": {
+    "email": "demo@ch.gov.uk",
+    "id": "F00DFACE"
+  },
+  "links": {
+    "self": "/orders/ORD-123123-123123"
+  }
+}

@@ -24,14 +24,10 @@ public class LoggingUtils {
     public static final String PARTITION = "partition";
     public static final String RETRY_ATTEMPT = "retry_attempt";
     public static final String MESSAGE = "message";
-    public static final String CURRENT_TOPIC = "current_topic";
-    public static final String NEXT_TOPIC = "next_topic";
-    public static final String ORDER_RECEIVED_GROUP_ERROR = "order_received_error";
     public static final String ORDER_REFERENCE_NUMBER = "order_reference_number";
     public static final String ORDER_URI = "order_uri";
     public static final String DESCRIPTION_LOG_KEY = "description_key";
     public static final String ITEM_ID = "item_id";
-    public static final String EXCEPTION = "exception";
     public static final String PAYMENT_REFERENCE = "payment_reference";
     public static final String COMPANY_NUMBER = "company_number";
 
@@ -79,15 +75,15 @@ public class LoggingUtils {
     public static Map<String, Object> logWithOrderReference(String logMessage,
             String orderReference) {
         Map<String, Object> logMap = createLogMapWithOrderReference(orderReference);
-        LOGGER.info(logMessage, logMap);
+        logIfNotNull(logMap, MESSAGE, logMessage);
         return logMap;
     }
 
     public static Map<String, Object> logMessageWithOrderReference(Message message,
             String logMessage, String orderReference) {
         Map<String, Object> logMap = createLogMapWithKafkaMessage(message);
+        logIfNotNull(logMap, MESSAGE, logMessage);
         logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderReference);
-        LOGGER.info(logMessage, logMap);
         return logMap;
     }
 

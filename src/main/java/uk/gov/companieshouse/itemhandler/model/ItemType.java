@@ -1,18 +1,14 @@
 package uk.gov.companieshouse.itemhandler.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
-import uk.gov.companieshouse.itemhandler.service.EmailService;
-import uk.gov.companieshouse.kafka.exceptions.SerializationException;
-
-import javax.annotation.PostConstruct;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import javax.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 
 public enum ItemType {
     CERTIFICATE("item#certificate"),
@@ -71,13 +67,8 @@ public enum ItemType {
     /**
      * Sends outbound Kafka message(s) to propagate the order and/or its items onwards for further processing.
      * @param order the order to be propagated
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws SerializationException
-     * @throws JsonProcessingException
      */
-    public void sendMessages(final OrderData order)
-            throws InterruptedException, ExecutionException, SerializationException, JsonProcessingException {
+    public void sendMessages(final OrderData order) {
         emailer.sendOrderConfirmation(order);
     }
 
