@@ -121,7 +121,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
         orderReceivedProducer.close();
         emailSendConsumer.close();
         chsItemOrderedConsumer.close();
-        embeddedKafkaBroker.destroy();
     }
 
     @Test

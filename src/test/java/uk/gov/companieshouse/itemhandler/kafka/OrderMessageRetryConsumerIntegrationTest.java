@@ -115,7 +115,6 @@ class OrderMessageRetryConsumerIntegrationTest {
         orderReceivedConsumer.close();
         emailSendConsumer.close();
         chsItemOrderedConsumer.close();
-        embeddedKafkaBroker.destroy();
     }
 
     @Test
