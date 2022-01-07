@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -79,6 +80,9 @@ class OrderMessageRetryConsumerIntegrationTest {
 
     @Autowired
     private OrderMessageRetryConsumerAspect orderMessageRetryConsumerAspect;
+
+    @Value("${response.handler.maximumRetryAttempts}")
+    private int maximumRetryEvents;
 
     @BeforeAll
     static void before() {
@@ -270,7 +274,7 @@ class OrderMessageRetryConsumerIntegrationTest {
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        orderProcessResponseHandlerAspect.setPostPublishToErrorTopicLatch(new CountDownLatch(1));
+        orderProcessResponseHandlerAspect.setPostServiceUnavailableLatch(new CountDownLatch(maximumRetryEvents + 1));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(orderReceivedConsumer,
                 kafkaTopics.getOrderReceivedNotificationError());
 
@@ -281,11 +285,12 @@ class OrderMessageRetryConsumerIntegrationTest {
 
         // when
         // sync so that retry consumer has completed and app has published email onto email send topic
-        orderProcessResponseHandlerAspect.getPostPublishToErrorTopicLatch().await(30, TimeUnit.SECONDS);
+        orderProcessResponseHandlerAspect.getPostServiceUnavailableLatch().await(30, TimeUnit.SECONDS);
         ConsumerRecord<String, OrderReceived> consumerRecord = KafkaTestUtils.getSingleRecord(orderReceivedConsumer, kafkaTopics.getOrderReceivedNotificationError());
         OrderReceived actual = consumerRecord.value();
 
         // then
+        assertEquals(0, orderProcessResponseHandlerAspect.getPostServiceUnavailableLatch().getCount());
         assertEquals(ORDER_NOTIFICATION_REFERENCE, actual.getOrderUri());
         assertEquals(0, actual.getAttempt());
     }
