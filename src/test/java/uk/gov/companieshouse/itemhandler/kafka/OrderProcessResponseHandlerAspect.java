@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 public class OrderProcessResponseHandlerAspect {
-    private CountDownLatch postPublishToErrorTopicLatch;
+    private CountDownLatch postServiceUnavailableLatch;
 
-    @Pointcut("execution(private void uk.gov.companieshouse.itemhandler.kafka.OrderProcessResponseHandler.publishToErrorTopic(..))")
-    private void publishToErrorTopic() {
+    @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderProcessResponseHandler.serviceUnavailable(..))")
+    void serviceUnavailable() {
     }
 
-    @After("publishToErrorTopic()")
-    private void afterPublishToErrorTopic() {
-        if (!isNull(postPublishToErrorTopicLatch)) {
-            postPublishToErrorTopicLatch.countDown();
+    @After("serviceUnavailable()")
+    void afterServiceUnavailable() {
+        if (!isNull(postServiceUnavailableLatch)) {
+            postServiceUnavailableLatch.countDown();
         }
     }
 
-    CountDownLatch getPostPublishToErrorTopicLatch() {
-        return postPublishToErrorTopicLatch;
+    CountDownLatch getPostServiceUnavailableLatch() {
+        return postServiceUnavailableLatch;
     }
 
-    void setPostPublishToErrorTopicLatch(CountDownLatch postPublishToErrorTopicLatch) {
-        this.postPublishToErrorTopicLatch = postPublishToErrorTopicLatch;
+    void setPostServiceUnavailableLatch(CountDownLatch postServiceUnavailableLatch) {
+        this.postServiceUnavailableLatch = postServiceUnavailableLatch;
     }
 }
