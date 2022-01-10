@@ -16,9 +16,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.TopicPartition;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,9 +37,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -49,7 +49,6 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
         properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
@@ -59,9 +58,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
     public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static MockServerContainer container;
     private MockServerClient client;
-
-    @Autowired
-    private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
     private KafkaConsumer<String, email_send> emailSendConsumer;
@@ -118,9 +114,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
     @AfterEach
     void teardown() {
         client.reset();
-        orderReceivedProducer.close();
-        emailSendConsumer.close();
-        chsItemOrderedConsumer.close();
     }
 
     @Test
@@ -136,7 +129,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(
@@ -144,10 +136,11 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        ConsumerRecords<String, email_send> consumerRecords = KafkaTestUtils.getRecords(emailSendConsumer);
+        email_send actual = consumerRecords.records(new TopicPartition(kafkaTopics.getEmailSend(), 0)).get(0).value();
 
         // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -169,17 +162,18 @@ class OrderMessageDefaultConsumerIntegrationTest {
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        ConsumerRecords<String, email_send> consumerRecords = KafkaTestUtils.getRecords(emailSendConsumer);
+        email_send actual = consumerRecords.records(new TopicPartition(kafkaTopics.getEmailSend(), 0)).get(
+                consumerRecords.count() - 1).value();
 
         // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
         assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -201,7 +195,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
@@ -212,12 +205,13 @@ class OrderMessageDefaultConsumerIntegrationTest {
         ChdItemOrdered actual = consumerRecord.value();
 
         // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals("ORD-123123-123123", actual.getReference());
         assertNotNull(actual.getItem());
     }
 
     @Test
-    void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException, IOException {
+    void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException {
         //given
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
@@ -234,6 +228,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
 
         // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         verify(orderProcessResponseHandler).serviceError(any());
         verify(logger).error(argumentCaptor.capture(), anyMap());
         assertEquals("order-received message processing failed with a "

@@ -3,7 +3,6 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import static java.util.Objects.isNull;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +21,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @Service
 public class OrderMessageErrorConsumer {
 
-    private static AtomicLong errorRecoveryOffset;
+    private final PartitionOffset errorRecoveryOffset;
 
     private final KafkaListenerEndpointRegistry registry;
     private final OrderProcessorService orderProcessorService;
@@ -37,11 +36,13 @@ public class OrderMessageErrorConsumer {
     public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
                                      final OrderProcessorService orderProcessorService,
                                      final OrderProcessResponseHandler orderProcessResponseHandler,
-                                     Logger logger) {
+                                     Logger logger,
+                                     PartitionOffset errorRecoveryOffset) {
         this.registry = registry;
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
         this.logger = logger;
+        this.errorRecoveryOffset = errorRecoveryOffset;
     }
 
     /**
@@ -67,7 +68,7 @@ public class OrderMessageErrorConsumer {
         // Configure recovery offset on first message received after application startup
         configureErrorRecoveryOffset(consumer);
 
-        if (offset <= errorRecoveryOffset.get()) {
+        if (offset < errorRecoveryOffset.getOffset()) {
             handleMessage(message);
         } else {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
@@ -106,15 +107,15 @@ public class OrderMessageErrorConsumer {
      * is consumed. This helps the error consumer to stop consuming messages when all messages up to
      * `errorRecoveryOffset` are processed.
      */
-    private synchronized void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
-        if (!isNull(errorRecoveryOffset)) {
+    private void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
+        if (!isNull(errorRecoveryOffset.getOffset())) {
             return;
         }
         // Get the end offsets for the consumers partitions i.e. the last un-committed [non-consumed] offsets
         // Note there should [will] only be one entry as this consumer is consuming from a single partition
         Map<TopicPartition, Long> endOffsets = consumer.endOffsets(consumer.assignment());
         Long endOffset = endOffsets.get(new TopicPartition(errorTopic, 0));
-        errorRecoveryOffset = new AtomicLong(endOffset - 1);
-        logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.get()));
+        errorRecoveryOffset.setOffset(endOffset);
+        logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.getOffset()));
     }
 }

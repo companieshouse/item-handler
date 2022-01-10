@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import uk.gov.companieshouse.itemhandler.kafka.KafkaTopics;
 import uk.gov.companieshouse.itemhandler.kafka.MessageDeserialiser;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
@@ -30,31 +31,44 @@ public class EmbeddedKafkaBrokerConfiguration {
     }
 
     @Bean
-    @Scope("prototype")
-    KafkaConsumer<String, email_send> emailSendConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), "false");
-        return new KafkaConsumer<>(props,
+    KafkaConsumer<String, email_send> emailSendConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
+        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, email_send> kafkaConsumer = new KafkaConsumer<>(props,
                 new StringDeserializer(),
                 new MessageDeserialiser<>(email_send.class));
+
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getEmailSend());
+        return kafkaConsumer;
     }
 
     @Bean
-    @Scope("prototype")
-    KafkaConsumer<String, OrderReceived> orderReceivedConsumer(@Value("${spring.kafka"
-            + ".bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), "false");
-        return new KafkaConsumer<>(props,
+    KafkaConsumer<String, OrderReceived> orderReceivedRetryConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
+        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, OrderReceived> kafkaConsumer = new KafkaConsumer<>(props,
                 new StringDeserializer(),
                 new MessageDeserialiser<>(OrderReceived.class));
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getOrderReceivedNotificationRetry());
+        return kafkaConsumer;
     }
 
     @Bean
-    @Scope("prototype")
-    KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
-        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), "false");
-        return new KafkaConsumer<>(props,
+    KafkaConsumer<String, OrderReceived> orderReceivedErrorConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
+        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, OrderReceived> kafkaConsumer = new KafkaConsumer<>(props,
+                new StringDeserializer(),
+                new MessageDeserialiser<>(OrderReceived.class));
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getOrderReceivedNotificationError());
+        return kafkaConsumer;
+    }
+
+    @Bean
+    KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
+        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, ChdItemOrdered> kafkaConsumer = new KafkaConsumer<>(props,
                 new StringDeserializer(),
                 new MessageDeserialiser<>(ChdItemOrdered.class));
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getChdItemOrdered());
+        return kafkaConsumer;
     }
 
     @Bean
