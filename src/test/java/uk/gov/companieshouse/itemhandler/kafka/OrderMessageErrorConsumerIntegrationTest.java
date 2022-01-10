@@ -12,7 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -130,8 +129,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         //then
         assertEquals(0, orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().getCount());
@@ -167,8 +165,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         //then
         assertEquals(0, orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().getCount());
@@ -204,8 +201,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, ChdItemOrdered> consumerRecord = KafkaTestUtils.getSingleRecord(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
-        ChdItemOrdered actual = consumerRecord.value();
+        ChdItemOrdered actual = KafkaTestUtils.getSingleRecord(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered()).value();
 
         //then
         assertEquals(0, orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().getCount());
@@ -233,8 +229,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
 
         // Get order received from retry topic
-        ConsumerRecord<String, OrderReceived> consumerRecord = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedNotificationRetry());
-        OrderReceived actual = consumerRecord.value();
+        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedNotificationRetry()).value();
 
         // then
         assertEquals(0, orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().getCount());
