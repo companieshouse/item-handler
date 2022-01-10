@@ -34,8 +34,7 @@ public class KafkaConfig {
 
     @Bean
     public ConsumerFactory<String, OrderReceived> consumerFactoryMessage() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(),
-                new MessageDeserialiser<>(OrderReceived.class));
+        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new OrderReceivedDeserialiser());
     }
 
     @Bean
@@ -127,11 +126,15 @@ public class KafkaConfig {
         return () -> props;
     }
 
+    @Bean
+    PartitionOffset errorRecoveryOffset() {
+        return new PartitionOffset();
+    }
+
     private Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, MessageDeserialiser.class);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.toString(false));
 
         return props;
     }

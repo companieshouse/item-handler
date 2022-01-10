@@ -3,12 +3,15 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import static java.util.Objects.isNull;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.event.ConsumerStoppedEvent;
+import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
@@ -22,7 +25,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 @Service
 public class OrderMessageErrorConsumer {
 
-    private static AtomicLong errorRecoveryOffset;
+    private final PartitionOffset errorRecoveryOffset;
 
     private final KafkaListenerEndpointRegistry registry;
     private final OrderProcessorService orderProcessorService;
@@ -37,11 +40,13 @@ public class OrderMessageErrorConsumer {
     public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
                                      final OrderProcessorService orderProcessorService,
                                      final OrderProcessResponseHandler orderProcessResponseHandler,
-                                     Logger logger) {
+                                     Logger logger,
+                                     PartitionOffset errorRecoveryOffset) {
         this.registry = registry;
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
         this.logger = logger;
+        this.errorRecoveryOffset = errorRecoveryOffset;
     }
 
     /**
@@ -67,7 +72,7 @@ public class OrderMessageErrorConsumer {
         // Configure recovery offset on first message received after application startup
         configureErrorRecoveryOffset(consumer);
 
-        if (offset <= errorRecoveryOffset.get()) {
+        if (offset < errorRecoveryOffset.getOffset()) {
             handleMessage(message);
         } else {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
@@ -78,10 +83,21 @@ public class OrderMessageErrorConsumer {
         }
     }
 
+    @EventListener
+    public void consumerStopped(ConsumerStoppedEvent event) {
+        Optional.ofNullable(event.getSource(KafkaMessageListenerContainer.class))
+                .flatMap(s -> Optional.ofNullable(s.getBeanName()))
+                .ifPresent(name -> {
+                    if (name.startsWith(errorGroup)) {
+                        errorRecoveryOffset.clear();
+                    }
+                });
+    }
+
     /**
      * Handles processing of received message.
      *
-     * @param message
+     * @param message containing order received
      */
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
         OrderReceived orderReceived = message.getPayload();
@@ -106,15 +122,15 @@ public class OrderMessageErrorConsumer {
      * is consumed. This helps the error consumer to stop consuming messages when all messages up to
      * `errorRecoveryOffset` are processed.
      */
-    private synchronized void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
-        if (!isNull(errorRecoveryOffset)) {
+    private void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
+        if (!isNull(errorRecoveryOffset.getOffset())) {
             return;
         }
         // Get the end offsets for the consumers partitions i.e. the last un-committed [non-consumed] offsets
         // Note there should [will] only be one entry as this consumer is consuming from a single partition
         Map<TopicPartition, Long> endOffsets = consumer.endOffsets(consumer.assignment());
         Long endOffset = endOffsets.get(new TopicPartition(errorTopic, 0));
-        errorRecoveryOffset = new AtomicLong(endOffset - 1);
-        logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.get()));
+        errorRecoveryOffset.setOffset(endOffset);
+        logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.getOffset()));
     }
 }

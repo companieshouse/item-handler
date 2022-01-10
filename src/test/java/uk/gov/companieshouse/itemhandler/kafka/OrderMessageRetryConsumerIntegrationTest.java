@@ -12,7 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -30,9 +29,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -43,7 +40,6 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
         properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
@@ -53,9 +49,6 @@ class OrderMessageRetryConsumerIntegrationTest {
     public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static MockServerContainer container;
     private MockServerClient client;
-
-    @Autowired
-    private EmbeddedKafkaBroker embeddedKafkaBroker;
 
     @Autowired
     private KafkaConsumer<String, email_send> emailSendConsumer;
@@ -70,7 +63,7 @@ class OrderMessageRetryConsumerIntegrationTest {
     private KafkaTopics kafkaTopics;
 
     @Autowired
-    private KafkaConsumer<String, OrderReceived> orderReceivedConsumer;
+    private KafkaConsumer<String, OrderReceived> orderReceivedErrorConsumer;
 
     @Autowired
     private OrderProcessResponseHandlerAspect orderProcessResponseHandlerAspect;
@@ -115,10 +108,6 @@ class OrderMessageRetryConsumerIntegrationTest {
     @AfterEach
     void teardown() {
         client.reset();
-        orderReceivedProducer.close();
-        orderReceivedConsumer.close();
-        emailSendConsumer.close();
-        chsItemOrderedConsumer.close();
     }
 
     @Test
@@ -134,7 +123,6 @@ class OrderMessageRetryConsumerIntegrationTest {
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
         orderMessageRetryConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(
@@ -142,10 +130,10 @@ class OrderMessageRetryConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
         orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
+        assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -167,7 +155,6 @@ class OrderMessageRetryConsumerIntegrationTest {
                                 "/fixtures/certified-copy.json",
                                 StandardCharsets.UTF_8))));
         orderMessageRetryConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer, kafkaTopics.getEmailSend());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(
@@ -175,10 +162,10 @@ class OrderMessageRetryConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
         orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
+        assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
         assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -200,7 +187,6 @@ class OrderMessageRetryConsumerIntegrationTest {
                                 "/fixtures/missing-image-delivery.json",
                                 StandardCharsets.UTF_8))));
         orderMessageRetryConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
 
         // when
         orderReceivedProducer.send(new ProducerRecord<>(
@@ -208,10 +194,10 @@ class OrderMessageRetryConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedNotificationRetry(),
                 getOrderReceived())).get();
         orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, ChdItemOrdered> consumerRecord = KafkaTestUtils.getSingleRecord(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
-        ChdItemOrdered actual = consumerRecord.value();
+        ChdItemOrdered actual = KafkaTestUtils.getSingleRecord(chsItemOrderedConsumer, kafkaTopics.getChdItemOrdered()).value();
 
         // then
+        assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals("ORD-123123-123123", actual.getReference());
         assertNotNull(actual.getItem());
     }
@@ -227,18 +213,17 @@ class OrderMessageRetryConsumerIntegrationTest {
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageRetryConsumerAspect.setBeforeProcessOrderReceivedEventLatch(new CountDownLatch(1));
         orderMessageRetryConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(emailSendConsumer,
-                kafkaTopics.getEmailSend());
 
         orderReceivedProducer.send(new ProducerRecord<>(
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
 
-        // sync so that retry consumer does not consume early
+        // Wait for order received to be processed and republished to retry topic
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        client.reset();
 
+        // Restore OrdersApi
+        client.reset();
         client.when(request()
                         .withPath(ORDER_NOTIFICATION_REFERENCE)
                         .withMethod(HttpMethod.GET.toString()))
@@ -249,15 +234,17 @@ class OrderMessageRetryConsumerIntegrationTest {
                                 "/fixtures/certified-certificate.json",
                                 StandardCharsets.UTF_8))));
 
+        // Start consuming from retry topic
         orderMessageRetryConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
+        // Wait for order received to be processed from retry topic
+        orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
 
         // when
         // sync so that retry consumer has completed and app has published email onto email send topic
-        orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, email_send> consumerRecord = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
-        email_send actual = consumerRecord.value();
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
+        assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
         assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -275,8 +262,6 @@ class OrderMessageRetryConsumerIntegrationTest {
                 .respond(response()
                         .withStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()));
         orderProcessResponseHandlerAspect.setPostServiceUnavailableLatch(new CountDownLatch(maximumRetryEvents + 1));
-        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(orderReceivedConsumer,
-                kafkaTopics.getOrderReceivedNotificationError());
 
         orderReceivedProducer.send(new ProducerRecord<>(
                 kafkaTopics.getOrderReceived(),
@@ -286,8 +271,7 @@ class OrderMessageRetryConsumerIntegrationTest {
         // when
         // sync so that retry consumer has completed and app has published email onto email send topic
         orderProcessResponseHandlerAspect.getPostServiceUnavailableLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecord<String, OrderReceived> consumerRecord = KafkaTestUtils.getSingleRecord(orderReceivedConsumer, kafkaTopics.getOrderReceivedNotificationError());
-        OrderReceived actual = consumerRecord.value();
+        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedErrorConsumer, kafkaTopics.getOrderReceivedNotificationError()).value();
 
         // then
         assertEquals(0, orderProcessResponseHandlerAspect.getPostServiceUnavailableLatch().getCount());

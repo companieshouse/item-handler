@@ -15,7 +15,7 @@ import uk.gov.companieshouse.logging.Logger;
 @Component
 class OrderMessageErrorConsumerAspect {
     private CountDownLatch beforeProcessOrderReceivedEventLatch;
-    private CountDownLatch postOrderConsumedEventLatch;
+    private CountDownLatch afterOrderConsumedEventLatch;
     private final Logger logger;
 
     @Pointcut("execution(public void uk.gov.companieshouse.itemhandler.kafka.OrderMessageErrorConsumer.processOrderReceived(..))")
@@ -31,8 +31,8 @@ class OrderMessageErrorConsumerAspect {
 
     @After("processOrderReceived()")
     void afterProcessOrderReceived() {
-        if (!isNull(postOrderConsumedEventLatch)) {
-            postOrderConsumedEventLatch.countDown();
+        if (!isNull(afterOrderConsumedEventLatch)) {
+            afterOrderConsumedEventLatch.countDown();
         }
     }
 
@@ -48,11 +48,11 @@ class OrderMessageErrorConsumerAspect {
         this.beforeProcessOrderReceivedEventLatch = countDownLatch;
     }
 
-    CountDownLatch getPostOrderConsumedEventLatch() {
-        return postOrderConsumedEventLatch;
+    CountDownLatch getAfterOrderConsumedEventLatch() {
+        return afterOrderConsumedEventLatch;
     }
 
-    void setPostOrderConsumedEventLatch(CountDownLatch postOrderConsumedEventLatch) {
-        this.postOrderConsumedEventLatch = postOrderConsumedEventLatch;
+    void setAfterOrderConsumedEventLatch(CountDownLatch afterOrderConsumedEventLatch) {
+        this.afterOrderConsumedEventLatch = afterOrderConsumedEventLatch;
     }
 }
