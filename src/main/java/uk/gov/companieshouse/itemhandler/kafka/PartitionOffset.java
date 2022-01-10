@@ -14,4 +14,8 @@ public final class PartitionOffset {
     public void reset() {
         this.offset = new ThreadLocal<>();
     }
+
+    public void clear() {
+        this.offset.remove();
+    }
 }

@@ -3,11 +3,15 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import static java.util.Objects.isNull;
 
 import java.util.Map;
+import java.util.Optional;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.event.ConsumerStoppedEvent;
+import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
@@ -79,10 +83,21 @@ public class OrderMessageErrorConsumer {
         }
     }
 
+    @EventListener
+    public void consumerStopped(ConsumerStoppedEvent event) {
+        Optional.ofNullable(event.getSource(KafkaMessageListenerContainer.class))
+                .flatMap(s -> Optional.ofNullable(s.getBeanName()))
+                .ifPresent(name -> {
+                    if (name.startsWith(errorGroup)) {
+                        errorRecoveryOffset.clear();
+                    }
+                });
+    }
+
     /**
      * Handles processing of received message.
      *
-     * @param message
+     * @param message containing order received
      */
     protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
         OrderReceived orderReceived = message.getPayload();
