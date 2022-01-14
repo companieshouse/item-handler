@@ -14,7 +14,7 @@ public class OrderMessageHandler {
 
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
-    private final MessageFilter messageFilter;
+    private final MessageFilter<OrderReceived> messageFilter;
     private final Logger logger;
 
     public OrderMessageHandler(final OrderProcessorService orderProcessorService,
