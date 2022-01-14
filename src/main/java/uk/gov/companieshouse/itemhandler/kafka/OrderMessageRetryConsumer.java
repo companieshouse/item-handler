@@ -19,9 +19,9 @@ public class OrderMessageRetryConsumer {
      *
      * @param message received
      */
-    @KafkaListener(id = "#{'${kafka.topics.order-received-notification-retry-group}'}",
-            groupId = "#{'${kafka.topics.order-received-notification-retry-group}'}",
-            topics = "#{'${kafka.topics.order-received-notification-retry}'}",
+    @KafkaListener(id = "#{'${kafka.topics.order-received-retry-group}'}",
+            groupId = "#{'${kafka.topics.order-received-retry-group}'}",
+            topics = "#{'${kafka.topics.order-received-retry}'}",
             autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(Message<OrderReceived> message) {

@@ -3,8 +3,8 @@ package uk.gov.companieshouse.itemhandler.kafka;
 public class KafkaTopics {
     private String emailSend;
     private String orderReceived;
-    private String orderReceivedNotificationRetry;
-    private String orderReceivedNotificationError;
+    private String orderReceivedRetry;
+    private String orderReceivedError;
     private String chdItemOrdered;
 
     public void setEmailSend(String emailSend) {
@@ -15,12 +15,12 @@ public class KafkaTopics {
         this.orderReceived = orderReceived;
     }
 
-    public void setOrderReceivedNotificationRetry(String orderReceivedNotificationRetry) {
-        this.orderReceivedNotificationRetry = orderReceivedNotificationRetry;
+    public void setOrderReceivedRetry(String orderReceivedRetry) {
+        this.orderReceivedRetry = orderReceivedRetry;
     }
 
-    public void setOrderReceivedNotificationError(String orderReceivedNotificationError) {
-        this.orderReceivedNotificationError = orderReceivedNotificationError;
+    public void setOrderReceivedError(String orderReceivedError) {
+        this.orderReceivedError = orderReceivedError;
     }
 
     public void setChdItemOrdered(String chdItemOrdered) {
@@ -35,12 +35,12 @@ public class KafkaTopics {
         return orderReceived;
     }
 
-    public String getOrderReceivedNotificationRetry() {
-        return orderReceivedNotificationRetry;
+    public String getOrderReceivedRetry() {
+        return orderReceivedRetry;
     }
 
-    public String getOrderReceivedNotificationError() {
-        return orderReceivedNotificationError;
+    public String getOrderReceivedError() {
+        return orderReceivedError;
     }
 
     public String getChdItemOrdered() {

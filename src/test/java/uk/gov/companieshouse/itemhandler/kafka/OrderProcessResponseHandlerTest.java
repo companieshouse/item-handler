@@ -15,6 +15,7 @@ import uk.gov.companieshouse.orders.OrderReceived;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,41 +35,47 @@ class OrderProcessResponseHandlerTest {
     private Message<OrderReceived> message;
 
     @Mock
-    private OrderReceived orderReceived;
-
-    @Mock
     private ResponseHandlerConfig config;
 
     @Test
     void testServiceOkLogsDebugMessage() {
         //given
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setAttempt(0);
+        when(message.getPayload()).thenReturn(orderReceived);
         when(message.getHeaders()).thenReturn(stubMessageHeaders());
 
         //when
         responseHandler.serviceOk(message);
 
         //then
-        verify(logger).debug("Order received message processing completed", expectedLogData());
+        assertEquals(0, orderReceived.getAttempt());
+        verify(logger).debug("Order received message processing completed", expectedLogData(0));
     }
 
     @Test
     void testServiceErrorLogsErrorMessage() {
         //given
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setAttempt(0);
+        when(message.getPayload()).thenReturn(orderReceived);
         when(message.getHeaders()).thenReturn(stubMessageHeaders());
 
         //when
         responseHandler.serviceError(message);
 
         //then
-        verify(logger).error("order-received message processing failed with a non-recoverable exception", expectedLogData());
+        assertEquals(0, orderReceived.getAttempt());
+        verify(logger).error("order-received message processing failed with a non-recoverable exception", expectedLogData(0));
     }
 
     @Test
     void testServiceUnavailableAttemptsRetryIfMaximumAttemptsNotExceeded() {
         //given
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setAttempt(1);
         when(message.getPayload()).thenReturn(orderReceived);
         when(message.getHeaders()).thenReturn(stubMessageHeaders());
-        when(orderReceived.getAttempt()).thenReturn(1);
         when(config.getMaximumRetryAttempts()).thenReturn(3);
         when(config.getRetryTopic()).thenReturn("order-received-retry");
 
@@ -76,17 +83,18 @@ class OrderProcessResponseHandlerTest {
         responseHandler.serviceUnavailable(message);
 
         //then
-        verify(orderReceived).setAttempt(2);
+        assertEquals(2, orderReceived.getAttempt());
         verify(messageProducer).sendMessage(orderReceived, "order-received-retry");
-        verify(logger).info("order-received message processing failed with a recoverable exception", expectedLogData());
+        verify(logger).info("publish order received to retry topic", expectedLogData(2));
     }
 
     @Test
-    void testServiceUnavailableAttemptsRetryIfMaximumAttemptsExceeded() {
+    void testServiceUnavailablePublishesToErrorTopicIfMaximumAttemptsExceeded() {
         //given
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setAttempt(3);
         when(message.getPayload()).thenReturn(orderReceived);
         when(message.getHeaders()).thenReturn(stubMessageHeaders());
-        when(orderReceived.getAttempt()).thenReturn(3);
         when(config.getMaximumRetryAttempts()).thenReturn(3);
         when(config.getErrorTopic()).thenReturn("order-received-error");
 
@@ -94,9 +102,9 @@ class OrderProcessResponseHandlerTest {
         responseHandler.serviceUnavailable(message);
 
         //then
-        verify(orderReceived).setAttempt(0);
+        assertEquals(0, orderReceived.getAttempt());
         verify(messageProducer).sendMessage(orderReceived, "order-received-error");
-        verify(logger).info("order-received message processing failed; maximum number of retry attempts exceeded", expectedLogData());
+        verify(logger).info("publish order received to error topic", expectedLogData(0));
     }
 
     private MessageHeaders stubMessageHeaders() {
@@ -108,12 +116,13 @@ class OrderProcessResponseHandlerTest {
         return new MessageHeaders(headers);
     }
 
-    private Map<String, Object> expectedLogData() {
+    private Map<String, Object> expectedLogData(int retryAttempt) {
         Map<String, Object> logData = new HashMap<>();
         logData.put("key", "key");
         logData.put("topic", "topic");
         logData.put("offset", 1);
         logData.put("partition", 0);
+        logData.put("retry_attempt", retryAttempt);
         return logData;
     }
 }

@@ -16,23 +16,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @ExtendWith(MockitoExtension.class)
 class OrderMessageConsumerTest {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_KEY = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
-    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
 
     @Spy
+    private MessageFilter<OrderReceived> duplicateMessageFilter = new DuplicateMessageFilter(1);
     @InjectMocks
     private OrderMessageHandler orderMessageHandler;
     @Mock
     private OrderProcessorService orderProcessorService;
     @Mock
     private OrderProcessResponseHandler orderProcessResponseHandler;
+    @Mock
+    private Logger logger;
 
     private static org.springframework.messaging.Message<OrderReceived> createTestMessage(String receivedTopic) {
         return new org.springframework.messaging.Message<OrderReceived>() {

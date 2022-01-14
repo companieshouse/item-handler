@@ -32,9 +32,9 @@ public class OrderMessageErrorConsumer {
     private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Logger logger;
 
-    @Value("${kafka.topics.order-received-notification-error-group}")
+    @Value("${kafka.topics.order-received-error-group}")
     private String errorGroup;
-    @Value("${kafka.topics.order-received-notification-error}")
+    @Value("${kafka.topics.order-received-error}")
     private String errorTopic;
 
     public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
@@ -59,9 +59,9 @@ public class OrderMessageErrorConsumer {
      *
      * @param message
      */
-    @KafkaListener(id = "#{'${kafka.topics.order-received-notification-error-group}'}",
-            groupId = "#{'${kafka.topics.order-received-notification-error-group}'}",
-            topics = "#{'${kafka.topics.order-received-notification-error}'}",
+    @KafkaListener(id = "#{'${kafka.topics.order-received-error-group}'}",
+            groupId = "#{'${kafka.topics.order-received-error-group}'}",
+            topics = "#{'${kafka.topics.order-received-error}'}",
             autoStartup = "#{${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(

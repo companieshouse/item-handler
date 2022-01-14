@@ -29,8 +29,11 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.topics.order-received-notification-error-group}")
+    @Value("${kafka.topics.order-received-error-group}")
     private String orderReceivedErrorGroup;
+
+    @Value("${duplicate-message-cache-size}")
+    private int duplicateMessageCacheSize;
 
     @Bean
     public ConsumerFactory<String, OrderReceived> consumerFactoryMessage() {
@@ -129,6 +132,12 @@ public class KafkaConfig {
     @Bean
     PartitionOffset errorRecoveryOffset() {
         return new PartitionOffset();
+    }
+
+    @Bean
+    @Scope("prototype")
+    MessageFilter<OrderReceived> duplicateMessageFilter() {
+        return new DuplicateMessageFilter(duplicateMessageCacheSize);
     }
 
     private Map<String, Object> consumerConfigs() {
