@@ -100,6 +100,7 @@ public class LoggingUtils {
         logIfNotNull(logMap, TOPIC, messageHeaders.get(KafkaHeaders.RECEIVED_TOPIC));
         logIfNotNull(logMap, OFFSET, messageHeaders.get(KafkaHeaders.OFFSET));
         logIfNotNull(logMap, PARTITION, messageHeaders.get(KafkaHeaders.RECEIVED_PARTITION_ID));
+        logIfNotNull(logMap, RETRY_ATTEMPT, message.getPayload().getAttempt());
 
         return logMap;
     }

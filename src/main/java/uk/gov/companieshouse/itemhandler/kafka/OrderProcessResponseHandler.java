@@ -44,14 +44,14 @@ class OrderProcessResponseHandler implements OrderProcessResponse.Visitor {
     }
 
     private void publishToRetryTopic(Message<OrderReceived> message, OrderReceived payload) {
-        logger.info("order-received message processing failed with a recoverable exception", LoggingUtils.getMessageHeadersAsMap(message));
         payload.setAttempt(payload.getAttempt() + 1);
+        logger.info("publish order received to retry topic", LoggingUtils.getMessageHeadersAsMap(message));
         messageProducer.sendMessage(payload, config.getRetryTopic());
     }
 
     private void publishToErrorTopic(Message<OrderReceived> message, OrderReceived payload) {
-        logger.info("order-received message processing failed; maximum number of retry attempts exceeded", LoggingUtils.getMessageHeadersAsMap(message));
         payload.setAttempt(0);
+        logger.info("publish order received to error topic", LoggingUtils.getMessageHeadersAsMap(message));
         messageProducer.sendMessage(payload, config.getErrorTopic());
     }
 }
