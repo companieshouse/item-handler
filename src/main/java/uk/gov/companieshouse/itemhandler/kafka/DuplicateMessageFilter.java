@@ -1,9 +1,10 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static java.util.Objects.isNull;
-
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
-import org.apache.kafka.common.cache.LRUCache;
+import java.util.Set;
 import org.springframework.messaging.Message;
 import uk.gov.companieshouse.orders.OrderReceived;
 
@@ -12,29 +13,35 @@ import uk.gov.companieshouse.orders.OrderReceived;
  *
  * <p>Note: Supplied messages are aged out of the internal cache on a least recently used basis.</p>
  */
-public class DuplicateMessageFilter implements MessageFilter<OrderReceived>{
-    final LRUCache<OrderReceivedKey, OrderReceivedKey> cache;
+class DuplicateMessageFilter implements MessageFilter<OrderReceived> {
+    final Set<CacheEntry> cache;
 
-    public DuplicateMessageFilter(int cacheSize) {
-        cache = new LRUCache<>(cacheSize);
+    DuplicateMessageFilter(int cacheSize) {
+        cache = Collections.newSetFromMap(new LinkedHashMap<CacheEntry, Boolean>() {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry<CacheEntry, Boolean> eldest) {
+                return size() > cacheSize;
+            }
+        });
     }
 
     @Override
     public synchronized boolean include(Message<OrderReceived> message) {
-        OrderReceivedKey key = new OrderReceivedKey(message.getPayload());
-        if (isNull(cache.get(key))) {
-            cache.put(key, key);
-            return true;
-        } else {
-            return false;
+        CacheEntry cacheEntry = new CacheEntry(message.getPayload());
+
+        boolean include = !cache.contains(cacheEntry);
+        if (include) {
+            cache.add(cacheEntry);
         }
+
+        return include;
     }
 
-    private static class OrderReceivedKey {
+    private static class CacheEntry {
         private final String uri;
         private final int attempt;
 
-        OrderReceivedKey(OrderReceived orderReceived) {
+        CacheEntry(OrderReceived orderReceived) {
             this.uri = orderReceived.getOrderUri();
             this.attempt = orderReceived.getAttempt();
         }
@@ -43,7 +50,7 @@ public class DuplicateMessageFilter implements MessageFilter<OrderReceived>{
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            OrderReceivedKey that = (OrderReceivedKey) o;
+            CacheEntry that = (CacheEntry) o;
             return attempt == that.attempt && Objects.equals(uri, that.uri);
         }
 
