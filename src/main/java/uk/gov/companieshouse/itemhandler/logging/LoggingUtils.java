@@ -66,10 +66,11 @@ public class LoggingUtils {
         return logMap;
     }
 
-    public static void logIfNotNull(Map<String, Object> logMap, String key, Object loggingObject) {
+    public static Map<String, Object> logIfNotNull(Map<String, Object> logMap, String key, Object loggingObject) {
         if (loggingObject != null) {
             logMap.put(key, loggingObject);
         }
+        return logMap;
     }
 
     public static Map<String, Object> logWithOrderReference(String logMessage,

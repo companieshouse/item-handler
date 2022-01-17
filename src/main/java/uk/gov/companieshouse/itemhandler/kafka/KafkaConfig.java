@@ -14,6 +14,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
@@ -137,6 +138,8 @@ public class KafkaConfig {
     @Bean
     @Scope("prototype")
     MessageFilter<OrderReceived> duplicateMessageFilter(Logger logger) {
+        logger.info("DuplicateMessageFilter config",
+                LoggingUtils.logIfNotNull(LoggingUtils.createLogMap(),"duplicate-message-cache-size", duplicateMessageCacheSize));
         return new DuplicateMessageFilter(duplicateMessageCacheSize, logger);
     }
 

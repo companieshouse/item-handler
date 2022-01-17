@@ -70,7 +70,7 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceOk(any());
+        verify(orderProcessResponseHandler).serviceOk(any());
     }
 
     @Test
@@ -85,7 +85,7 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
+        verify(orderProcessResponseHandler).serviceUnavailable(any());
     }
 
     @Test
@@ -100,6 +100,6 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceError(any());
+        verify(orderProcessResponseHandler).serviceError(any());
     }
 }

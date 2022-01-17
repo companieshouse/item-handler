@@ -62,7 +62,7 @@ class OrderMessageHandlerTest {
         orderMessageHandler.handleMessage(message);
 
         //then
-        verify(orderProcessorService, times(1)).processOrderReceived(any());
+        verify(orderProcessorService).processOrderReceived(any());
     }
 
     @Test
