@@ -136,8 +136,8 @@ public class KafkaConfig {
 
     @Bean
     @Scope("prototype")
-    MessageFilter<OrderReceived> duplicateMessageFilter() {
-        return new DuplicateMessageFilter(duplicateMessageCacheSize);
+    MessageFilter<OrderReceived> duplicateMessageFilter(Logger logger) {
+        return new DuplicateMessageFilter(duplicateMessageCacheSize, logger);
     }
 
     private Map<String, Object> consumerConfigs() {

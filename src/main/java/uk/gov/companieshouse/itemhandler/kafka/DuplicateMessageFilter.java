@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.springframework.messaging.Message;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 /**
@@ -15,23 +17,28 @@ import uk.gov.companieshouse.orders.OrderReceived;
  */
 class DuplicateMessageFilter implements MessageFilter<OrderReceived> {
     final Set<CacheEntry> cache;
+    final Logger logger;
 
-    DuplicateMessageFilter(int cacheSize) {
+    DuplicateMessageFilter(int cacheSize, Logger logger) {
         cache = Collections.newSetFromMap(new LinkedHashMap<CacheEntry, Boolean>() {
             @Override
             protected boolean removeEldestEntry(Map.Entry<CacheEntry, Boolean> eldest) {
                 return size() > cacheSize;
             }
         });
+        this.logger = logger;
     }
 
     @Override
     public synchronized boolean include(Message<OrderReceived> message) {
-        CacheEntry cacheEntry = new CacheEntry(message.getPayload());
+        OrderReceived orderReceived = message.getPayload();
+        CacheEntry cacheEntry = new CacheEntry(orderReceived);
 
         boolean include = !cache.contains(cacheEntry);
         if (include) {
             cache.add(cacheEntry);
+        } else {
+            logger.debug("'order-received' message is a duplicate", LoggingUtils.getMessageHeadersAsMap(message));
         }
 
         return include;

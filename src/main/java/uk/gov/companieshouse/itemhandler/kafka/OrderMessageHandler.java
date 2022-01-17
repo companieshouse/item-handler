@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import java.util.Map;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -33,31 +32,15 @@ public class OrderMessageHandler {
      * @param message received
      */
     public void handleMessage(Message<OrderReceived> message) {
-        OrderReceived orderReceived = message.getPayload();
-        String orderReceivedUri = orderReceived.getOrderUri();
-
         if (messageFilter.include(message)) {
-            logMessageReceived(message, orderReceivedUri);
+            // Log message
+            logger.info("'order-received' message received", LoggingUtils.getMessageHeadersAsMap(message));
 
             // Process message
-            OrderProcessResponse response = orderProcessorService.processOrderReceived(
-                    orderReceivedUri);
+            OrderProcessResponse response = orderProcessorService.processOrderReceived(message.getPayload().getOrderUri());
+
             // Handle response
             response.getStatus().accept(orderProcessResponseHandler, message);
-        } else {
-            logDuplicateMessage(message, orderReceivedUri);
         }
-    }
-
-    protected void logMessageReceived(Message<OrderReceived> message, String orderUri) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        logger.info("'order-received' message received", logMap);
-    }
-
-    protected void logDuplicateMessage(Message<OrderReceived> message, String orderUri) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        logger.debug("'order-received' message is a duplicate", logMap);
     }
 }

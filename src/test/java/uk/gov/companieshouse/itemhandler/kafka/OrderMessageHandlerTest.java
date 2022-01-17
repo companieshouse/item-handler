@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -10,8 +8,6 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,9 +29,6 @@ class OrderMessageHandlerTest {
 
     @Mock
     private Logger logger;
-
-    @Captor
-    private ArgumentCaptor<String> argumentCaptor;
 
     @Mock
     private Message<OrderReceived> message;
@@ -75,8 +68,6 @@ class OrderMessageHandlerTest {
     @Test
     void shouldNotHandleMessageWhenFilterExcludesMessage() {
         //given
-        when(message.getHeaders()).thenReturn(messageHeaders);
-        when(message.getPayload()).thenReturn(orderReceived);
         when(messageFilter.include(any())).thenReturn(false);
 
         //when
@@ -84,7 +75,5 @@ class OrderMessageHandlerTest {
 
         //then
         verify(orderProcessorService, times(0)).processOrderReceived(any());
-        verify(logger).debug(argumentCaptor.capture(), anyMap());
-        assertEquals("'order-received' message is a duplicate", argumentCaptor.getValue());
     }
 }
