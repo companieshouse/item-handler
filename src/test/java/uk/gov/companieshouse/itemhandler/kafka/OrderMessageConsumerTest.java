@@ -1,11 +1,9 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import ch.qos.logback.classic.turbo.DuplicateMessageFilter;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +66,7 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceOk(any());
+        verify(orderProcessResponseHandler).serviceOk(any());
     }
 
     @Test
@@ -83,7 +81,7 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
+        verify(orderProcessResponseHandler).serviceUnavailable(any());
     }
 
     @Test
@@ -98,6 +96,6 @@ class OrderMessageConsumerTest {
         orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceError(any());
+        verify(orderProcessResponseHandler).serviceError(any());
     }
 }

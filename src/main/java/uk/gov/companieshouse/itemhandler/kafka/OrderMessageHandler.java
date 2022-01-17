@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
