@@ -14,6 +14,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
@@ -29,8 +30,11 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.topics.order-received-notification-error-group}")
+    @Value("${kafka.topics.order-received-error-group}")
     private String orderReceivedErrorGroup;
+
+    @Value("${duplicate-message-cache-size}")
+    private int duplicateMessageCacheSize;
 
     @Bean
     public ConsumerFactory<String, OrderReceived> consumerFactoryMessage() {
@@ -129,6 +133,14 @@ public class KafkaConfig {
     @Bean
     PartitionOffset errorRecoveryOffset() {
         return new PartitionOffset();
+    }
+
+    @Bean
+    @Scope("prototype")
+    MessageFilter<OrderReceived> duplicateMessageFilter(Logger logger) {
+        logger.info("DuplicateMessageFilter config",
+                LoggingUtils.logIfNotNull(LoggingUtils.createLogMap(),"duplicate-message-cache-size", duplicateMessageCacheSize));
+        return new DuplicateMessageFilter(duplicateMessageCacheSize, logger);
     }
 
     private Map<String, Object> consumerConfigs() {

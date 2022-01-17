@@ -76,7 +76,7 @@ class OrdersApiClientServiceTest {
         // When & Then
         OrderData actualOrderData = serviceUnderTest.getOrderData(ORDER_URL);
         assertThat(actualOrderData.getEtag(), is(expectedOrderData.getEtag()));
-        verify(ordersApiToOrderDataMapper, times(1)).ordersApiToOrderData(ordersApi);
+        verify(ordersApiToOrderDataMapper).ordersApiToOrderData(ordersApi);
     }
 
     @Test
