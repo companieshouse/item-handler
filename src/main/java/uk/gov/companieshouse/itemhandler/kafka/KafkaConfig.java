@@ -29,7 +29,7 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.topics.order-received-notification-error-group}")
+    @Value("${kafka.topics.order-received-error-group}")
     private String orderReceivedErrorGroup;
 
     @Bean

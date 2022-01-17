@@ -51,8 +51,6 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
         properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
 class OrderMessageDefaultConsumerIntegrationTest {
 
-    public static final String ORDER_REFERENCE_NUMBER = "87654321";
-    public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static MockServerContainer container;
     private MockServerClient client;
 
@@ -97,12 +95,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
         container.stop();
     }
 
-    private static OrderReceived getOrderReceived() {
-        OrderReceived orderReceived = new OrderReceived();
-        orderReceived.setOrderUri(ORDER_NOTIFICATION_REFERENCE);
-        return orderReceived;
-    }
-
     @BeforeEach
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
@@ -117,7 +109,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testConsumesCertificateOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -149,7 +141,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testConsumesCertifiedDocumentOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
         // given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -180,7 +172,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testConsumesMissingImageDeliveryFromOrderReceivedAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException {
         // given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -207,7 +199,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.NOT_FOUND.value()));
@@ -226,5 +218,15 @@ class OrderMessageDefaultConsumerIntegrationTest {
         verify(logger).error(argumentCaptor.capture(), anyMap());
         assertEquals("order-received message processing failed with a "
                 + "non-recoverable exception", argumentCaptor.getValue());
+    }
+
+    private OrderReceived getOrderReceived() {
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setOrderUri(getOrderReference());
+        return orderReceived;
+    }
+
+    private String getOrderReference() {
+        return "/orders/ORD-111111-123456";
     }
 }

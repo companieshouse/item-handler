@@ -44,8 +44,6 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
         properties = {"uk.gov.companieshouse.item-handler.error-consumer=true"})
 class OrderMessageErrorConsumerIntegrationTest {
 
-    public static final String ORDER_REFERENCE_NUMBER = "87654321";
-    public static final String ORDER_NOTIFICATION_REFERENCE = "/orders/" + ORDER_REFERENCE_NUMBER;
     private static MockServerContainer container;
     private MockServerClient client;
 
@@ -87,12 +85,6 @@ class OrderMessageErrorConsumerIntegrationTest {
         container.stop();
     }
 
-    private static OrderReceived getOrderReceived() {
-        OrderReceived orderReceived = new OrderReceived();
-        orderReceived.setOrderUri(ORDER_NOTIFICATION_REFERENCE);
-        return orderReceived;
-    }
-
     @BeforeEach
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
@@ -110,7 +102,7 @@ class OrderMessageErrorConsumerIntegrationTest {
             IOException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -123,8 +115,8 @@ class OrderMessageErrorConsumerIntegrationTest {
 
         //when
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
-                kafkaTopics.getOrderReceivedNotificationError(),
-                kafkaTopics.getOrderReceivedNotificationError(),
+                kafkaTopics.getOrderReceivedError(),
+                kafkaTopics.getOrderReceivedError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
@@ -146,7 +138,7 @@ class OrderMessageErrorConsumerIntegrationTest {
     void testConsumesCertifiedDocumentOrderReceivedFromErrorTopic() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -159,8 +151,8 @@ class OrderMessageErrorConsumerIntegrationTest {
 
         //when
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
-                kafkaTopics.getOrderReceivedNotificationError(),
-                kafkaTopics.getOrderReceivedNotificationError(),
+                kafkaTopics.getOrderReceivedError(),
+                kafkaTopics.getOrderReceivedError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
@@ -182,7 +174,7 @@ class OrderMessageErrorConsumerIntegrationTest {
     void testConsumesMissingImageDeliveryFromNotificationErrorAndPublishesChsItemOrdered() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -195,8 +187,8 @@ class OrderMessageErrorConsumerIntegrationTest {
 
         //when
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
-                kafkaTopics.getOrderReceivedNotificationError(),
-                kafkaTopics.getOrderReceivedNotificationError(),
+                kafkaTopics.getOrderReceivedError(),
+                kafkaTopics.getOrderReceivedError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getBeforeProcessOrderReceivedEventLatch().countDown();
@@ -214,7 +206,7 @@ class OrderMessageErrorConsumerIntegrationTest {
     void testPublishesOrderReceivedToRetryTopicWhenOrdersApiIsUnavailable() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                        .withPath(ORDER_NOTIFICATION_REFERENCE)
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()));
@@ -222,18 +214,28 @@ class OrderMessageErrorConsumerIntegrationTest {
 
         // when
         ProducerRecord<String, OrderReceived> producerRecord = new ProducerRecord<>(
-                kafkaTopics.getOrderReceivedNotificationError(),
-                kafkaTopics.getOrderReceivedNotificationError(),
+                kafkaTopics.getOrderReceivedError(),
+                kafkaTopics.getOrderReceivedError(),
                 getOrderReceived());
         orderReceivedProducer.send(producerRecord).get();
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
 
         // Get order received from retry topic
-        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedNotificationRetry()).value();
+        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedRetry()).value();
 
         // then
         assertEquals(0, orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().getCount());
         assertNotNull(actual);
-        assertEquals(ORDER_NOTIFICATION_REFERENCE, actual.getOrderUri());
+        assertEquals(getOrderReference(), actual.getOrderUri());
+    }
+
+    private OrderReceived getOrderReceived() {
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setOrderUri(getOrderReference());
+        return orderReceived;
+    }
+
+    private String getOrderReference() {
+        return "/orders/ORD-111111-123456";
     }
 }
