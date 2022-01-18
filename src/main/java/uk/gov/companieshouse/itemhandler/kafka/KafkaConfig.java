@@ -1,6 +1,5 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import java.util.function.Supplier;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,21 +29,30 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${kafka.topics.order-received-error-group}")
-    private String orderReceivedErrorGroup;
-
     @Value("${duplicate-message-cache-size}")
     private int duplicateMessageCacheSize;
 
     @Bean
-    public ConsumerFactory<String, OrderReceived> consumerFactoryMessage() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs(), new StringDeserializer(), new OrderReceivedDeserialiser());
+    public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.toString(false));
+
+        ConcurrentKafkaListenerContainerFactory<String, OrderReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(getConsumerFactory(props));
+        factory.setErrorHandler(new SeekToCurrentErrorHandler(new FixedBackOff(0, 0)));
+        return factory;
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory(ConsumerFactory<String, OrderReceived> consumerFactoryMessage) {
+    public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactoryError() {
+        final Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.toString(false));
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
         ConcurrentKafkaListenerContainerFactory<String, OrderReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactoryMessage);
+        factory.setConsumerFactory(getConsumerFactory(props));
         factory.setErrorHandler(new SeekToCurrentErrorHandler(new FixedBackOff(0, 0)));
         return factory;
     }
@@ -119,18 +127,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    Supplier<Map<String, Object>> consumerConfigsErrorSupplier() {
-        final Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderReceivedDeserialiser.class);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, orderReceivedErrorGroup);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-
-        return () -> props;
-    }
-
-    @Bean
     PartitionOffset errorRecoveryOffset() {
         return new PartitionOffset();
     }
@@ -143,11 +139,7 @@ public class KafkaConfig {
         return new DuplicateMessageFilter(duplicateMessageCacheSize, logger);
     }
 
-    private Map<String, Object> consumerConfigs() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.toString(false));
-
-        return props;
+    private ConsumerFactory<String, OrderReceived> getConsumerFactory(Map<String, Object> props) {
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new OrderReceivedDeserialiser());
     }
 }

@@ -17,8 +17,6 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
-import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
-import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
@@ -28,9 +26,8 @@ public class OrderMessageErrorConsumer {
     private final PartitionOffset errorRecoveryOffset;
 
     private final KafkaListenerEndpointRegistry registry;
-    private final OrderProcessorService orderProcessorService;
-    private final OrderProcessResponseHandler orderProcessResponseHandler;
     private final Logger logger;
+    private final OrderMessageHandler orderReceivedProcessor;
 
     @Value("${kafka.topics.order-received-error-group}")
     private String errorGroup;
@@ -38,13 +35,11 @@ public class OrderMessageErrorConsumer {
     private String errorTopic;
 
     public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
-                                     final OrderProcessorService orderProcessorService,
-                                     final OrderProcessResponseHandler orderProcessResponseHandler,
+                                     OrderMessageHandler orderReceivedProcessor,
                                      Logger logger,
                                      PartitionOffset errorRecoveryOffset) {
         this.registry = registry;
-        this.orderProcessorService = orderProcessorService;
-        this.orderProcessResponseHandler = orderProcessResponseHandler;
+        this.orderReceivedProcessor = orderReceivedProcessor;
         this.logger = logger;
         this.errorRecoveryOffset = errorRecoveryOffset;
     }
@@ -57,13 +52,15 @@ public class OrderMessageErrorConsumer {
      * is republished to `-retry` topic for failover processing. This listener stops accepting
      * messages when the topic's offset reaches `errorRecoveryOffset`.
      *
-     * @param message
+     * @param message to be processed
+     * @param offset Kafka offset of the current message
+     * @param consumer Kafka consumer used by current consumer thread
      */
     @KafkaListener(id = "#{'${kafka.topics.order-received-error-group}'}",
             groupId = "#{'${kafka.topics.order-received-error-group}'}",
             topics = "#{'${kafka.topics.order-received-error}'}",
             autoStartup = "#{${uk.gov.companieshouse.item-handler.error-consumer}}",
-            containerFactory = "kafkaListenerContainerFactory")
+            containerFactory = "kafkaListenerContainerFactoryError")
     public void processOrderReceived(
             Message<OrderReceived> message,
             @Header(KafkaHeaders.OFFSET) Long offset,
@@ -73,8 +70,11 @@ public class OrderMessageErrorConsumer {
         configureErrorRecoveryOffset(consumer);
 
         if (offset < errorRecoveryOffset.getOffset()) {
-            handleMessage(message);
-        } else {
+            orderReceivedProcessor.handleMessage(message);
+        }
+
+        // Stop consumer after last message processed
+        if (offset >= errorRecoveryOffset.getOffset() - 1) {
             Map<String, Object> logMap = LoggingUtils.createLogMap();
             logMap.put(errorGroup, errorRecoveryOffset);
             logMap.put(LoggingUtils.TOPIC, errorTopic);
@@ -92,29 +92,6 @@ public class OrderMessageErrorConsumer {
                         errorRecoveryOffset.clear();
                     }
                 });
-    }
-
-    /**
-     * Handles processing of received message.
-     *
-     * @param message containing order received
-     */
-    protected void handleMessage(org.springframework.messaging.Message<OrderReceived> message) {
-        OrderReceived orderReceived = message.getPayload();
-        String orderReceivedUri = orderReceived.getOrderUri();
-        logMessageReceived(message, orderReceivedUri);
-
-        // Process message
-        OrderProcessResponse response = orderProcessorService.processOrderReceived(orderReceivedUri);
-        // Handle response
-        response.getStatus().accept(orderProcessResponseHandler, message);
-    }
-
-    protected void logMessageReceived(org.springframework.messaging.Message<OrderReceived> message,
-                                      String orderUri) {
-        Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(message);
-        LoggingUtils.logIfNotNull(logMap, LoggingUtils.ORDER_URI, orderUri);
-        logger.info("'order-received' message received", logMap);
     }
 
     /**
