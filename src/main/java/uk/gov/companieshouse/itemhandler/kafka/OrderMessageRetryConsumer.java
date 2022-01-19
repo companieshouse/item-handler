@@ -22,7 +22,7 @@ public class OrderMessageRetryConsumer {
     @KafkaListener(id = "#{'${kafka.topics.order-received-retry-group}'}",
             groupId = "#{'${kafka.topics.order-received-retry-group}'}",
             topics = "#{'${kafka.topics.order-received-retry}'}",
-            autoStartup = "true",
+            autoStartup = "#{!${uk.gov.companieshouse.item-handler.error-consumer}}",
             containerFactory = "kafkaListenerContainerFactory")
     public void processOrderReceived(Message<OrderReceived> message) {
         orderReceivedProcessor.handleMessage(message);

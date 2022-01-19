@@ -9,14 +9,12 @@ import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.event.ConsumerStoppedEvent;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
@@ -24,8 +22,8 @@ import uk.gov.companieshouse.orders.OrderReceived;
 public class OrderMessageErrorConsumer {
 
     private final PartitionOffset errorRecoveryOffset;
+    private final ErrorConsumerController errorConsumerController;
 
-    private final KafkaListenerEndpointRegistry registry;
     private final Logger logger;
     private final OrderMessageHandler orderReceivedProcessor;
 
@@ -34,14 +32,14 @@ public class OrderMessageErrorConsumer {
     @Value("${kafka.topics.order-received-error}")
     private String errorTopic;
 
-    public OrderMessageErrorConsumer(KafkaListenerEndpointRegistry registry,
-                                     OrderMessageHandler orderReceivedProcessor,
+    public OrderMessageErrorConsumer(OrderMessageHandler orderReceivedProcessor,
                                      Logger logger,
-                                     PartitionOffset errorRecoveryOffset) {
-        this.registry = registry;
+                                     PartitionOffset errorRecoveryOffset,
+                                     ErrorConsumerController errorConsumerController) {
         this.orderReceivedProcessor = orderReceivedProcessor;
         this.logger = logger;
         this.errorRecoveryOffset = errorRecoveryOffset;
+        this.errorConsumerController = errorConsumerController;
     }
 
     /**
@@ -73,13 +71,9 @@ public class OrderMessageErrorConsumer {
             orderReceivedProcessor.handleMessage(message);
         }
 
-        // Stop consumer after last message processed
+        // Stop consumer after offset reached
         if (offset >= errorRecoveryOffset.getOffset() - 1) {
-            Map<String, Object> logMap = LoggingUtils.createLogMap();
-            logMap.put(errorGroup, errorRecoveryOffset);
-            logMap.put(LoggingUtils.TOPIC, errorTopic);
-            logger.info("Pausing error consumer as error recovery offset reached.", logMap);
-            registry.getListenerContainer(errorGroup).pause();
+            errorConsumerController.pauseConsumerThread();
         }
     }
 
