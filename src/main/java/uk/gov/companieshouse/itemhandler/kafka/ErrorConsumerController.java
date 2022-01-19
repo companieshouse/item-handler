@@ -35,7 +35,7 @@ public class ErrorConsumerController {
         registry.getListenerContainer(errorGroup).pause();
     }
 
-    public void resumeConsumerThread() {
+    void resumeConsumerThread() {
         Map<String, Object> logMap = LoggingUtils.createLogMap();
         logMap.put(errorGroup, partitionOffset.getOffset());
         logMap.put(LoggingUtils.TOPIC, errorTopic);
