@@ -33,12 +33,12 @@ public class KafkaConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory() {
-        return getContainerFactory(getDefaultConsumerProperties());
+        return getContainerFactory(getConsumerConfigs());
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactoryError() {
-        final Map<String, Object> props = getDefaultConsumerProperties();
+        final Map<String, Object> props = getConsumerConfigs();
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return getContainerFactory(props);
     }
@@ -132,7 +132,7 @@ public class KafkaConfig {
         return factory;
     }
 
-    private Map<String, Object> getDefaultConsumerProperties() {
+    private Map<String, Object> getConsumerConfigs() {
         final Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.toString(false));
