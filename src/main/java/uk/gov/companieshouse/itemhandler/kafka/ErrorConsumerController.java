@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.MessageListenerContainer;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.logging.Logger;
@@ -33,7 +34,8 @@ public class ErrorConsumerController {
         logMap.put(errorGroup, partitionOffset.getOffset());
         logMap.put(LoggingUtils.TOPIC, errorTopic);
         logger.info("Pausing error consumer as error recovery offset reached.", logMap);
-        Optional.ofNullable(registry.getListenerContainer(errorGroup)).ifPresent(c->c.pause());
+        Optional.ofNullable(registry.getListenerContainer(errorGroup)).ifPresent(
+                MessageListenerContainer::pause);
     }
 
     void resumeConsumerThread() {
@@ -41,6 +43,7 @@ public class ErrorConsumerController {
         logMap.put(errorGroup, partitionOffset.getOffset());
         logMap.put(LoggingUtils.TOPIC, errorTopic);
         logger.info("Resuming error consumer thread.", logMap);
-        Optional.ofNullable(registry.getListenerContainer(errorGroup)).ifPresent(c->c.resume());
+        Optional.ofNullable(registry.getListenerContainer(errorGroup)).ifPresent(
+                MessageListenerContainer::resume);
     }
 }
