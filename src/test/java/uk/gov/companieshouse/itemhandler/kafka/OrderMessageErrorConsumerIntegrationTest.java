@@ -69,6 +69,9 @@ class OrderMessageErrorConsumerIntegrationTest {
     @Autowired
     private PartitionOffset errorRecoveryOffset;
 
+    @Autowired
+    private ErrorConsumerController errorConsumerController;
+
     @BeforeAll
     static void before() {
         container = new MockServerContainer(DockerImageName.parse(
@@ -90,6 +93,7 @@ class OrderMessageErrorConsumerIntegrationTest {
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
         errorRecoveryOffset.reset();
+        errorConsumerController.resumeConsumerThread();
     }
 
     @AfterEach
@@ -223,7 +227,7 @@ class OrderMessageErrorConsumerIntegrationTest {
         orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().await(30, TimeUnit.SECONDS);
 
         // Get order received from retry topic
-        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedRetry()).value();
+        OrderReceived actual = KafkaTestUtils.getSingleRecord(orderReceivedRetryConsumer, kafkaTopics.getOrderReceivedRetry(), 30000).value();
 
         // then
         assertEquals(0, orderMessageErrorConsumerAspect.getAfterOrderConsumedEventLatch().getCount());
