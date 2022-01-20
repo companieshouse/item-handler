@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -27,9 +28,7 @@ public class OrderMessageErrorConsumer {
     private final Logger logger;
     private final OrderMessageHandler orderReceivedProcessor;
 
-    @Value("${kafka.topics.order-received-error-group}")
     private String errorGroup;
-    @Value("${kafka.topics.order-received-error}")
     private String errorTopic;
 
     public OrderMessageErrorConsumer(OrderMessageHandler orderReceivedProcessor,
@@ -89,11 +88,11 @@ public class OrderMessageErrorConsumer {
     }
 
     /**
-     * Lazily sets `errorRecoveryOffset` to last topic offset minus 1, before first message received
-     * is consumed. This helps the error consumer to stop consuming messages when all messages up to
+     * Lazily sets `errorRecoveryOffset` to last topic offset, before first message received is
+     * consumed. This helps the error consumer to stop consuming messages when all messages up to
      * `errorRecoveryOffset` are processed.
      */
-    private void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
+    void configureErrorRecoveryOffset(KafkaConsumer<String, OrderReceived> consumer) {
         if (!isNull(errorRecoveryOffset.getOffset())) {
             return;
         }
@@ -103,5 +102,15 @@ public class OrderMessageErrorConsumer {
         Long endOffset = endOffsets.get(new TopicPartition(errorTopic, 0));
         errorRecoveryOffset.setOffset(endOffset);
         logger.info(String.format("Setting Error Consumer Recovery Offset to '%1$d'", errorRecoveryOffset.getOffset()));
+    }
+
+    @Autowired
+    void setErrorGroup(@Value("${kafka.topics.order-received-error-group}") String errorGroup) {
+        this.errorGroup = errorGroup;
+    }
+
+    @Autowired
+    void setErrorTopic(@Value("${kafka.topics.order-received-error}") String errorTopic) {
+        this.errorTopic = errorTopic;
     }
 }
