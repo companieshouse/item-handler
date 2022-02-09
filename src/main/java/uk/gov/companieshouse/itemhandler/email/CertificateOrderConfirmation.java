@@ -29,6 +29,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateGeneralNatureOfBusinessInformation;
     private String certificateLiquidatorsDetails;
     private FeatureOptions featureOptions;
+    private String certificateCompanyStatus;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -204,5 +205,13 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setFeatureOptions(FeatureOptions featureOptions) {
         this.featureOptions = featureOptions;
+    }
+
+    public String getCertificateCompanyStatus() {
+        return certificateCompanyStatus;
+    }
+
+    public void setCertificateCompanyStatus(String certificateCompanyStatus) {
+        this.certificateCompanyStatus = certificateCompanyStatus;
     }
 }

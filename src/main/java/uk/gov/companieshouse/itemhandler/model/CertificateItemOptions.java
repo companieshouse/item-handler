@@ -16,6 +16,7 @@ public class CertificateItemOptions extends DeliveryItemOptions {
     private PrincipalPlaceOfBusinessDetails principalPlaceOfBusinessDetails;
     private Boolean includeGeneralNatureOfBusinessInformation;
     private LiquidatorsDetails liquidatorsDetails;
+    private CompanyStatus companyStatus;
 
     public CertificateType getCertificateType() {
         return certificateType;
@@ -135,5 +136,13 @@ public class CertificateItemOptions extends DeliveryItemOptions {
 
     public void setLiquidatorsDetails(LiquidatorsDetails liquidatorsDetails) {
         this.liquidatorsDetails = liquidatorsDetails;
+    }
+
+    public CompanyStatus getCompanyStatus() {
+        return companyStatus;
+    }
+
+    public void setCompanyStatus(CompanyStatus companyStatus) {
+        this.companyStatus = companyStatus;
     }
 }

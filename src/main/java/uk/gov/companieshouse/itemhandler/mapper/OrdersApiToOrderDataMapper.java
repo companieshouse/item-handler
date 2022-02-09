@@ -15,6 +15,7 @@ import uk.gov.companieshouse.api.model.order.item.CertifiedCopyItemOptionsApi;
 import uk.gov.companieshouse.api.model.order.item.MissingImageDeliveryItemOptionsApi;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemOptions;
@@ -63,5 +64,11 @@ public interface OrdersApiToOrderDataMapper {
         @ValueMapping(source = MappingConstants.ANY_UNMAPPED, target = "OTHER")
     })
     CompanyType mapCompanyType(String companyType);
+
+    @ValueMappings({
+            @ValueMapping(source = "liquidation", target = "LIQUIDATION"),
+            @ValueMapping(source = MappingConstants.ANY_UNMAPPED, target = "OTHER")
+    })
+    CompanyStatus mapCompanyStatus(String companyStatus);
 
 }

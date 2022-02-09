@@ -31,6 +31,7 @@
         }
       ],
       "item_options": {
+        "company_status": "active",
         "delivery_method": "postal",
         "delivery_timescale": "standard",
         "forename": "Forename",

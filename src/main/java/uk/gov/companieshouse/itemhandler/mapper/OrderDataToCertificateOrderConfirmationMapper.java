@@ -13,6 +13,7 @@ import uk.gov.companieshouse.itemhandler.model.Address;
 import uk.gov.companieshouse.itemhandler.model.BasicInformationIncludable;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -92,6 +93,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
         confirmation.setCertificateLiquidatorsDetails(
                 Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
+        confirmation.setCertificateCompanyStatus(Optional.ofNullable(options.getCompanyStatus()).map(CompanyStatus::getValue).orElse(null));
     }
 
     /**
