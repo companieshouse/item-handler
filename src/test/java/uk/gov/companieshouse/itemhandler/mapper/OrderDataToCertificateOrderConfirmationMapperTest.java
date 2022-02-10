@@ -14,6 +14,7 @@ import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
@@ -194,6 +195,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
                 setIncludeBasicInformation(true);
             }
         });
+        options.setCompanyStatus(CompanyStatus.LIQUIDATION);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -221,6 +223,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
         assertThat(confirmation.getCertificateLiquidatorsDetails(), is("Yes"));
+        assertThat(confirmation.getCertificateCompanyStatus(), is("liquidation"));
     }
 
     @Test
@@ -235,6 +238,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(null);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -250,6 +254,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
+        assertThat(confirmation.getCertificateCompanyStatus(), nullValue());
     }
 
     @Test
