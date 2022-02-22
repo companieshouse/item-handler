@@ -12,6 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
+import uk.gov.companieshouse.itemhandler.model.AdministratorsDetails;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
@@ -195,6 +196,11 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
                 setIncludeBasicInformation(true);
             }
         });
+        options.setAdministratorsDetails(new AdministratorsDetails() {
+            {
+                setIncludeBasicInformation(true);
+            }
+        });
         options.setCompanyStatus(CompanyStatus.LIQUIDATION);
 
         item.setItemOptions(options);
@@ -223,6 +229,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
         assertThat(confirmation.getCertificateLiquidatorsDetails(), is("Yes"));
+        assertThat(confirmation.getCertificateAdministratorsDetails(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyStatus(), is("liquidation"));
     }
 
@@ -863,6 +870,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
         assertNull(confirmation.getCertificateLiquidatorsDetails());
+        assertNull(confirmation.getCertificateAdministratorsDetails());
     }
 
     @Test
@@ -883,5 +891,25 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // Then
         assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateLiquidatorsDetails(), is("No"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedWhenBasicInformationNullForAdministrators() {
+
+        // Given options with all properties set to null
+        order.setItems(Collections.singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("99");
+
+        options.setAdministratorsDetails(new AdministratorsDetails());
+
+        item.setItemOptions(options);
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertInformationIsAsExpected(confirmation);
+        assertThat(confirmation.getCertificateAdministratorsDetails(), is("No"));
     }
 }

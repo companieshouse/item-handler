@@ -93,6 +93,8 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
         confirmation.setCertificateLiquidatorsDetails(
                 Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
+        confirmation.setCertificateAdministratorsDetails(
+                Optional.ofNullable(options.getAdministratorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
         confirmation.setCertificateCompanyStatus(Optional.ofNullable(options.getCompanyStatus()).map(CompanyStatus::getValue).orElse(null));
     }
 
