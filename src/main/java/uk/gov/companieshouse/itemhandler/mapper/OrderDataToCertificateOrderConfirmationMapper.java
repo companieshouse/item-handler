@@ -78,7 +78,8 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateRegisteredOfficeOptions(mapCertificateRegisteredOfficeOptions(options.getRegisteredOfficeAddressDetails()));
         confirmation.setCertificateDirectorOptions(mapCertificateDirectorOptions(item));
         confirmation.setCertificateSecretaryOptions(mapCertificateSecretaryOptions(item));
-        confirmation.setCertificateGoodStandingInformation(new Content<>(mapCertificateOptionsText(options.getIncludeGoodStandingInformation())));
+        confirmation.setCertificateGoodStandingInformation(new Content<>(
+                Optional.ofNullable(options.getIncludeGoodStandingInformation()).map(this::mapCertificateOptionsText).orElse(null)));
         confirmation.setCertificateSecretaries(mapIncludeBasicInformationText(options.getSecretaryDetails()));
         confirmation.setCertificateDirectors(mapIncludeBasicInformationText(options.getDirectorDetails()));
         confirmation.setCertificateCompanyObjects(mapCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));

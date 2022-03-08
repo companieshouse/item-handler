@@ -854,7 +854,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("No"));
+        assertNull(confirmation.getCertificateGoodStandingInformation().getContent());
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("No"));
