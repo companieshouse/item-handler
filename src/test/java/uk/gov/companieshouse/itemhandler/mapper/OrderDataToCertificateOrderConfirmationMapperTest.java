@@ -228,9 +228,8 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("Yes"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
-        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("Yes"));
-        assertThat(confirmation.getCertificateAdministratorsDetails(), is("Yes"));
-        assertThat(confirmation.getCertificateCompanyStatus(), is("liquidation"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails().getContent(), is("Yes"));
+        assertThat(confirmation.getCertificateAdministratorsDetails().getContent(), is("Yes"));
     }
 
     @Test
@@ -261,7 +260,6 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
-        assertThat(confirmation.getCertificateCompanyStatus(), nullValue());
     }
 
     @Test
@@ -869,8 +867,8 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("No"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
-        assertNull(confirmation.getCertificateLiquidatorsDetails());
-        assertNull(confirmation.getCertificateAdministratorsDetails());
+        assertNull(confirmation.getCertificateLiquidatorsDetails().getContent());
+        assertNull(confirmation.getCertificateAdministratorsDetails().getContent());
     }
 
     @Test
@@ -890,7 +888,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("No"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails().getContent(), is("No"));
     }
 
     @Test
@@ -910,6 +908,6 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateAdministratorsDetails(), is("No"));
+        assertThat(confirmation.getCertificateAdministratorsDetails().getContent(), is("No"));
     }
 }
