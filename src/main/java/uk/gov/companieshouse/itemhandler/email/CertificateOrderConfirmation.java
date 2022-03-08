@@ -12,7 +12,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateType;
     private String[] certificateIncludes;
     private String deliveryMethod;
-    private String certificateGoodStandingInformation;
+    private Content<String> certificateGoodStandingInformation;
     private String certificateDirectors;
     private String certificateSecretaries;
     private String certificateCompanyObjects;
@@ -56,11 +56,11 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
         this.certificateIncludes = certificateIncludes;
     }
 
-    public String getCertificateGoodStandingInformation() {
+    public Content<String> getCertificateGoodStandingInformation() {
         return certificateGoodStandingInformation;
     }
 
-    public void setCertificateGoodStandingInformation(String certificateGoodStandingInformation) {
+    public void setCertificateGoodStandingInformation(Content<String> certificateGoodStandingInformation) {
         this.certificateGoodStandingInformation = certificateGoodStandingInformation;
     }
 
