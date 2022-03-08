@@ -4,595 +4,42 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>654</x>
-      <y>18</y>
-      <w>462</w>
-      <h>234</h>
+      <x>150</x>
+      <y>186</y>
+      <w>252</w>
+      <h>48</h>
     </coordinates>
-    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::OrdersKafkaConsumer
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+OrderMessageDefaultConsumer
 --
--ORDER_RECEIVED_TOPIC = "order-received": String
--ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry": String
--ORDER_RECEIVED_KEY_RETRY = ORDER_RECEIVED_TOPIC_RETRY: String
--ORDER_RECEIVED_TOPIC_ERROR = "order-received-error": String
--ORDER_RECEIVED_GROUP = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC: String
--ORDER_RECEIVED_GROUP_RETRY = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_RETRY: String
--ORDER_RECEIVED_GROUP_ERROR = APPLICATION_NAMESPACE + "-" + ORDER_RECEIVED_TOPIC_ERROR: String
--errorRecoveryOffset = 0L: long
--MAX_RETRY_ATTEMPTS = 3: int
--bootstrapServers: String
--errorConsumerEnabled: boolean
--serializerFactory: SerializerFactory
--kafkaProducer: OrdersKafkaProducer
--registry: KafkaListenerEndpointRegistry
--retryCount: Map&lt;String, Integer&gt;
--processor: OrderProcessorService
---
-+processOrderReceived(org.springframework.messaging.Message&lt;OrderReceived&gt; message): void
-+processOrderReceivedRetry(org.springframework.messaging.Message&lt;OrderReceived&gt; message): void
-+processOrderReceivedError(org.springframework.messaging.Message&lt;OrderReceived&gt; message): void
---
-bg=orange</panel_attributes>
++processOrderReceived(Message&lt;OrderReceived&gt; message)
+
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>660</x>
-      <y>294</y>
-      <w>450</w>
+      <x>432</x>
+      <y>384</y>
+      <w>276</w>
       <h>72</h>
     </coordinates>
-    <panel_attributes>uk.gov.companieshouse.itemhandler.service::OrderProcessorService
+    <panel_attributes>uk.gov.companieshouse.itemhandler.service::
+OrderProcessorService
 --
 -ordersApi: OrdersApiClientService
 -orderRouter: OrderRouterService
 --
-+OrderProcessorService(final OrdersApiClientService ordersApi, final OrderRouterService orderRouter): ctor
 +processOrderReceived(final String orderUri): void
---
-bg=orange
 </panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>870</x>
-      <y>246</y>
-      <w>18</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>558</x>
-      <y>414</y>
-      <w>384</w>
-      <h>84</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;service&gt;&gt;
-uk.gov.companieshouse.itemhandler.service::OrdersApiClientService
---
--LOGGER = LoggerFactory.getLogger(APPLICATION_NAMESPACE): Logger
--ordersApiToOrderDataMapper: OrdersApiToOrderDataMapper
--apiClient: ApiClient
---
-+OrdersApiClientService(OrdersApiToOrderDataMapper mapper, ApiClient apiClient): ctor
-+getOrderData(String orderUri): OrderData
---
-bg=orange
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>768</x>
-      <y>360</y>
-      <w>18</w>
-      <h>66</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>330</x>
-      <y>660</y>
-      <w>486</w>
-      <h>114</h>
-    </coordinates>
-    <panel_attributes>bg=orange
-&lt;&lt;interface&gt;&gt;
-uk.gov.companieshouse.itemhandler.mapper::
-OrdersApiToOrderDataMapper
---
---
-~ordersApiToOrderData(OrdersApi ordersApi): OrderData
-~apiToItem(BaseItemApi baseItemApi): Item
-~apiToItemOptions(BaseItemApi baseItemApi, @MappingTarget Item item): void
-~apiToOptions(BaseItemOptionsApi baseItemOptionsApi): ItemOptions
-~apiToCertificateItemOptions(CertificateItemOptionsApi certificateItemOptionsApi): CertificateItemOptions
-~apiToCertifiedCopyItemOptions(CertifiedCopyItemOptionsApi certifiedCopyItemOptionsApi): CertifiedCopyItemOptions
-~apiToMissingImageDeliveryOptions(MissingImageDeliveryItemOptionsApi missingImageDeliveryItemOptionsApi): MissingImageDeliveryItemOptions
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>696</x>
-      <y>492</y>
-      <w>18</w>
-      <h>180</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;280.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>888</x>
-      <y>654</y>
-      <w>240</w>
-      <h>126</h>
-    </coordinates>
-    <panel_attributes>bg=red
-uk.gov.companieshouse.itemhandler.model::OrderData
---
--orderedAt: LocalDateTime
--orderedBy: ActionedBy
--links: OrderLinks
---
-+getOrderedAt(): LocalDateTime
-+setOrderedAt(LocalDateTime orderedAt): void
-+getOrderedBy(): ActionedBy
-+setOrderedBy(ActionedBy orderedBy): void
-+getLinks(): OrderLinks
-+setLinks(OrderLinks links): void
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>900</x>
-      <y>492</y>
-      <w>66</w>
-      <h>174</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-&lt;&lt;produces&gt;&gt;</panel_attributes>
-    <additional_attributes>10.0;270.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>984</x>
-      <y>414</y>
-      <w>282</w>
-      <h>78</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.itemhandler.service::
-OrderRouterService
---
---
-+routeOrder(final OrderData order): void
-~getItemType(final OrderData order): ItemType
--getKind(final OrderData order): String
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1014</x>
-      <y>360</y>
-      <w>18</w>
-      <h>66</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1026</x>
-      <y>486</y>
-      <w>18</w>
-      <h>180</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-</panel_attributes>
-    <additional_attributes>10.0;280.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1158</x>
-      <y>546</y>
-      <w>234</w>
-      <h>54</h>
-    </coordinates>
-    <panel_attributes>bg=red
-&lt;&lt;enum&gt;&gt;
-uk.gov.companieshouse.itemhandler.model::
-ItemType
---
-+sendMessages(final OrderData order) : void</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1236</x>
-      <y>486</y>
-      <w>18</w>
-      <h>72</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1158</x>
-      <y>648</y>
-      <w>234</w>
-      <h>54</h>
-    </coordinates>
-    <panel_attributes>bg=red
-uk.gov.companieshouse.itemhandler.service::
-EmailService
---
-+sendOrderConfirmation(final OrderData order) : void</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1272</x>
-      <y>594</y>
-      <w>18</w>
-      <h>66</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>1410</x>
-      <y>438</y>
-      <w>162</w>
-      <h>66</h>
-    </coordinates>
-    <panel_attributes>Item type depends upon kind
-property of first order item.
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1386</x>
-      <y>498</y>
-      <w>108</w>
-      <h>72</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;100.0;160.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1260</x>
-      <y>444</y>
-      <w>162</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;250.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>948</x>
-      <y>936</y>
-      <w>342</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>bg=green
-/uk.gov.companieshouse.itemhandler.kafka::
-KafkaProducer/
---
---
-+afterPropertiesSet(): void
---
-~getChKafkaProducer() : CHKafkaProducer 
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1080</x>
-      <y>1116</y>
-      <w>552</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>bg=green
-uk.gov.companieshouse.itemhandler.kafka::
-EmailSendKafkaProducer
---
---
-+sendMessage(final Message message, final String orderReference, final Consumer&lt;RecordMetadata&gt; asyncResponseLogger): void
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1140</x>
-      <y>972</y>
-      <w>18</w>
-      <h>156</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;240.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1152</x>
-      <y>852</y>
-      <w>318</w>
-      <h>54</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
-EmailSendMessageProducer
---
---
-+sendMessage(final EmailSend email, String orderReference): void
---
-bg=green
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1272</x>
-      <y>696</y>
-      <w>18</w>
-      <h>168</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;260.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1314</x>
-      <y>900</y>
-      <w>18</w>
-      <h>228</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;360.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>588</x>
-      <y>936</y>
-      <w>288</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.kafka.producer::
-CHKafkaProducer
---
-+sendAndReturnFuture(Message msg) : Future&lt;RecordMetadata&gt; </panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>870</x>
-      <y>948</y>
-      <w>90</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;130.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>588</x>
-      <y>1014</y>
-      <w>300</w>
-      <h>36</h>
-    </coordinates>
-    <panel_attributes>org.apache.kafka.clients.producer::
-KafkaProducer
---
-+send(ProducerRecord&lt;K, V&gt; record) : Future&lt;RecordMetadata&gt; </panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>726</x>
-      <y>978</y>
-      <w>18</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>894</x>
-      <y>858</y>
-      <w>84</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>Kafka boilerplate</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>828</x>
-      <y>882</y>
-      <w>78</w>
-      <h>66</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>110.0;10.0;10.0;90.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>1500</x>
-      <y>612</y>
-      <w>264</w>
-      <h>84</h>
-    </coordinates>
-    <panel_attributes>Sends order notification email to internal recipients only. 
-i.e. Recipient specific to order type is configured
-by system property / environment variables:
-
-CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT
-CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT
-MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1386</x>
-      <y>654</y>
-      <w>126</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;190.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1374</x>
-      <y>774</y>
-      <w>198</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.email::EmailSend</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1416</x>
-      <y>726</y>
-      <w>108</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>email::email_send</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1464</x>
-      <y>738</y>
-      <w>18</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>1590</x>
-      <y>714</y>
-      <w>102</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>Avro Generated Model</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1518</x>
-      <y>726</y>
-      <w>84</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;120.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1380</x>
-      <y>696</y>
-      <w>18</w>
-      <h>90</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;130.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1434</x>
-      <y>792</y>
-      <w>18</w>
-      <h>72</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>1368</x>
-      <y>942</y>
-      <w>324</w>
-      <h>54</h>
-    </coordinates>
-    <panel_attributes>bg=green
-uk.gov.companieshouse.itemhandler.kafka::
-EmailSendMessageFactory
---
---
-+EmailSendMessageFactory(SerializerFactory serializer): ctor
-+createMessage(final EmailSend emailSend, String orderReference): Message
---
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1434</x>
-      <y>900</y>
+      <x>564</x>
+      <y>342</y>
       <w>18</w>
       <h>54</h>
     </coordinates>
@@ -602,67 +49,17 @@ EmailSendMessageFactory
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1404</x>
-      <y>1038</y>
-      <w>246</w>
-      <h>36</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.kafka.message::
-Message
---</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1524</x>
-      <y>990</y>
-      <w>66</w>
+      <x>342</x>
+      <y>504</y>
+      <w>204</w>
       <h>60</h>
     </coordinates>
-    <panel_attributes>lt=&lt;.
-&lt;&lt;produces&gt;&gt;</panel_attributes>
-    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>1524</x>
-      <y>1068</y>
-      <w>18</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>870</x>
-      <y>966</y>
-      <w>246</w>
-      <h>162</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;390.0;250.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>246</x>
-      <y>432</y>
-      <w>228</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>&lt;&lt;component&gt;&gt;
-uk.gov.companieshouse.itemhandler.client::
-ApiClient
+    <panel_attributes>&lt;&lt;service&gt;&gt;
+uk.gov.companieshouse.itemhandler.service::
+OrdersApiClientService
 --
---
-+getInternalApiClient(): InternalApiClient
---
-bg=green
++getOrderData(String orderUri): OrderData
+
 </panel_attributes>
     <additional_attributes/>
   </element>
@@ -671,311 +68,46 @@ bg=green
     <coordinates>
       <x>468</x>
       <y>450</y>
-      <w>102</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;150.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>534</x>
-      <y>606</y>
-      <w>84</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>Mapstruct Mapper</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>576</x>
-      <y>642</y>
       <w>18</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;30.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>414</x>
-      <y>612</y>
-      <w>18</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>810</x>
-      <y>702</y>
-      <w>90</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>130.0;10.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>264</x>
-      <y>318</y>
-      <w>204</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api::
-InternalApiClient
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>264</x>
-      <y>264</y>
-      <w>204</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api::
-ApiClient</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>354</x>
-      <y>288</y>
-      <w>18</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>462</x>
-      <y>330</y>
-      <w>108</w>
-      <h>108</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;160.0;160.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLNote</id>
-    <coordinates>
-      <x>42</x>
-      <y>234</y>
-      <w>138</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>private-api-sdk-java:2.0.63
-
-HTTP client API used to fetch
-OrderApi model</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>246</x>
-      <y>372</y>
-      <w>228</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.sdk.manager::
-ApiSdkManager</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>354</x>
-      <y>396</y>
-      <w>18</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>354</x>
-      <y>342</y>
-      <w>18</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>258</x>
-      <y>516</y>
-      <w>210</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api.model.order::
-/AbstractOrderDataApi/
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>258</x>
-      <y>588</y>
-      <w>210</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api.model.order::
-OrdersApi
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>360</x>
-      <y>540</y>
-      <w>18</w>
-      <h>60</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;80.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>6</x>
-      <y>318</y>
-      <w>210</w>
-      <h>30</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api.handler.order::
-PrivateOrderResourceHandler
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>210</x>
-      <y>324</y>
-      <w>66</w>
-      <h>18</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;10.0;90.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>0</x>
-      <y>372</y>
-      <w>228</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>uk.gov.companieshouse.api.handler.order.request::
-OrdersGet
---
-+execute() : ApiResponse&lt;OrdersApi&gt; </panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>108</x>
-      <y>342</y>
-      <w>18</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;50.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>30</x>
-      <y>438</y>
-      <w>180</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>template=OrdersAPI
-uk.gov.companieshouse.api.model::
-ApiResponse
---</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>108</x>
-      <y>408</y>
-      <w>18</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>114</x>
-      <y>474</y>
-      <w>156</w>
-      <h>138</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>240.0;210.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>462</x>
-      <y>492</y>
-      <w>114</w>
-      <h>120</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;180.0;170.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>972</x>
-      <y>882</y>
-      <w>78</w>
       <h>66</h>
     </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;110.0;90.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>174</x>
-      <y>252</y>
-      <w>102</w>
-      <h>42</h>
-    </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;150.0;50.0</additional_attributes>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1218</x>
-      <y>84</y>
+      <x>672</x>
+      <y>504</y>
+      <w>282</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;service&gt;&gt;
+uk.gov.companieshouse.itemhandler.service::
+OrderRouterService
+--
++routeOrder(final OrderData order): void
+~getItemType(final OrderData order): ItemType
+-getKind(final OrderData order): String
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>696</x>
+      <y>450</y>
+      <w>18</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>474</x>
+      <y>66</y>
       <w>216</w>
       <h>42</h>
     </coordinates>
@@ -988,31 +120,340 @@ Message
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1110</x>
+      <x>270</x>
       <y>102</y>
-      <w>120</w>
-      <h>18</h>
+      <w>264</w>
+      <h>96</h>
     </coordinates>
-    <panel_attributes>lt=&lt;.</panel_attributes>
-    <additional_attributes>180.0;10.0;10.0;10.0</additional_attributes>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>420.0;10.0;420.0;90.0;10.0;90.0;10.0;140.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1230</x>
-      <y>168</y>
+      <x>480</x>
+      <y>6</y>
       <w>162</w>
-      <h>42</h>
+      <h>30</h>
     </coordinates>
     <panel_attributes>uk.gov.companieshouse.orders::
-OrderReceived</panel_attributes>
+OrderReceived
+bg=gray</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1308</x>
-      <y>120</y>
+      <x>558</x>
+      <y>30</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>708</x>
+      <y>0</y>
+      <w>144</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>Kafka order notification message
+
+kafka-models:1.0.26</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>636</x>
+      <y>12</y>
+      <w>84</w>
+      <h>18</h>
+    </coordinates>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>10.0;10.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>54</x>
+      <y>6</y>
+      <w>156</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>Class Diagram: item-handler
+
+v0.1.57</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>696</x>
+      <y>612</y>
+      <w>234</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;enum&gt;&gt;
+uk.gov.companieshouse.itemhandler.model::
+ItemType
+--
++sendMessages(final OrderData order) : void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>810</x>
+      <y>660</y>
+      <w>18</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>708</x>
+      <y>732</y>
+      <w>210</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.service::
+EmailService
+--
++sendOrderConfirmation(final OrderData order)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>810</x>
+      <y>780</y>
+      <w>18</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;200.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>690</x>
+      <y>900</y>
+      <w>318</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+EmailSendMessageProducer
+--
++sendMessage(final EmailSend email, String orderReference): void
+--
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>870</x>
+      <y>840</y>
+      <w>198</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.email::EmailSend
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>888</x>
+      <y>780</y>
+      <w>18</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;100.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>936</x>
+      <y>798</y>
+      <w>108</w>
+      <h>18</h>
+    </coordinates>
+    <panel_attributes>email::email_send
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>984</x>
+      <y>810</y>
+      <w>18</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>1128</x>
+      <y>786</y>
+      <w>102</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>Avro Generated Model</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>972</x>
+      <y>660</y>
+      <w>240</w>
+      <h>78</h>
+    </coordinates>
+    <panel_attributes>Certified certificates &amp; documents:
+
+Sends order notification email to internal recipients only. 
+i.e. Recipient specific to order type is configured
+by system property / environment variables:
+
+Kafka record published to: email-send
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>852</x>
+      <y>948</y>
+      <w>18</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;340.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>618</x>
+      <y>1152</y>
+      <w>414</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+MessageProducer
+--
++sendMessage(final Message message, final Consumer&lt;RecordMetadata&gt; asyncResponseLogger)
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>906</x>
+      <y>984</y>
+      <w>324</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+EmailSendMessageFactory
+--
++EmailSendMessageFactory(SerializerFactory serializer): ctor
++createMessage(final EmailSend emailSend, String orderReference): Message
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>972</x>
+      <y>948</y>
+      <w>18</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>942</x>
+      <y>1080</y>
+      <w>246</w>
+      <h>36</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.kafka.message::
+Message
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1062</x>
+      <y>1032</y>
+      <w>66</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;produces&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>984</x>
+      <y>1110</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>660</x>
+      <y>1092</y>
+      <w>18</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;100.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>522</x>
+      <y>1050</y>
+      <w>288</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.kafka.producer::
+CHKafkaProducer
+--
++sendAndReturnFuture(Message msg) : Future&lt;RecordMetadata&gt; 
++send(Message msg)
+bg=gray</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>810</x>
+      <y>564</y>
       <w>18</w>
       <h>60</h>
     </coordinates>
@@ -1020,117 +461,565 @@ OrderReceived</panel_attributes>
     <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
   </element>
   <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1026</x>
+      <y>1164</y>
+      <w>198</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throws&gt;&gt;</panel_attributes>
+    <additional_attributes>310.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1446</x>
-      <y>90</y>
-      <w>156</w>
-      <h>36</h>
+      <x>1212</x>
+      <y>1158</y>
+      <w>210</w>
+      <h>30</h>
     </coordinates>
-    <panel_attributes>org.springframework.messaging::
-MessageHeaders</panel_attributes>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.exception::
+NonRetryableException</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1392</x>
-      <y>102</y>
-      <w>66</w>
+      <x>1038</x>
+      <y>798</y>
+      <w>102</w>
       <h>18</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>90.0;10.0;10.0;10.0</additional_attributes>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>10.0;10.0;150.0;10.0</additional_attributes>
   </element>
   <element>
-    <id>UMLNote</id>
+    <id>Relation</id>
     <coordinates>
-      <x>1644</x>
-      <y>54</y>
-      <w>138</w>
-      <h>54</h>
+      <x>912</x>
+      <y>720</y>
+      <w>72</w>
+      <h>36</h>
     </coordinates>
-    <panel_attributes>Contains kafka_offset for
-error recovery. Recovery 
-is performed when:
-
-kafka_offset &lt;= 0</panel_attributes>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>10.0;40.0;100.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>354</x>
+      <y>654</y>
+      <w>204</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.exception::
+RetryableException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>54</x>
+      <y>390</y>
+      <w>204</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse
+--
++newBuilder(): Builder
++getOrderUri(): String
++getStatus(): Status
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1596</x>
-      <y>72</y>
-      <w>60</w>
-      <h>48</h>
+      <x>252</x>
+      <y>408</y>
+      <w>192</w>
+      <h>24</h>
     </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;60.0;80.0;10.0</additional_attributes>
+    <panel_attributes>lt=&lt;-
+&lt;&lt;produces&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;300.0;20.0</additional_attributes>
   </element>
   <element>
-    <id>UMLNote</id>
+    <id>UMLClass</id>
     <coordinates>
-      <x>1446</x>
-      <y>168</y>
+      <x>12</x>
+      <y>600</y>
+      <w>282</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+/Visitable/
+--
++ accept(Visitor visitor, Message&lt;OrderReceived&gt; message)
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>36</x>
+      <y>684</y>
+      <w>246</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+/Visitor/
+--
++ serviceOk(Message&lt;OrderReceived&gt; message) : void
++ serviceUnavailable(Message&lt;OrderReceived&gt; message) : void
++ serviceError(Message&lt;OrderReceived&gt; message) : void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>42</x>
+      <y>492</y>
+      <w>222</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.service::OrderProcessResponse.
+Status
+--
+enum {OK,
+          SERVICE_UNAVAILABLE,
+          SERVICE_ERROR}
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>552</y>
+      <w>18</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>450</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;70.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>18</x>
+      <y>792</y>
+      <w>270</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.
+itemhandler.kafka::OrderProcessResponseHandler
+--
++serviceOk(Message&lt;OrderReceived&gt; message): void
++serviceUnavailable(Message&lt;OrderReceived&gt; message): void
++serviceError(Message&lt;OrderReceived&gt; message): void
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>750</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>150</x>
+      <y>648</y>
+      <w>18</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;60.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>450</x>
+      <y>300</y>
       <w>240</w>
       <h>48</h>
     </coordinates>
-    <panel_attributes>Kafka order notification message
-
-kafka-models:1.0.17</panel_attributes>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+OrderMessageHandler
+--
++handleMessage(Message&lt;OrderReceived&gt; message)
+--
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1386</x>
-      <y>180</y>
-      <w>72</w>
-      <h>18</h>
+      <x>270</x>
+      <y>228</y>
+      <w>264</w>
+      <h>84</h>
     </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;100.0;10.0</additional_attributes>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>420.0;120.0;420.0;60.0;10.0;60.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>714</x>
-      <y>882</y>
-      <w>30</w>
-      <h>66</h>
+      <x>150</x>
+      <y>312</y>
+      <w>312</w>
+      <h>90</h>
     </coordinates>
-    <panel_attributes>lt=..</panel_attributes>
-    <additional_attributes>10.0;10.0;30.0;90.0</additional_attributes>
+    <panel_attributes>lt=&lt;-
+&lt;&lt;uses&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;130.0;10.0;10.0;500.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>462</x>
+      <y>732</y>
+      <w>204</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.service::
+ChdItemSenderService
+--
++sendItemsToChd(final OrderData order)
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>618</x>
+      <y>660</y>
+      <w>210</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;10.0;50.0;330.0;50.0;330.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLNote</id>
     <coordinates>
-      <x>678</x>
-      <y>846</y>
-      <w>84</w>
+      <x>354</x>
+      <y>822</y>
+      <w>198</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>Missing image delivery:
+Kafka record published to: chd-item-ordered</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>432</x>
+      <y>780</y>
+      <w>126</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=..</panel_attributes>
+    <additional_attributes>10.0;70.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>1212</x>
+      <y>1092</y>
+      <w>210</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.exception::
+ItemHandlerRuntimeException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1326</x>
+      <y>1116</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>480</x>
+      <y>588</y>
+      <w>204</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.exception::
+.ItemHandlerRuntimeException</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>420</x>
+      <y>558</y>
+      <w>54</w>
+      <h>108</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+&lt;&lt;throws&gt;&gt;</panel_attributes>
+    <additional_attributes>10.0;160.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>516</x>
+      <y>612</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>276</x>
+      <y>1128</y>
+      <w>204</w>
+      <h>72</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+KafkaConfig
+--
+@Bean
+MessageProducer defaultMessageProducer(...)
+@Bean
+MessageProducer chdMessageProducer(...)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>474</x>
+      <y>1164</y>
+      <w>156</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+&lt;&lt;create&gt;&gt;</panel_attributes>
+    <additional_attributes>240.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>438</x>
+      <y>186</y>
+      <w>258</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+OrderMessageRetryConsumer
+--
++processOrderReceived(Message&lt;OrderReceived&gt; message)
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>726</x>
+      <y>186</y>
+      <w>258</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+OrderMessageErrorConsumer
+--
++processOrderReceived(Message&lt;OrderReceived&gt; message)
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>558</x>
+      <y>102</y>
+      <w>18</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>600</x>
+      <y>102</y>
+      <w>264</w>
+      <h>96</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;90.0;420.0;90.0;420.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>564</x>
+      <y>228</y>
+      <w>18</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>612</x>
+      <y>228</y>
+      <w>252</w>
+      <h>84</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;10.0;60.0;400.0;60.0;400.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>948</x>
+      <y>102</y>
+      <w>192</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka
+::PartitionOffset
+--
++setOffset(Long offset): void
++getOffset(): Long
++clear(): void
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>888</x>
+      <y>36</y>
+      <w>192</w>
       <h>42</h>
     </coordinates>
-    <panel_attributes>ch-kafka:1.4.2</panel_attributes>
+    <panel_attributes>uk.gov.companieshouse.itemhandler.kafka::
+ErrorConsumerController
+--
++pauseConsumerThread(): void
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>UMLNote</id>
+    <id>Relation</id>
     <coordinates>
-      <x>36</x>
-      <y>36</y>
-      <w>270</w>
-      <h>120</h>
+      <x>918</x>
+      <y>72</y>
+      <w>18</w>
+      <h>126</h>
     </coordinates>
-    <panel_attributes>Class Diagram: item-handler
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;190.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>966</x>
+      <y>156</y>
+      <w>18</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;50.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>768</x>
+      <y>300</y>
+      <w>222</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;interface&gt;&gt;
+template=&lt;T&gt;
+uk.gov.companieshouse.itemhandler.kafka::
+/MessageFilter/
 
-Uses:
-
-private-api-sdk-java:2.0.63
-api-sdk-manager-java-library:1.0.4
-api-sdk-java:4.1.48
-kafka-models:1.0.17
-ch-kafka:1.4.2</panel_attributes>
+</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>684</x>
+      <y>312</y>
+      <w>96</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+&lt;&lt;uses&gt;&gt;</panel_attributes>
+    <additional_attributes>140.0;20.0;10.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>756</x>
+      <y>378</y>
+      <w>276</w>
+      <h>42</h>
+    </coordinates>
+    <panel_attributes>template=OrderReceived
+uk.gov.companieshouse.itemhandler.kafka::
+DuplicateMessageFilter
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>870</x>
+      <y>342</y>
+      <w>18</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;70.0</additional_attributes>
   </element>
 </diagram>
