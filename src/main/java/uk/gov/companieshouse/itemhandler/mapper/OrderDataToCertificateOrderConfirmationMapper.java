@@ -14,6 +14,7 @@ import uk.gov.companieshouse.itemhandler.model.BasicInformationIncludable;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
+import uk.gov.companieshouse.itemhandler.model.Content;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -91,11 +92,10 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateLimitedPartner(mapIncludeBasicInformationText(options.getLimitedPartnerDetails()));
         confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options.getPrincipalPlaceOfBusinessDetails()));
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
-        confirmation.setCertificateLiquidatorsDetails(
-                Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
-        confirmation.setCertificateAdministratorsDetails(
-                Optional.ofNullable(options.getAdministratorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null));
-        confirmation.setCertificateCompanyStatus(Optional.ofNullable(options.getCompanyStatus()).map(CompanyStatus::getValue).orElse(null));
+        confirmation.setCertificateLiquidatorsDetails(new Content<>(
+                Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null)));
+        confirmation.setCertificateAdministratorsDetails(new Content<>(
+                Optional.ofNullable(options.getAdministratorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null)));
     }
 
     /**

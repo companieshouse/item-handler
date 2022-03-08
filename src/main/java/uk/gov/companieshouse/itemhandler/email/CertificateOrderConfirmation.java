@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.email;
 
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
+import uk.gov.companieshouse.itemhandler.model.Content;
 
 /**
  * An instance of this holds the information required to generate a certificate order confirmation email.
@@ -27,10 +28,9 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateLimitedPartner;
     private String certificatePrincipalPlaceOfBusinessDetails;
     private String certificateGeneralNatureOfBusinessInformation;
-    private String certificateLiquidatorsDetails;
-    private String certificateAdministratorsDetails;
+    private Content<String> certificateLiquidatorsDetails;
+    private Content<String> certificateAdministratorsDetails;
     private FeatureOptions featureOptions;
-    private String certificateCompanyStatus;
 
     public String getFeeAmount() {
         return feeAmount;
@@ -192,19 +192,19 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
         this.certificateGeneralNatureOfBusinessInformation = certificateGeneralNatureOfBusinessInformation;
     }
 
-    public String getCertificateLiquidatorsDetails() {
+    public Content<String> getCertificateLiquidatorsDetails() {
         return certificateLiquidatorsDetails;
     }
 
-    public void setCertificateLiquidatorsDetails(String certificateLiquidatorsDetails) {
+    public void setCertificateLiquidatorsDetails(Content<String> certificateLiquidatorsDetails) {
         this.certificateLiquidatorsDetails = certificateLiquidatorsDetails;
     }
 
-    public String getCertificateAdministratorsDetails() {
+    public Content<String> getCertificateAdministratorsDetails() {
         return certificateAdministratorsDetails;
     }
 
-    public void setCertificateAdministratorsDetails(String certificateAdministratorsDetails) {
+    public void setCertificateAdministratorsDetails(Content<String> certificateAdministratorsDetails) {
         this.certificateAdministratorsDetails = certificateAdministratorsDetails;
     }
 
@@ -214,13 +214,5 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setFeatureOptions(FeatureOptions featureOptions) {
         this.featureOptions = featureOptions;
-    }
-
-    public String getCertificateCompanyStatus() {
-        return certificateCompanyStatus;
-    }
-
-    public void setCertificateCompanyStatus(String certificateCompanyStatus) {
-        this.certificateCompanyStatus = certificateCompanyStatus;
     }
 }
