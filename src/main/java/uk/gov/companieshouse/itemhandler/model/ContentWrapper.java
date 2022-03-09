@@ -2,10 +2,10 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import java.util.Objects;
 
-public class Content<T> {
-    private T content;
+public class ContentWrapper<T> {
+    private final T content;
 
-    public Content(T content) {
+    public ContentWrapper(T content) {
         this.content = content;
     }
 
@@ -17,7 +17,7 @@ public class Content<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Content<?> content1 = (Content<?>) o;
+        ContentWrapper<?> content1 = (ContentWrapper<?>) o;
         return Objects.equals(content, content1.content);
     }
 

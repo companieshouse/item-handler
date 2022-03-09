@@ -13,8 +13,7 @@ import uk.gov.companieshouse.itemhandler.model.Address;
 import uk.gov.companieshouse.itemhandler.model.BasicInformationIncludable;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
-import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
-import uk.gov.companieshouse.itemhandler.model.Content;
+import uk.gov.companieshouse.itemhandler.model.ContentWrapper;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -78,7 +77,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateRegisteredOfficeOptions(mapCertificateRegisteredOfficeOptions(options.getRegisteredOfficeAddressDetails()));
         confirmation.setCertificateDirectorOptions(mapCertificateDirectorOptions(item));
         confirmation.setCertificateSecretaryOptions(mapCertificateSecretaryOptions(item));
-        confirmation.setCertificateGoodStandingInformation(new Content<>(
+        confirmation.setCertificateGoodStandingInformation(new ContentWrapper<>(
                 Optional.ofNullable(options.getIncludeGoodStandingInformation()).map(this::mapCertificateOptionsText).orElse(null)));
         confirmation.setCertificateSecretaries(mapIncludeBasicInformationText(options.getSecretaryDetails()));
         confirmation.setCertificateDirectors(mapIncludeBasicInformationText(options.getDirectorDetails()));
@@ -93,9 +92,9 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateLimitedPartner(mapIncludeBasicInformationText(options.getLimitedPartnerDetails()));
         confirmation.setCertificatePrincipalPlaceOfBusinessDetails(mapCertificatePrincipalPlaceOfBusinessDetails(options.getPrincipalPlaceOfBusinessDetails()));
         confirmation.setCertificateGeneralNatureOfBusinessInformation(mapCertificateOptionsText(options.getIncludeGeneralNatureOfBusinessInformation()));
-        confirmation.setCertificateLiquidatorsDetails(new Content<>(
+        confirmation.setCertificateLiquidatorsDetails(new ContentWrapper<>(
                 Optional.ofNullable(options.getLiquidatorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null)));
-        confirmation.setCertificateAdministratorsDetails(new Content<>(
+        confirmation.setCertificateAdministratorsDetails(new ContentWrapper<>(
                 Optional.ofNullable(options.getAdministratorsDetails()).map(this::mapIncludeBasicInformationText).orElse(null)));
     }
 
