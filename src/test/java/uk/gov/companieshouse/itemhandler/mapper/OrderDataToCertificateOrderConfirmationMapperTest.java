@@ -213,7 +213,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -228,9 +228,8 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("Yes"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("Yes"));
-        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("Yes"));
-        assertThat(confirmation.getCertificateAdministratorsDetails(), is("Yes"));
-        assertThat(confirmation.getCertificateCompanyStatus(), is("liquidation"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails().getContent(), is("Yes"));
+        assertThat(confirmation.getCertificateAdministratorsDetails().getContent(), is("Yes"));
     }
 
     @Test
@@ -255,13 +254,12 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
         assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
         assertThat(confirmation.getFeeAmount(), is("15"));
-        assertThat(confirmation.getCertificateCompanyStatus(), nullValue());
     }
 
     @Test
@@ -285,7 +283,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -316,7 +314,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -347,7 +345,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -377,7 +375,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -409,7 +407,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address and the one previous"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -441,7 +439,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("Current address and the two previous"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -473,7 +471,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("All current and previous addresses"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -505,7 +503,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
@@ -543,7 +541,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("Yes"));
         assertThat(directors.getIncludeDobType(), is(IncludeDobType.PARTIAL));
@@ -586,7 +584,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(directors.getIncludeAddress(), is(false));
@@ -623,7 +621,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("Yes"));
         assertThat(directors.getIncludeDobType(), is(IncludeDobType.PARTIAL));
@@ -657,7 +655,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(secretary.getIncludeBasicInformation(), is(true));
@@ -690,7 +688,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
         assertThat(secretary.getIncludeBasicInformation(), is(false));
@@ -723,7 +721,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
         assertThat(confirmation.getCertificateRegisteredOfficeOptions(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(secretary.getIncludeAddress(), is(true));
@@ -856,7 +854,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation(), is("No"));
+        assertNull(confirmation.getCertificateGoodStandingInformation().getContent());
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("No"));
@@ -869,8 +867,8 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCertificateLimitedPartner(), is("No"));
         assertThat(confirmation.getCertificatePrincipalPlaceOfBusinessDetails(), is("No"));
         assertThat(confirmation.getCertificateGeneralNatureOfBusinessInformation(), is("No"));
-        assertNull(confirmation.getCertificateLiquidatorsDetails());
-        assertNull(confirmation.getCertificateAdministratorsDetails());
+        assertNull(confirmation.getCertificateLiquidatorsDetails().getContent());
+        assertNull(confirmation.getCertificateAdministratorsDetails().getContent());
     }
 
     @Test
@@ -890,7 +888,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateLiquidatorsDetails(), is("No"));
+        assertThat(confirmation.getCertificateLiquidatorsDetails().getContent(), is("No"));
     }
 
     @Test
@@ -910,6 +908,6 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateAdministratorsDetails(), is("No"));
+        assertThat(confirmation.getCertificateAdministratorsDetails().getContent(), is("No"));
     }
 }
