@@ -13,6 +13,7 @@ import uk.gov.companieshouse.itemhandler.model.Address;
 import uk.gov.companieshouse.itemhandler.model.BasicInformationIncludable;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
+import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.ContentWrapper;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
@@ -77,8 +78,9 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         confirmation.setCertificateRegisteredOfficeOptions(mapCertificateRegisteredOfficeOptions(options.getRegisteredOfficeAddressDetails()));
         confirmation.setCertificateDirectorOptions(mapCertificateDirectorOptions(item));
         confirmation.setCertificateSecretaryOptions(mapCertificateSecretaryOptions(item));
-        confirmation.setCertificateGoodStandingInformation(new ContentWrapper<>(
-                Optional.ofNullable(options.getIncludeGoodStandingInformation()).map(this::mapCertificateOptionsText).orElse(null)));
+        if (CompanyStatus.ACTIVE == options.getCompanyStatus()) {
+            confirmation.setCertificateGoodStandingInformation(new ContentWrapper<>(mapCertificateOptionsText(options.getIncludeGoodStandingInformation())));
+        }
         confirmation.setCertificateSecretaries(mapIncludeBasicInformationText(options.getSecretaryDetails()));
         confirmation.setCertificateDirectors(mapIncludeBasicInformationText(options.getDirectorDetails()));
         confirmation.setCertificateCompanyObjects(mapCertificateOptionsText(options.getIncludeCompanyObjectsInformation()));
