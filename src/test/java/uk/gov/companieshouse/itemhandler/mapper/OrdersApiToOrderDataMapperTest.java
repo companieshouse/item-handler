@@ -512,19 +512,19 @@ class OrdersApiToOrderDataMapperTest {
     }
 
     @Test
-    @DisplayName("Correctly maps company status active to enumerated type")
+    @DisplayName("Correctly maps company status active to enumerated type ACTIVE")
     void testActiveCompanyStatusMapping() {
         assertThat(CompanyStatus.ACTIVE, is(mapper.mapCompanyStatus("active")));
     }
 
     @Test
-    @DisplayName("Correctly maps company status liquidation to enumerated type")
+    @DisplayName("Correctly maps company status liquidation to enumerated type LIQUIDATION")
     void testLiquidatedCompanyStatusMapping() {
         assertThat(CompanyStatus.LIQUIDATION, is(mapper.mapCompanyStatus("liquidation")));
     }
 
     @Test
-    @DisplayName("Correctly maps company status other to enumerated type")
+    @DisplayName("Correctly maps unmapped company status to enumerated type OTHER")
     void testOtherCompanyStatusMapping() {
         assertThat(CompanyStatus.OTHER, is(mapper.mapCompanyStatus("xyz")));
     }
