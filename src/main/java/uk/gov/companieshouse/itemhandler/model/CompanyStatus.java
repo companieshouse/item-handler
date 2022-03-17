@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.model;
 
 public enum CompanyStatus {
+    ACTIVE("active"),
     LIQUIDATION("liquidation"),
     OTHER("other");
 

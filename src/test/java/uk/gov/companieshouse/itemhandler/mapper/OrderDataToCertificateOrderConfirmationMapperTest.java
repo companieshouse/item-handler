@@ -213,7 +213,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
 
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
         assertInformationIsAsExpected(confirmation);
-        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("Yes"));
+        assertThat(confirmation.getCertificateGoodStandingInformation(), is(nullValue()));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("Yes"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("Yes"));
@@ -245,6 +245,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
         options.setCompanyStatus(null);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -274,6 +275,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         options.setDirectorDetails(directors);
         options.setSecretaryDetails(null);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -305,6 +307,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -336,6 +339,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -366,6 +370,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -398,6 +403,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -430,6 +436,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -462,6 +469,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -494,6 +502,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -532,6 +541,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -575,6 +585,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -612,6 +623,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretaries.setIncludeBasicInformation(true);
         options.setSecretaryDetails(secretaries);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -646,6 +658,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeAppointmentDate(true);
         options.setSecretaryDetails(secretary);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -679,6 +692,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeAppointmentDate(false);
         options.setSecretaryDetails(secretary);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -712,6 +726,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         secretary.setIncludeAppointmentDate(false);
         options.setSecretaryDetails(secretary);
         options.setIncludeCompanyObjectsInformation(true);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         item.setItemOptions(options);
         order.setItems(singletonList(item));
@@ -848,13 +863,14 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         order.setOrderedAt(LocalDateTime.now());
         order.setTotalOrderCost("99");
         item.setItemOptions(options);
+        options.setCompanyStatus(CompanyStatus.ACTIVE);
 
         // When
         final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
 
         // Then
         assertInformationIsAsExpected(confirmation);
-        assertNull(confirmation.getCertificateGoodStandingInformation().getContent());
+        assertThat(confirmation.getCertificateGoodStandingInformation().getContent(), is("No"));
         assertThat(confirmation.getCertificateDirectors(), is("No"));
         assertThat(confirmation.getCertificateSecretaries(), is("No"));
         assertThat(confirmation.getCertificateCompanyObjects(), is("No"));

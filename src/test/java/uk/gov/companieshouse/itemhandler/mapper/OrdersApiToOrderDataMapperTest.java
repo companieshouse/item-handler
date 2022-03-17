@@ -3,6 +3,7 @@ package uk.gov.companieshouse.itemhandler.mapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,7 @@ import uk.gov.companieshouse.api.model.order.item.RegisteredOfficeAddressDetails
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
+import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
@@ -507,5 +509,23 @@ class OrdersApiToOrderDataMapperTest {
         item.setEtag(TOKEN_ETAG);
 
         return item;
+    }
+
+    @Test
+    @DisplayName("Correctly maps company status active to enumerated type ACTIVE")
+    void testActiveCompanyStatusMapping() {
+        assertThat(CompanyStatus.ACTIVE, is(mapper.mapCompanyStatus("active")));
+    }
+
+    @Test
+    @DisplayName("Correctly maps company status liquidation to enumerated type LIQUIDATION")
+    void testLiquidatedCompanyStatusMapping() {
+        assertThat(CompanyStatus.LIQUIDATION, is(mapper.mapCompanyStatus("liquidation")));
+    }
+
+    @Test
+    @DisplayName("Correctly maps unmapped company status to enumerated type OTHER")
+    void testOtherCompanyStatusMapping() {
+        assertThat(CompanyStatus.OTHER, is(mapper.mapCompanyStatus("xyz")));
     }
 }

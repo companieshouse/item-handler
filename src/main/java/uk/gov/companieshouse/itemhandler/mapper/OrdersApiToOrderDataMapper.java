@@ -66,6 +66,7 @@ public interface OrdersApiToOrderDataMapper {
     CompanyType mapCompanyType(String companyType);
 
     @ValueMappings({
+            @ValueMapping(source = "active", target = "ACTIVE"),
             @ValueMapping(source = "liquidation", target = "LIQUIDATION"),
             @ValueMapping(source = MappingConstants.ANY_UNMAPPED, target = "OTHER")
     })
