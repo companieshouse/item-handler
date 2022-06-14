@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.SAME_DAY;
+import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.STANDARD;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +34,7 @@ import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -79,6 +82,9 @@ class EmailServiceTest {
     @Mock
     private ItemOrderConfirmation itemOrderConfirmation;
 
+    @Mock
+    private DeliveryItemOptions deliveryItemOptions;
+
     @Captor
     ArgumentCaptor<EmailSend> emailCaptor;
 
@@ -101,6 +107,8 @@ class EmailServiceTest {
         when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
 
         // When
@@ -119,6 +127,36 @@ class EmailServiceTest {
     }
 
     @Test
+    @DisplayName("Sends same day certificate order confirmation successfully")
+    void sendsSameDayCertificateOrderConfirmation() throws Exception {
+
+        // Given
+        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
+        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
+        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
+        when(order.getItems()).thenReturn(items);
+        when(items.get(0)).thenReturn(item);
+        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(SAME_DAY);
+
+        // When
+        emailServiceUnderTest.sendOrderConfirmation(order);
+        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
+
+        // Then
+        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
+        final EmailSend emailSent = emailCaptor.getValue();
+        assertThat(emailSent.getAppId(), is("item-handler.same-day-certificate-order-confirmation"));
+        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
+        assertThat(emailSent.getMessageType(), is("same_day_certificate_order_confirmation_email"));
+        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
+        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
+        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+    }
+
+    @Test
     @DisplayName("Sends certified copy order confirmation successfully")
     void sendsCertifiedCopyOrderConfirmation() throws Exception {
 
@@ -130,6 +168,8 @@ class EmailServiceTest {
         when(itemOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
 
         // When
@@ -159,6 +199,8 @@ class EmailServiceTest {
         when(itemOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
 
         // When
@@ -185,6 +227,8 @@ class EmailServiceTest {
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_UNKNOWN);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         when(order.getReference()).thenReturn("456");
 
         // When and then
@@ -205,6 +249,8 @@ class EmailServiceTest {
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
 
         // When
         Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(order);

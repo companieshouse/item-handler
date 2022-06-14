@@ -2,6 +2,7 @@ package uk.gov.companieshouse.itemhandler.service;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.STANDARD;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -17,6 +18,7 @@ import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -62,6 +64,9 @@ class EmailServiceIntegrationTest {
     @MockBean
     private ItemOrderConfirmation itemOrderConfirmation;
 
+    @MockBean
+    private DeliveryItemOptions deliveryItemOptions;
+
     @Test
     @DisplayName("EmailService sets the to line on the confirmation to the configured " +
             "certificate.order.confirmation.recipient value")
@@ -74,6 +79,8 @@ class EmailServiceIntegrationTest {
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
@@ -92,6 +99,8 @@ class EmailServiceIntegrationTest {
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then
@@ -111,6 +120,8 @@ class EmailServiceIntegrationTest {
         when(order.getItems()).thenReturn(items);
         when(items.get(0)).thenReturn(item);
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
+        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         emailServiceUnderTest.sendOrderConfirmation(order);
 
         // Then

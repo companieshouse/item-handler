@@ -12,6 +12,7 @@ import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -32,6 +33,10 @@ public class EmailService {
             "item-handler.certificate-order-confirmation";
     public static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certificate_order_confirmation_email";
+    public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
+            "item-handler.same-day-certificate-order-confirmation";
+    public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+            "same_day_certificate_order_confirmation_email";
     public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.certified-copy-order-confirmation";
     public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
@@ -43,6 +48,7 @@ public class EmailService {
     public static final String ITEM_TYPE_CERTIFICATE = "certificate";
     public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
+    public static final String STANDARD_DELIVERY = "standard";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
@@ -116,14 +122,15 @@ public class EmailService {
      */
     private OrderConfirmationAndEmail buildOrderConfirmationAndEmail(final OrderData order) {
         final String descriptionId = order.getItems().get(0).getDescriptionIdentifier();
+        final String deliveryTimescale = ((DeliveryItemOptions) order.getItems().get(0).getItemOptions()).getDeliveryTimescale().getJsonName();
         final EmailSend email = new EmailSend();
         final OrderConfirmation confirmation;
         switch (descriptionId) {
             case ITEM_TYPE_CERTIFICATE:
                 confirmation = orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions);
                 confirmation.setTo(certificateOrderRecipient);
-                email.setAppId(CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ? CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID : SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ? CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE : SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
