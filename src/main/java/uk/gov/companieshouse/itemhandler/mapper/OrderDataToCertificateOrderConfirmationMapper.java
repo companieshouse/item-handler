@@ -20,6 +20,7 @@ import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.ContentWrapper;
+import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.DirectorOrSecretaryDetails;
 import uk.gov.companieshouse.itemhandler.model.IncludeDobType;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -239,7 +240,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
     }
 
     private String mapDeliveryMethod (String timescale) {
-        if (timescale == "STANDARD") {
+        if (timescale.equals(DeliveryTimescale.STANDARD.toString())) {
              return toSentenceCase(timescale) + " delivery (aim to dispatch within " + dispatchDays
                             + " working days)";
         } else {
@@ -248,7 +249,7 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
     }
 
     private String mapIsEmailRequired(CertificateItemOptions item) {
-        if (item.getDeliveryTimescale().toString() == "SAME_DAY") {
+        if (item.getDeliveryTimescale().toString().equals(DeliveryTimescale.SAME_DAY.toString())) {
             if (item.getIncludeEmailCopy()) {
                 return "Yes";
             } else {
