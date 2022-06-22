@@ -12,6 +12,7 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
     private String certificateType;
     private String[] certificateIncludes;
     private String deliveryMethod;
+    private String emailCopyRequired;
     private ContentWrapper<String> certificateGoodStandingInformation;
     private String certificateDirectors;
     private String certificateSecretaries;
@@ -118,6 +119,14 @@ public class CertificateOrderConfirmation extends OrderConfirmation {
 
     public void setDeliveryMethod(String deliveryMethod) {
         this.deliveryMethod = deliveryMethod;
+    }
+
+    public String getEmailCopyRequired() {
+        return emailCopyRequired;
+    }
+
+    public void setEmailCopyRequired(String emailCopyRequired) {
+        this.emailCopyRequired = emailCopyRequired;
     }
 
     public String getCertificateCompanyType() {

@@ -1,5 +1,23 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.ALL;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_PREVIOUS_AND_PRIOR;
+import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,25 +49,6 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Collections;
-
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.ALL;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_AND_PREVIOUS;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT_PREVIOUS_AND_PRIOR;
-import static uk.gov.companieshouse.itemhandler.util.DateConstants.DATETIME_OF_PAYMENT_FORMATTER;
 
 /**
  * Unit tests the {@link OrderDataToCertificateOrderConfirmationMapper} interface and its implementation.
@@ -137,8 +136,9 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         item.setCompanyNumber("00000001");
         item.setKind("item#certificate");
         options = new CertificateItemOptions();
-        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
         options.setCertificateType(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
+        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
+        options.setIncludeEmailCopy(false);
     }
 
     @Test
@@ -204,6 +204,8 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         options.setCompanyStatus(CompanyStatus.LIQUIDATION);
 
         item.setItemOptions(options);
+        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
+        options.setIncludeEmailCopy(false);
         order.setItems(singletonList(item));
         order.setOrderedAt(LocalDateTime.now());
         order.setTotalOrderCost("15");
@@ -850,6 +852,7 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         assertThat(confirmation.getCountry(), is("England"));
 
         assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within ${dispatch-days} working days)"));
+        assertThat(confirmation.getEmailCopyRequired(), is("Email only available for express delivery method"));
         assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
         assertThat(confirmation.getCompanyNumber(), is("00000001"));
         assertThat(confirmation.getCertificateType(), is("Incorporation with all company name changes"));
@@ -925,5 +928,56 @@ class OrderDataToCertificateOrderConfirmationMapperTest {
         // Then
         assertInformationIsAsExpected(confirmation);
         assertThat(confirmation.getCertificateAdministratorsDetails().getContent(), is("No"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedWithStandardDelivery() {
+
+        item.setItemOptions(options);
+        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
+        options.setIncludeEmailCopy(false);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within ${dispatch-days} working days)"));
+        assertThat(confirmation.getEmailCopyRequired(), is("Email only available for express delivery method"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedWithExpressDeliveryAndEmailCopyIsRequired() {
+
+        item.setItemOptions(options);
+        options.setDeliveryTimescale(DeliveryTimescale.SAME_DAY);
+        options.setIncludeEmailCopy(true);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("50");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        assertThat(confirmation.getDeliveryMethod(), is("Express (Orders received before 11am will be dispatched the same day. Orders received after 11am will be dispatched the next working day)"));
+        assertThat(confirmation.getEmailCopyRequired(), is("Yes"));
+    }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedWithExpressDeliveryAndEmailCopyIsNotRequired() {
+
+        item.setItemOptions(options);
+        options.setDeliveryTimescale(DeliveryTimescale.SAME_DAY);
+        options.setIncludeEmailCopy(false);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("50");
+
+        // When
+        final CertificateOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        assertThat(confirmation.getDeliveryMethod(), is("Express (Orders received before 11am will be dispatched the same day. Orders received after 11am will be dispatched the next working day)"));
+        assertThat(confirmation.getEmailCopyRequired(), is("No"));
     }
 }
