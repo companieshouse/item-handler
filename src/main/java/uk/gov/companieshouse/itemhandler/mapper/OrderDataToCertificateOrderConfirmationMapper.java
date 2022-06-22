@@ -1,6 +1,11 @@
 package uk.gov.companieshouse.itemhandler.mapper;
 
 
+import static java.lang.Boolean.TRUE;
+import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -22,12 +27,6 @@ import uk.gov.companieshouse.itemhandler.model.Members;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.model.PrincipalPlaceOfBusinessDetails;
 import uk.gov.companieshouse.itemhandler.model.RegisteredOfficeAddressDetails;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static java.lang.Boolean.TRUE;
-import static uk.gov.companieshouse.itemhandler.model.IncludeAddressRecordsType.CURRENT;
 
 @Mapper(componentModel = "spring")
 public abstract class OrderDataToCertificateOrderConfirmationMapper implements MapperUtil {
@@ -66,7 +65,9 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
         // Order details field mappings
         final CertificateItemOptions certificateItemOptions = (CertificateItemOptions) item.getItemOptions();
         final String timescale = certificateItemOptions.getDeliveryTimescale().toString();
-        confirmation.setDeliveryMethod(toSentenceCase(timescale) + " delivery (aim to dispatch within " + dispatchDays + " working days)");
+
+        confirmation.setDeliveryMethod(mapDeliveryMethod(timescale));
+        confirmation.setEmailCopyRequired((mapIsEmailRequired(certificateItemOptions)));
         confirmation.setTimeOfPayment(getTimeOfPayment(order.getOrderedAt()));
 
         // Certificate details field mappings
@@ -235,5 +236,26 @@ public abstract class OrderDataToCertificateOrderConfirmationMapper implements M
 
     private String mapIncludeBasicInformationText(BasicInformationIncludable details) {
         return details != null ? mapCertificateOptionsText(details.getIncludeBasicInformation()) : "No";
+    }
+
+    private String mapDeliveryMethod (String timescale) {
+        if (timescale == "STANDARD") {
+             return toSentenceCase(timescale) + " delivery (aim to dispatch within " + dispatchDays
+                            + " working days)";
+        } else {
+            return "Express (Orders received before 11am will be dispatched the same day. Orders received after 11am will be dispatched the next working day)";
+        }
+    }
+
+    private String mapIsEmailRequired(CertificateItemOptions item) {
+        if (item.getDeliveryTimescale().toString() == "SAME_DAY") {
+            if (item.getIncludeEmailCopy()) {
+                return "Yes";
+            } else {
+                return "No";
+            }
+        } else {
+            return "Email only available for express delivery method";
+        }
     }
 }
