@@ -18,7 +18,6 @@ IS_ERROR_QUEUE_CONSUMER | Setting to `true` configures app to listen only to `or
 CERTIFICATE_ORDER_CONFIRMATION_RECIPIENT | The recipient certificate order confirmation emails are sent to. | ✓ | | env var
 CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT | The recipient certified copy order confirmation emails are sent to. | ✓ | | env var
 MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT | The recipient missing image delivery order confirmation emails are sent to. | ✓ | | env var
-DUPLICATE_MESSAGE_CACHE_SIZE | The maximum number of order-received cached on an LRU basis | ✓ | | env var
 
 ### Endpoints
 Path | Method | Description

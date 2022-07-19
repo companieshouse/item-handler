@@ -35,8 +35,6 @@ class LoggingUtilsTest {
 
     @Mock
     private RecordMetadata acknowledgedMessage;
-    @Mock
-    private OrderReceived orderReceived;
 
     @Test
     @DisplayName("createLogMap returns a new log map")
@@ -148,7 +146,7 @@ class LoggingUtilsTest {
         assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
         assertEquals(LOG_MESSAGE, logMap.get(LoggingUtils.MESSAGE));
     }
-
+    
     @Test
     @DisplayName("getMessageHeadersAsMap returns a populated map")
     void getMessageHeadersAsMapReturnsPopulatedMap() {
@@ -157,16 +155,13 @@ class LoggingUtilsTest {
         doReturn(TOPIC_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_TOPIC);
         doReturn(OFFSET_VALUE).when(messageHeaders).get(KafkaHeaders.OFFSET);
         doReturn(PARTITION_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_PARTITION_ID);
-        when(orderReceivedMessage.getPayload()).thenReturn(orderReceived);
-        when(orderReceived.getAttempt()).thenReturn(0);
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(orderReceivedMessage);
         assertNotNull(logMap);
-        assertEquals(5, logMap.size());
+        assertEquals(4, logMap.size());
         assertEquals(KEY_VALUE, logMap.get(LoggingUtils.KEY));
         assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
         assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
         assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
-        assertEquals(0, logMap.get(LoggingUtils.RETRY_ATTEMPT));
     }
 
     private Message createMessageWithTopicAndOffset() {

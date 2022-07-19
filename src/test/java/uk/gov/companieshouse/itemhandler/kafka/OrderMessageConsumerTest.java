@@ -7,7 +7,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,43 +16,42 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
-import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 @ExtendWith(MockitoExtension.class)
 class OrderMessageConsumerTest {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
+    private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_KEY = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
+    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
 
+    @Spy
+    @InjectMocks
+    private OrderMessageHandler orderMessageHandler;
     @Mock
     private OrderProcessorService orderProcessorService;
     @Mock
     private OrderProcessResponseHandler orderProcessResponseHandler;
-    @Mock
-    private Logger logger;
-    @Spy
-    private MessageFilter<OrderReceived> duplicateMessageFilter = new DuplicateMessageFilter(1, logger);
-    @InjectMocks
-    private OrderMessageHandler orderMessageHandler;
 
-    private static org.springframework.messaging.Message<OrderReceived> createTestMessage() {
+    private static org.springframework.messaging.Message<OrderReceived> createTestMessage(String receivedTopic) {
         return new org.springframework.messaging.Message<OrderReceived>() {
             @Override
-            public @NotNull OrderReceived getPayload() {
+            public OrderReceived getPayload() {
                 OrderReceived orderReceived = new OrderReceived();
                 orderReceived.setOrderUri(ORDER_RECEIVED_URI);
                 return orderReceived;
             }
 
             @Override
-            public @NotNull MessageHeaders getHeaders() {
+            public MessageHeaders getHeaders() {
                 Map<String, Object> headerItems = new HashMap<>();
-                headerItems.put("kafka_receivedTopic", OrderMessageConsumerTest.ORDER_RECEIVED_TOPIC_RETRY);
+                headerItems.put("kafka_receivedTopic", receivedTopic);
                 headerItems.put("kafka_offset", 0);
                 headerItems.put("kafka_receivedMessageKey", ORDER_RECEIVED_KEY);
                 headerItems.put("kafka_receivedPartitionId", 0);
-                return new MessageHeaders(headerItems);
+                MessageHeaders headers = new MessageHeaders(headerItems);
+                return headers;
             }
         };
     }
@@ -67,10 +65,10 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage());
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
-        verify(orderProcessResponseHandler).serviceOk(any());
+        verify(orderProcessResponseHandler, times(1)).serviceOk(any());
     }
 
     @Test
@@ -82,10 +80,10 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage());
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
-        verify(orderProcessResponseHandler).serviceUnavailable(any());
+        verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
     }
 
     @Test
@@ -97,9 +95,9 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage());
+        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
 
         // Then
-        verify(orderProcessResponseHandler).serviceError(any());
+        verify(orderProcessResponseHandler, times(1)).serviceError(any());
     }
 }

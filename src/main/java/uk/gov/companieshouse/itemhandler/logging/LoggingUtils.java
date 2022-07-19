@@ -66,11 +66,10 @@ public class LoggingUtils {
         return logMap;
     }
 
-    public static Map<String, Object> logIfNotNull(Map<String, Object> logMap, String key, Object loggingObject) {
+    public static void logIfNotNull(Map<String, Object> logMap, String key, Object loggingObject) {
         if (loggingObject != null) {
             logMap.put(key, loggingObject);
         }
-        return logMap;
     }
 
     public static Map<String, Object> logWithOrderReference(String logMessage,
@@ -101,8 +100,6 @@ public class LoggingUtils {
         logIfNotNull(logMap, TOPIC, messageHeaders.get(KafkaHeaders.RECEIVED_TOPIC));
         logIfNotNull(logMap, OFFSET, messageHeaders.get(KafkaHeaders.OFFSET));
         logIfNotNull(logMap, PARTITION, messageHeaders.get(KafkaHeaders.RECEIVED_PARTITION_ID));
-        logIfNotNull(logMap, RETRY_ATTEMPT, message.getPayload().getAttempt());
-        logIfNotNull(logMap, ORDER_URI, message.getPayload().getOrderUri());
 
         return logMap;
     }
