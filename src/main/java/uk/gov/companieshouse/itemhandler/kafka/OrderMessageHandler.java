@@ -13,16 +13,13 @@ public class OrderMessageHandler {
 
     private final OrderProcessorService orderProcessorService;
     private final OrderProcessResponseHandler orderProcessResponseHandler;
-    private final MessageFilter<OrderReceived> messageFilter;
     private final Logger logger;
 
     public OrderMessageHandler(final OrderProcessorService orderProcessorService,
                                final OrderProcessResponseHandler orderProcessResponseHandler,
-                               final MessageFilter<OrderReceived> messageFilter,
                                final Logger logger) {
         this.orderProcessorService = orderProcessorService;
         this.orderProcessResponseHandler = orderProcessResponseHandler;
-        this.messageFilter = messageFilter;
         this.logger = logger;
     }
 
@@ -32,15 +29,13 @@ public class OrderMessageHandler {
      * @param message received
      */
     public void handleMessage(Message<OrderReceived> message) {
-        if (messageFilter.include(message)) {
-            // Log message
-            logger.info("'order-received' message received", LoggingUtils.getMessageHeadersAsMap(message));
+        // Log message
+        logger.info("'order-received' message received", LoggingUtils.getMessageHeadersAsMap(message));
 
-            // Process message
-            OrderProcessResponse response = orderProcessorService.processOrderReceived(message.getPayload().getOrderUri());
+        // Process message
+        OrderProcessResponse response = orderProcessorService.processOrderReceived(message.getPayload().getOrderUri());
 
-            // Handle response
-            response.getStatus().accept(orderProcessResponseHandler, message);
-        }
+        // Handle response
+        response.getStatus().accept(orderProcessResponseHandler, message);
     }
 }

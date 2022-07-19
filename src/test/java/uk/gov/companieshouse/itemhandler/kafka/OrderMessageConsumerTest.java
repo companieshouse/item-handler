@@ -1,57 +1,56 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessResponse;
 import uk.gov.companieshouse.itemhandler.service.OrderProcessorService;
+import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderMessageConsumerTest {
     private static final String ORDER_RECEIVED_URI = "/order/ORDER-12345";
-    private static final String ORDER_RECEIVED_TOPIC = "order-received";
     private static final String ORDER_RECEIVED_KEY = "order-received";
     private static final String ORDER_RECEIVED_TOPIC_RETRY = "order-received-retry";
-    private static final String ORDER_RECEIVED_TOPIC_ERROR = "order-received-error";
 
-    @Spy
-    @InjectMocks
-    private OrderMessageHandler orderMessageHandler;
     @Mock
     private OrderProcessorService orderProcessorService;
     @Mock
     private OrderProcessResponseHandler orderProcessResponseHandler;
+    @Mock
+    private Logger logger;
+    @InjectMocks
+    private OrderMessageHandler orderMessageHandler;
 
-    private static org.springframework.messaging.Message<OrderReceived> createTestMessage(String receivedTopic) {
+    private static org.springframework.messaging.Message<OrderReceived> createTestMessage() {
         return new org.springframework.messaging.Message<OrderReceived>() {
             @Override
-            public OrderReceived getPayload() {
+            public @NotNull OrderReceived getPayload() {
                 OrderReceived orderReceived = new OrderReceived();
                 orderReceived.setOrderUri(ORDER_RECEIVED_URI);
                 return orderReceived;
             }
 
             @Override
-            public MessageHeaders getHeaders() {
+            public @NotNull MessageHeaders getHeaders() {
                 Map<String, Object> headerItems = new HashMap<>();
-                headerItems.put("kafka_receivedTopic", receivedTopic);
+                headerItems.put("kafka_receivedTopic", OrderMessageConsumerTest.ORDER_RECEIVED_TOPIC_RETRY);
                 headerItems.put("kafka_offset", 0);
                 headerItems.put("kafka_receivedMessageKey", ORDER_RECEIVED_KEY);
                 headerItems.put("kafka_receivedPartitionId", 0);
-                MessageHeaders headers = new MessageHeaders(headerItems);
-                return headers;
+                return new MessageHeaders(headerItems);
             }
         };
     }
@@ -65,10 +64,10 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceOk(any());
+        verify(orderProcessResponseHandler).serviceOk(any());
     }
 
     @Test
@@ -80,10 +79,10 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceUnavailable(any());
+        verify(orderProcessResponseHandler).serviceUnavailable(any());
     }
 
     @Test
@@ -95,9 +94,9 @@ class OrderMessageConsumerTest {
                 .build());
 
         // When
-        orderMessageHandler.handleMessage(createTestMessage(ORDER_RECEIVED_TOPIC_RETRY));
+        orderMessageHandler.handleMessage(createTestMessage());
 
         // Then
-        verify(orderProcessResponseHandler, times(1)).serviceError(any());
+        verify(orderProcessResponseHandler).serviceError(any());
     }
 }
