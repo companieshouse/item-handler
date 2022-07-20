@@ -28,9 +28,6 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
-    @Value("${duplicate-message-cache-size}")
-    private int duplicateMessageCacheSize;
-
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory() {
         return getContainerFactory(getConsumerConfigs());
@@ -115,14 +112,6 @@ public class KafkaConfig {
     @Bean
     PartitionOffset errorRecoveryOffset() {
         return new PartitionOffset();
-    }
-
-    @Bean
-    @Scope("prototype")
-    MessageFilter<OrderReceived> duplicateMessageFilter(Logger logger) {
-        logger.info("DuplicateMessageFilter config",
-                LoggingUtils.logIfNotNull(LoggingUtils.createLogMap(),"duplicate-message-cache-size", duplicateMessageCacheSize));
-        return new DuplicateMessageFilter(duplicateMessageCacheSize, logger);
     }
 
     private ConcurrentKafkaListenerContainerFactory<String, OrderReceived> getContainerFactory(Map<String, Object> props) {
