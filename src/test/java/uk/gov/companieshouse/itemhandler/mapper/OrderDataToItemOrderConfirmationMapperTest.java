@@ -84,54 +84,7 @@ class OrderDataToItemOrderConfirmationMapperTest {
     void orderToConfirmationBehavesAsExpectedForCertifiedCopy() {
 
         // Given
-        final OrderData order = new OrderData();
-        order.setReference("ORD-108815-904831");
-        order.setPaymentReference("orderable_item_ORD-108815-904831");
-
-        final ActionedBy orderedBy = new ActionedBy();
-        orderedBy.setEmail("demo@ch.gov.uk");
-        order.setOrderedBy(orderedBy);
-
-        final DeliveryDetails delivery = new DeliveryDetails();
-        delivery.setForename("Jenny");
-        delivery.setSurname("Wilson");
-        delivery.setAddressLine1("Kemp House Capital Office");
-        delivery.setAddressLine2("LTD");
-        delivery.setLocality("Kemp House");
-        delivery.setPremises("152-160 City Road");
-        delivery.setRegion("London");
-        delivery.setPostalCode("EC1V 2NX");
-        delivery.setCountry("England");
-
-        order.setDeliveryDetails(delivery);
-        final Item item = new Item();
-        item.setCompanyName("THE COMPANY");
-        item.setCompanyNumber("00000001");
-        item.setKind("item#certified-copy");
-        final CertifiedCopyItemOptions options = new CertifiedCopyItemOptions();
-        options.setDeliveryTimescale(DeliveryTimescale.STANDARD);
-
-        FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
-        filingHistoryDocument.setFilingHistoryDate("2018-02-15");
-        filingHistoryDocument.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
-        filingHistoryDocument.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
-        filingHistoryDocument.setFilingHistoryType("AP01");
-        List<FilingHistoryDocument> filingHistoryDocuments = new ArrayList<>();
-        filingHistoryDocuments.add(filingHistoryDocument);
-        options.setFilingHistoryDocuments(filingHistoryDocuments);
-
-        List<ItemCosts> itemCosts = new ArrayList<>();
-        ItemCosts itemCost = new ItemCosts();
-        itemCost.setItemCost("15");
-        itemCost.setDiscountApplied("0");
-        itemCost.setCalculatedCost("15");
-        itemCosts.add(itemCost);
-
-        item.setItemOptions(options);
-        item.setItemCosts(itemCosts);
-        order.setItems(singletonList(item));
-        order.setOrderedAt(LocalDateTime.now());
-        order.setTotalOrderCost("15");
+        final OrderData order = createOrder(DeliveryTimescale.STANDARD);
 
         // When
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
@@ -139,35 +92,25 @@ class OrderDataToItemOrderConfirmationMapperTest {
         final ItemOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
 
         // Then
-        assertThat(confirmation.getTo(), is(nullValue()));
-
-        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
-        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
-
-        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
-
-        assertThat(confirmation.getForename(), is("Jenny"));
-        assertThat(confirmation.getSurname(), is("Wilson"));
-        assertThat(confirmation.getAddressLine1(), is("Kemp House Capital Office"));
-        assertThat(confirmation.getAddressLine2(), is("LTD"));
-        assertThat(confirmation.getHouseName(), is("Kemp House"));
-        assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
-        assertThat(confirmation.getCity(), is("London"));
-        assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
-        assertThat(confirmation.getCountry(), is("England"));
-
-        assertThat(confirmation.getDeliveryMethod(), is("Standard delivery (aim to dispatch within ${dispatch-days} working days)"));
-        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
-        assertThat(confirmation.getCompanyNumber(), is("00000001"));
-        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
-        assertThat(confirmation.getTotalFee(), is("15"));
-
-        assertThat(confirmation.getItemDetails().get(0).getDateFiled(), is("15 Feb 2018"));
-        assertThat(confirmation.getItemDetails().get(0).getType(), is("AP01"));
-        assertThat(confirmation.getItemDetails().get(0).getDescription(),
-                is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
-        assertThat(confirmation.getItemDetails().get(0).getFee(), is("15"));
+        assertCertifiedCopy(confirmation, order, "Standard delivery (aim to dispatch within ${dispatch-days} working days)");
     }
+
+    @Test
+    void orderToConfirmationBehavesAsExpectedForCertifiedCopySameDay() {
+
+        // Given
+        final OrderData order = createOrder(DeliveryTimescale.SAME_DAY);
+
+        // When
+        when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(anyString(), anyMap()))
+            .thenReturn("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018");
+        final ItemOrderConfirmation confirmation = mapperUnderTest.orderToConfirmation(order);
+
+        // Then
+        assertCertifiedCopy(confirmation, order,
+            "Express (Orders received before 11am will be dispatched the same day. Orders received after 11am will be dispatched the next working day)");
+    }
+
 
     @Test
     void orderToConfirmationBehavesAsExpectedForMissingImageDelivery() {
@@ -248,6 +191,90 @@ class OrderDataToItemOrderConfirmationMapperTest {
     @Test
     void reformatDateFiledBehavesAsExpected() {
         assertThat(mapperUnderTest.reformatDateFiled(DATE_FILED), is(EXPECTED_REFORMATTED_DATE_FILED));
+    }
+
+    private OrderData createOrder(DeliveryTimescale timescale) {
+        final OrderData order = new OrderData();
+        order.setReference("ORD-108815-904831");
+        order.setPaymentReference("orderable_item_ORD-108815-904831");
+
+        final ActionedBy orderedBy = new ActionedBy();
+        orderedBy.setEmail("demo@ch.gov.uk");
+        order.setOrderedBy(orderedBy);
+
+        final DeliveryDetails delivery = new DeliveryDetails();
+        delivery.setForename("Jenny");
+        delivery.setSurname("Wilson");
+        delivery.setAddressLine1("Kemp House Capital Office");
+        delivery.setAddressLine2("LTD");
+        delivery.setLocality("Kemp House");
+        delivery.setPremises("152-160 City Road");
+        delivery.setRegion("London");
+        delivery.setPostalCode("EC1V 2NX");
+        delivery.setCountry("England");
+
+        order.setDeliveryDetails(delivery);
+        final Item item = new Item();
+        item.setCompanyName("THE COMPANY");
+        item.setCompanyNumber("00000001");
+        item.setKind("item#certified-copy");
+        final CertifiedCopyItemOptions options = new CertifiedCopyItemOptions();
+        options.setDeliveryTimescale(timescale);
+
+        FilingHistoryDocument filingHistoryDocument = new FilingHistoryDocument();
+        filingHistoryDocument.setFilingHistoryDate("2018-02-15");
+        filingHistoryDocument.setFilingHistoryDescription("appoint-person-director-company-with-name-date");
+        filingHistoryDocument.setFilingHistoryDescriptionValues(singletonMap("key", "value"));
+        filingHistoryDocument.setFilingHistoryType("AP01");
+        List<FilingHistoryDocument> filingHistoryDocuments = new ArrayList<>();
+        filingHistoryDocuments.add(filingHistoryDocument);
+        options.setFilingHistoryDocuments(filingHistoryDocuments);
+
+        List<ItemCosts> itemCosts = new ArrayList<>();
+        ItemCosts itemCost = new ItemCosts();
+        itemCost.setItemCost("15");
+        itemCost.setDiscountApplied("0");
+        itemCost.setCalculatedCost("15");
+        itemCosts.add(itemCost);
+
+        item.setItemOptions(options);
+        item.setItemCosts(itemCosts);
+        order.setItems(singletonList(item));
+        order.setOrderedAt(LocalDateTime.now());
+        order.setTotalOrderCost("15");
+
+        return order;
+    }
+
+    private void assertCertifiedCopy (ItemOrderConfirmation confirmation, OrderData order, String deliveryMethodText) {
+        assertThat(confirmation.getTo(), is(nullValue()));
+
+        assertThat(confirmation.getOrderReferenceNumber(), is("ORD-108815-904831"));
+        assertThat(confirmation.getPaymentReference(), is("orderable_item_ORD-108815-904831"));
+
+        assertThat(confirmation.getEmailAddress(), is("demo@ch.gov.uk"));
+
+        assertThat(confirmation.getForename(), is("Jenny"));
+        assertThat(confirmation.getSurname(), is("Wilson"));
+        assertThat(confirmation.getAddressLine1(), is("Kemp House Capital Office"));
+        assertThat(confirmation.getAddressLine2(), is("LTD"));
+        assertThat(confirmation.getHouseName(), is("Kemp House"));
+        assertThat(confirmation.getHouseNumberStreetName(), is("152-160 City Road"));
+        assertThat(confirmation.getCity(), is("London"));
+        assertThat(confirmation.getPostCode(), is("EC1V 2NX"));
+        assertThat(confirmation.getCountry(), is("England"));
+
+        assertThat(confirmation.getDeliveryMethod(), is(deliveryMethodText));
+        assertThat(confirmation.getCompanyName(), is("THE COMPANY"));
+        assertThat(confirmation.getCompanyNumber(), is("00000001"));
+        assertThat(confirmation.getTimeOfPayment(), is(DATETIME_OF_PAYMENT_FORMATTER.format(order.getOrderedAt())));
+        assertThat(confirmation.getTotalFee(), is("15"));
+
+        assertThat(confirmation.getItemDetails().get(0).getDateFiled(), is("15 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getType(), is("AP01"));
+        assertThat(confirmation.getItemDetails().get(0).getDescription(),
+            is("Appointment of Ms Sharon Michelle White as a Director on 01 Feb 2018"));
+        assertThat(confirmation.getItemDetails().get(0).getFee(), is("15"));
     }
 
 }
