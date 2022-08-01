@@ -61,8 +61,12 @@ public abstract class OrderDataToItemOrderConfirmationMapper implements MapperUt
         if (item.getKind().equals("item#certified-copy")) {
             final String timescale =
                     ((CertifiedCopyItemOptions) item.getItemOptions()).getDeliveryTimescale().toString();
-            String deliveryMethod = String.format("%s delivery (aim to dispatch within %s working days)", toSentenceCase(timescale), dispatchDays);
-            confirmation.setDeliveryMethod(deliveryMethod);
+            if (timescale.equals("SAME_DAY")){
+                confirmation.setDeliveryMethod("Express (Orders received before 11am will be dispatched the same day. Orders received after 11am will be dispatched the next working day)");
+            } else {
+                String deliveryMethod = String.format("%s delivery (aim to dispatch within %s working days)", toSentenceCase(timescale), dispatchDays);
+                confirmation.setDeliveryMethod(deliveryMethod);
+            }
             confirmation.setItemDetails(collateItemDetailsForCertifiedCopy(item));
         }
         else {
