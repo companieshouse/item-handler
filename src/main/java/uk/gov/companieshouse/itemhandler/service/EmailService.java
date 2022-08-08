@@ -41,6 +41,10 @@ public class EmailService {
             "item-handler.certified-copy-order-confirmation";
     public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
+    public static final String SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
+            "item-handler.same-day-certified-copy-order-confirmation";
+    public static final String SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
+            "same_day_certified_copy_order_confirmation_email";
     public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.missing-image-delivery-order-confirmation";
     public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
@@ -135,8 +139,12 @@ public class EmailService {
             case ITEM_TYPE_CERTIFIED_COPY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
                 confirmation.setTo(certifiedCopyOrderRecipient);
-                email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ?
+                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID :
+                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ?
+                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE :
+                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
