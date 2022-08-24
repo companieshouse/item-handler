@@ -69,7 +69,7 @@ public enum ItemType {
      * @param order the order to be propagated
      */
     public void sendMessages(final OrderData order) {
-        emailer.sendOrderConfirmation(order);
+        emailer.sendOrderConfirmation(new DeliverableItemGroup(order, "", DeliveryTimescale.STANDARD));
     }
 
     protected void setEmailer(EmailService emailer) {

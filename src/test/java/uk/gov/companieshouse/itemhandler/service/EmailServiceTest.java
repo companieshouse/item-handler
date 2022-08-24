@@ -34,6 +34,7 @@ import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -112,7 +113,7 @@ class EmailServiceTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -142,7 +143,7 @@ class EmailServiceTest {
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(SAME_DAY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -173,7 +174,7 @@ class EmailServiceTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -204,7 +205,7 @@ class EmailServiceTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -235,7 +236,7 @@ class EmailServiceTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -264,7 +265,7 @@ class EmailServiceTest {
 
         // When and then
         assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
-                emailServiceUnderTest.sendOrderConfirmation(order))
+                emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD)))
                 .withMessage("Unable to determine order confirmation type from description ID unknown!")
                 .withNoCause();
 
@@ -284,7 +285,7 @@ class EmailServiceTest {
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
 
         // When
-        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(order);
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
 
         // Then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);

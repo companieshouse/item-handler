@@ -3,17 +3,15 @@ package uk.gov.companieshouse.itemhandler.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KindAndDeliveryTimescaleGroup {
+public class ItemGroup {
 
     private OrderData order;
     private String kind;
-    private DeliveryTimescale timescale;
     private final List<Item> items;
 
-    public KindAndDeliveryTimescaleGroup(OrderData order, String kind, DeliveryTimescale timescale) {
+    public ItemGroup(OrderData order, String kind) {
         this.order = order;
         this.kind = kind;
-        this.timescale = timescale;
         this.items = new ArrayList<>();
     }
 
@@ -33,19 +31,19 @@ public class KindAndDeliveryTimescaleGroup {
         this.kind = kind;
     }
 
-    public DeliveryTimescale getTimescale() {
-        return timescale;
-    }
-
-    public void setTimescale(DeliveryTimescale timescale) {
-        this.timescale = timescale;
-    }
-
     public List<Item> getItems() {
         return items;
     }
 
-    public void addItem(Item item) {
+    public void add(Item item) {
         items.add(item);
+    }
+
+    public void addAll(List<Item> itemList) {
+        items.addAll(itemList);
+    }
+
+    public boolean empty() {
+        return items.isEmpty();
     }
 }

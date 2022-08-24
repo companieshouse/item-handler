@@ -12,6 +12,7 @@ import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
@@ -100,9 +101,9 @@ public class EmailService {
      *
      * @param order the order information used to compose the order confirmation email.
      */
-    public void sendOrderConfirmation(final OrderData order) {
+    public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
-            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(order);
+            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
             final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
             final EmailSend email = orderConfirmationAndEmail.email;
             email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
@@ -113,7 +114,7 @@ public class EmailService {
             LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
             emailSendProducer.sendMessage(email, orderReference);
         } catch (JsonProcessingException exception) {
-            String msg = String.format("Error converting order (%s) confirmation to JSON", order.getReference());
+            String msg = String.format("Error converting order (%s) confirmation to JSON", itemGroup.getOrder().getReference());
             LOGGER.error(msg, exception);
             throw new NonRetryableException(msg);
         }
