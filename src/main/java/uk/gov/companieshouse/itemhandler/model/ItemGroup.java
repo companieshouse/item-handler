@@ -7,12 +7,16 @@ public class ItemGroup {
 
     private OrderData order;
     private String kind;
-    private final List<Item> items;
+    private List<Item> items;
 
     public ItemGroup(OrderData order, String kind) {
+        this(order, kind, new ArrayList<>());
+    }
+
+    public ItemGroup(OrderData order, String kind, List<Item> items) {
         this.order = order;
         this.kind = kind;
-        this.items = new ArrayList<>();
+        this.items = items;
     }
 
     public OrderData getOrder() {

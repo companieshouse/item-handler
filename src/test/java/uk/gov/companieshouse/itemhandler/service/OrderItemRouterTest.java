@@ -1,20 +1,23 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.api.model.order.item.CertificateItemOptionsApi;
-import uk.gov.companieshouse.api.model.order.item.DeliveryTimescaleApi;
-import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
@@ -43,75 +46,31 @@ public class OrderItemRouterTest {
     @Mock
     private DeliverableItemGroup deliverableItemGroup;
 
+    @Captor
+    private ArgumentCaptor<DeliverableItemGroup> itemGroupCaptor;
+
     @Test
     @DisplayName("test certified cert standard delivery route to email service")
     void testRouteToEmailServiceCert() {
         // given
         Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
         Item certSameDay = getExpectedItem("item#certificate", DeliveryTimescale.SAME_DAY);
-        when(order.getItems()).thenReturn(Arrays.asList(cert, certSameDay));
-
-        // when
-        orderItemRouter.route(order);
-
-        // then
-        verify(emailService).sendOrderConfirmation(deliverableItemGroup);
-        verify(deliverableItemGroup).setKind("item#certificate");
-        verify(deliverableItemGroup).setTimescale(DeliveryTimescale.STANDARD);
-    }
-
-    @Test
-    @DisplayName("test certified cert standard delivery route to email service")
-    void testRouteToEmailServiceCopy() {
-        // given
-        Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
         Item copy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
-        Item certSameDay = getExpectedItem("item#certificate", DeliveryTimescale.SAME_DAY);
         Item copySameDay = getExpectedItem("item#certified-copy", DeliveryTimescale.SAME_DAY);
-        when(order.getItems()).thenReturn(Arrays.asList(cert, copy, certSameDay, copySameDay));
-
+        List<Item> items = Arrays.asList(cert, copySameDay, certSameDay, copy);
+        Collections.shuffle(items);
+        when(order.getItems()).thenReturn(items);
 
         // when
         orderItemRouter.route(order);
 
         // then
-        verify(emailService).sendOrderConfirmation(deliverableItemGroup);
-    }
-
-    @Test
-    @DisplayName("test certified cert standard delivery route to email service")
-    void testRouteToEmailServiceCertSameDay() {
-        // given
-        Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
-        Item copy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
-        Item certSameDay = getExpectedItem("item#certificate", DeliveryTimescale.SAME_DAY);
-        Item copySameDay = getExpectedItem("item#certified-copy", DeliveryTimescale.SAME_DAY);
-        when(order.getItems()).thenReturn(Arrays.asList(cert, copy, certSameDay, copySameDay));
-
-
-        // when
-        orderItemRouter.route(order);
-
-        // then
-        verify(emailService).sendOrderConfirmation(deliverableItemGroup);
-    }
-
-    @Test
-    @DisplayName("test certified cert standard delivery route to email service")
-    void testRouteToEmailServiceCopySameDay() {
-        // given
-        Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
-        Item copy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
-        Item certSameDay = getExpectedItem("item#certificate", DeliveryTimescale.SAME_DAY);
-        Item copySameDay = getExpectedItem("item#certified-copy", DeliveryTimescale.SAME_DAY);
-        when(order.getItems()).thenReturn(Arrays.asList(cert, copy, certSameDay, copySameDay));
-
-
-        // when
-        orderItemRouter.route(order);
-
-        // then
-        verify(emailService).sendOrderConfirmation(deliverableItemGroup);
+        verify(emailService, times(4)).sendOrderConfirmation(itemGroupCaptor.capture());
+        List<DeliverableItemGroup> capturedValues = itemGroupCaptor.getAllValues();
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.STANDARD, new ArrayList<>(Collections.singletonList(cert)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.SAME_DAY, new ArrayList<>(Collections.singletonList(certSameDay)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.STANDARD, new ArrayList<>(Collections.singletonList(copy)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.SAME_DAY, new ArrayList<>(Collections.singletonList(copySameDay)))));
     }
 
     private Item getExpectedItem(String kind, DeliveryTimescale timescale) {
