@@ -2,6 +2,7 @@ package uk.gov.companieshouse.itemhandler.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ItemGroup {
 
@@ -49,5 +50,22 @@ public class ItemGroup {
 
     public boolean empty() {
         return items.isEmpty();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ItemGroup itemGroup = (ItemGroup) o;
+        return Objects.equals(order, itemGroup.order) && Objects.equals(kind, itemGroup.kind) && Objects.equals(items, itemGroup.items);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(order, kind, items);
     }
 }

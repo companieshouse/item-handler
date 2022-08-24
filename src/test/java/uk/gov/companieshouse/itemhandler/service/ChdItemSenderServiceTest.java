@@ -59,7 +59,7 @@ public class ChdItemSenderServiceTest {
         when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
-        serviceUnderTest.sendItemsToChd(order);
+        serviceUnderTest.sendItemsToChd(null);
 
         // Then
         verify(order).getReference();
@@ -83,7 +83,7 @@ public class ChdItemSenderServiceTest {
         when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
-        serviceUnderTest.sendItemsToChd(order);
+        serviceUnderTest.sendItemsToChd(null);
 
         // Then
         PowerMockito.verifyStatic(LoggingUtils.class);

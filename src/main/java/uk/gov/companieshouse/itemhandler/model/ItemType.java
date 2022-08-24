@@ -16,7 +16,7 @@ public enum ItemType {
     MISSING_IMAGE_DELIVERY("item#missing-image-delivery") {
         @Override
         public void sendMessages(OrderData order) {
-            getItemSender().sendItemsToChd(order);
+            getItemSender().sendItemsToChd(null);
         }
     };
 

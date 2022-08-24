@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
@@ -8,6 +9,7 @@ import uk.gov.companieshouse.itemhandler.model.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class OrderItemRouter implements Routable {
@@ -22,17 +24,21 @@ public class OrderItemRouter implements Routable {
     @Override
     public void route(OrderData order) {
         Map<String, Map<DeliveryTimescale, DeliverableItemGroup>> deliverableItemGroupMap = deliverableItemsByKindAndDeliveryTimescale(order);
-//        ItemGroup missingImageDeliveryItems = byMissingImageDelivery(order); //TODO: change ChdItemSenderService
+        ItemGroup missingImageDeliveryItems = byMissingImageDelivery(order);
         deliverableItemGroupMap.values().forEach(timescaleToGroup -> timescaleToGroup.values().forEach(g -> emailService.sendOrderConfirmation(g)));
-//        this.chdItemSenderService.sendItemsToChd(missingImageDeliveryItems); //TODO: change signature
+        if (!missingImageDeliveryItems.empty()) {
+            this.chdItemSenderService.sendItemsToChd(missingImageDeliveryItems);
+        }
     }
 
     private Map<String, Map<DeliveryTimescale, DeliverableItemGroup>> deliverableItemsByKindAndDeliveryTimescale(OrderData order) {
         return order.getItems()
                 .stream()
                 .filter(item -> item.getItemOptions() instanceof DeliveryItemOptions)
+                .peek(item -> Optional.ofNullable(((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale())
+                        .orElseThrow(() -> new NonRetryableException(String.format("Item [%s] is missing a delivery timescale", item.getId()))))
                 .collect(Collectors.groupingBy(Item::getKind, Collectors.toMap(
-                        a -> ((DeliveryItemOptions) a.getItemOptions()).getDeliveryTimescale(),
+                        item -> ((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale(),
                         item -> {
                             DeliverableItemGroup deliverableItemGroup =
                                     new DeliverableItemGroup(order,
