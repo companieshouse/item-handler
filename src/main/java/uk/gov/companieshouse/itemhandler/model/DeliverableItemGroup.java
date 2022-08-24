@@ -12,9 +12,7 @@ public class DeliverableItemGroup extends ItemGroup {
         return timescale;
     }
 
-    public void setTimescale(
-            DeliveryTimescale timescale) {
-        this.timescale =
-                timescale;
+    public void setTimescale(DeliveryTimescale timescale) {
+        this.timescale = timescale;
     }
 }

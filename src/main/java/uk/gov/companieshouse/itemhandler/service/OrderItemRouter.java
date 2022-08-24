@@ -1,12 +1,9 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
-import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -27,13 +24,22 @@ public class OrderItemRouter implements Routable {
 
     private Map<String, DeliverableItemGroup> deliverableItemsByKindAndDeliveryTimescale(OrderData order) {
         return order.getItems().stream().collect(
-                Collectors.toMap(Item::getKind,
-                        item -> new DeliverableItemGroup(order,
-                                                         item.getKind(),
-                                                         ((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale())
-                        , (itemGroup, itemGroup2) -> itemGroup));
+                Collectors.toMap(
+                        item -> item.getKind() + ((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale().getJsonName(),
+                        item -> {
+                            DeliverableItemGroup deliverableItemGroup =
+                                    new DeliverableItemGroup(order,
+                                                             item.getKind(),
+                                                             ((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale());
+                            deliverableItemGroup.add(item);
+                            return deliverableItemGroup;
+                        },
+                        (originalItemGroup, duplicateKeyItemGroup) -> {
+                            originalItemGroup.addAll(duplicateKeyItemGroup.getItems());
+                            return originalItemGroup;
+                        })
+        );
     }
-
 
     private ItemGroup byMissingImageDelivery(OrderData order) {
         return null;
