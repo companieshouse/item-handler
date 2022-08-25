@@ -77,15 +77,4 @@ public class EmailData {
     public int hashCode() {
         return Objects.hash(to, subject, orderReference, deliveryDetails, paymentDetails);
     }
-
-    @Override
-    public String toString() {
-        return "EmailData{" +
-                "to='" + to + '\'' +
-                ", subject='" + subject + '\'' +
-                ", orderReference='" + orderReference + '\'' +
-                ", deliveryDetails=" + deliveryDetails +
-                ", paymentDetails=" + paymentDetails +
-                '}';
-    }
 }

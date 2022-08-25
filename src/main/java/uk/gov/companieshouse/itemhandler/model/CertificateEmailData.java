@@ -85,11 +85,4 @@ public class CertificateEmailData extends EmailData {
     public int hashCode() {
         return Objects.hash(certificates);
     }
-
-    @Override
-    public String toString() {
-        return "CertificateEmailData{" +
-                "certificates=" + certificates +
-                '}';
-    }
 }

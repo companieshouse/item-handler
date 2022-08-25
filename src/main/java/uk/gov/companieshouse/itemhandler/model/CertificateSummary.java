@@ -4,14 +4,14 @@ import java.util.Objects;
 
 public class CertificateSummary {
     private String itemNumber;
-    private CertificateType certificateType;
+    private String certificateType;
     private String companyNumber;
     private String fee;
 
     public CertificateSummary() {
     }
 
-    public CertificateSummary(String itemNumber, CertificateType certificateType, String companyNumber, String fee) {
+    public CertificateSummary(String itemNumber, String certificateType, String companyNumber, String fee) {
         this.itemNumber = itemNumber;
         this.certificateType = certificateType;
         this.companyNumber = companyNumber;
@@ -26,11 +26,11 @@ public class CertificateSummary {
         this.itemNumber = itemNumber;
     }
 
-    public CertificateType getCertificateType() {
+    public String getCertificateType() {
         return certificateType;
     }
 
-    public void setCertificateType(CertificateType certificateType) {
+    public void setCertificateType(String certificateType) {
         this.certificateType = certificateType;
     }
 
@@ -68,15 +68,5 @@ public class CertificateSummary {
     @Override
     public int hashCode() {
         return Objects.hash(itemNumber, certificateType, companyNumber, fee);
-    }
-
-    @Override
-    public String toString() {
-        return "CertificateSummary{" +
-                "itemNumber='" + itemNumber + '\'' +
-                ", certificateType=" + certificateType +
-                ", companyNumber='" + companyNumber + '\'' +
-                ", fee='" + fee + '\'' +
-                '}';
     }
 }
