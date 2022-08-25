@@ -7,28 +7,34 @@ import org.springframework.stereotype.Component;
 
 @Configuration
 @PropertySource("classpath:application.properties")
-@ConfigurationProperties("email")
+@ConfigurationProperties(prefix = "email")
 @Component
 public class EmailConfig {
-    private final String standardCertificateSubjectLine;
-    private final String expressCertificateSubjectLine;
-    private final String senderEmail;
-
-    public EmailConfig(String standardCertificateSubjectLine, String expressCertificateSubjectLine, String senderEmail) {
-        this.standardCertificateSubjectLine = standardCertificateSubjectLine;
-        this.expressCertificateSubjectLine = expressCertificateSubjectLine;
-        this.senderEmail = senderEmail;
-    }
+    private String standardCertificateSubjectLine;
+    private String expressCertificateSubjectLine;
+    private String senderEmail;
 
     public String getStandardCertificateSubjectLine() {
         return standardCertificateSubjectLine;
+    }
+
+    public void setStandardCertificateSubjectLine(String standardCertificateSubjectLine) {
+        this.standardCertificateSubjectLine = standardCertificateSubjectLine;
     }
 
     public String getExpressCertificateSubjectLine() {
         return expressCertificateSubjectLine;
     }
 
+    public void setExpressCertificateSubjectLine(String expressCertificateSubjectLine) {
+        this.expressCertificateSubjectLine = expressCertificateSubjectLine;
+    }
+
     public String getSenderEmail() {
         return senderEmail;
+    }
+
+    public void setSenderEmail(String senderEmail) {
+        this.senderEmail = senderEmail;
     }
 }
