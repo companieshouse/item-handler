@@ -4,6 +4,9 @@ public class PaymentDetails {
     private String reference;
     private String date;
 
+    public PaymentDetails() {
+    }
+
     public PaymentDetails(String reference, String date) {
         this.reference = reference;
         this.date = date;
