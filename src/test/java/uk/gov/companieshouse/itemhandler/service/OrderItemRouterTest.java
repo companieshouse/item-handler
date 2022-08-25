@@ -21,7 +21,7 @@ import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.model.*;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderItemRouterTest {
+class OrderItemRouterTest {
 
     @InjectMocks
     private OrderItemRouter orderItemRouter;

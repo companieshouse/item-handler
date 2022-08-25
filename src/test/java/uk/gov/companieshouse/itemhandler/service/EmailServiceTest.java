@@ -263,9 +263,11 @@ class EmailServiceTest {
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
         when(order.getReference()).thenReturn("456");
 
+        DeliverableItemGroup deliverableItemGroup = new DeliverableItemGroup(order, "", STANDARD);
+
         // When and then
         assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
-                emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD)))
+                emailServiceUnderTest.sendOrderConfirmation(deliverableItemGroup))
                 .withMessage("Unable to determine order confirmation type from description ID unknown!")
                 .withNoCause();
 
