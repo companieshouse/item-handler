@@ -18,6 +18,7 @@ import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -81,7 +82,7 @@ class EmailServiceIntegrationTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
         when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
 
         // Then
         verify(certificateOrderConfirmation).setTo("certificate-handler@nowhere.com");
@@ -101,7 +102,7 @@ class EmailServiceIntegrationTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
         when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
 
         // Then
         verify(itemOrderConfirmation).setTo("certified-copy-handler@nowhere.com");
@@ -122,7 +123,7 @@ class EmailServiceIntegrationTest {
         when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
         when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        emailServiceUnderTest.sendOrderConfirmation(order);
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
 
         // Then
         verify(itemOrderConfirmation).setTo("missing-image-delivery-handler@nowhere.com");

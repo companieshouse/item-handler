@@ -61,7 +61,7 @@ class ItemTypeIntegrationTest {
         CERTIFICATE.sendMessages(order);
 
         // Then
-        verify(emailer).sendOrderConfirmation(order);
+        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(order, "", DeliveryTimescale.STANDARD));
 
     }
 
@@ -73,7 +73,7 @@ class ItemTypeIntegrationTest {
         CERTIFIED_COPY.sendMessages(order);
 
         // Then
-        verify(emailer).sendOrderConfirmation(order);
+        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(order, "", DeliveryTimescale.STANDARD));
 
     }
 
@@ -85,8 +85,7 @@ class ItemTypeIntegrationTest {
         MISSING_IMAGE_DELIVERY.sendMessages(order);
 
         // Then
-        verify(itemSender).sendItemsToChd(order);
-
+        verify(itemSender).sendItemsToChd(new ItemGroup(order, "item#missing-image-delivery"));
     }
 
 }

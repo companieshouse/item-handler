@@ -13,6 +13,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.kafka.ItemMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.List;
@@ -59,7 +60,7 @@ public class ChdItemSenderServiceTest {
         when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
-        serviceUnderTest.sendItemsToChd(order);
+        serviceUnderTest.sendItemsToChd(new ItemGroup(order, "item#missing-image-delivery"));
 
         // Then
         verify(order).getReference();
@@ -83,7 +84,7 @@ public class ChdItemSenderServiceTest {
         when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
 
         // When
-        serviceUnderTest.sendItemsToChd(order);
+        serviceUnderTest.sendItemsToChd(new ItemGroup(order, "item#missing-image-delivery"));
 
         // Then
         PowerMockito.verifyStatic(LoggingUtils.class);
