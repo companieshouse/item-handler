@@ -35,10 +35,9 @@ public class OrderItemRouter implements Routable {
         return order.getItems()
                 .stream()
                 .filter(item -> item.getItemOptions() instanceof DeliveryItemOptions)
-                .peek(item -> Optional.ofNullable(((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale())
-                        .orElseThrow(() -> new NonRetryableException(String.format("Item [%s] is missing a delivery timescale", item.getId()))))
                 .collect(Collectors.groupingBy(Item::getKind, Collectors.toMap(
-                        item -> ((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale(),
+                        item -> Optional.ofNullable(((DeliveryItemOptions) item.getItemOptions()).getDeliveryTimescale())
+                                .orElseThrow(() -> new NonRetryableException(String.format("Item [%s] is missing a delivery timescale", item.getId()))),
                         item -> {
                             DeliverableItemGroup deliverableItemGroup =
                                     new DeliverableItemGroup(order,

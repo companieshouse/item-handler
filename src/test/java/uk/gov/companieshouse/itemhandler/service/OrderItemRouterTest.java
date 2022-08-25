@@ -32,7 +32,7 @@ import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderItemRouterTest {
+class OrderItemRouterTest {
 
     @InjectMocks
     private OrderItemRouter orderItemRouter;
