@@ -1,23 +1,21 @@
 package uk.gov.companieshouse.itemhandler.model;
 
+import java.util.Objects;
+
 public class EmailData {
     private String to;
     private String subject;
-    private String emailAddress;
     private String orderReference;
-    private String deliveryMethod;
     private DeliveryDetails deliveryDetails;
     private PaymentDetails paymentDetails;
 
     public EmailData() {
     }
 
-    public EmailData(String to, String subject, String emailAddress, String orderReference, String deliveryMethod, DeliveryDetails deliveryDetails, PaymentDetails paymentDetails) {
+    public EmailData(String to, String subject, String orderReference, DeliveryDetails deliveryDetails, PaymentDetails paymentDetails) {
         this.to = to;
         this.subject = subject;
-        this.emailAddress = emailAddress;
         this.orderReference = orderReference;
-        this.deliveryMethod = deliveryMethod;
         this.deliveryDetails = deliveryDetails;
         this.paymentDetails = paymentDetails;
     }
@@ -38,28 +36,12 @@ public class EmailData {
         this.subject = subject;
     }
 
-    public String getEmailAddress() {
-        return emailAddress;
-    }
-
-    public void setEmailAddress(String emailAddress) {
-        this.emailAddress = emailAddress;
-    }
-
     public String getOrderReference() {
         return orderReference;
     }
 
     public void setOrderReference(String orderReference) {
         this.orderReference = orderReference;
-    }
-
-    public String getDeliveryMethod() {
-        return deliveryMethod;
-    }
-
-    public void setDeliveryMethod(String deliveryMethod) {
-        this.deliveryMethod = deliveryMethod;
     }
 
     public DeliveryDetails getDeliveryDetails() {
@@ -76,5 +58,34 @@ public class EmailData {
 
     public void setPaymentDetails(PaymentDetails paymentDetails) {
         this.paymentDetails = paymentDetails;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        EmailData emailData = (EmailData) o;
+        return Objects.equals(to, emailData.to) && Objects.equals(subject, emailData.subject) && Objects.equals(orderReference, emailData.orderReference) && Objects
+                .equals(deliveryDetails, emailData.deliveryDetails) && Objects.equals(paymentDetails, emailData.paymentDetails);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(to, subject, orderReference, deliveryDetails, paymentDetails);
+    }
+
+    @Override
+    public String toString() {
+        return "EmailData{" +
+                "to='" + to + '\'' +
+                ", subject='" + subject + '\'' +
+                ", orderReference='" + orderReference + '\'' +
+                ", deliveryDetails=" + deliveryDetails +
+                ", paymentDetails=" + paymentDetails +
+                '}';
     }
 }
