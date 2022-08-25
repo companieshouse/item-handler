@@ -1,7 +1,12 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +23,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.model.*;
+import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
+import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.ItemGroup;
+import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderItemRouterTest {
@@ -42,8 +53,8 @@ public class OrderItemRouterTest {
     private ArgumentCaptor<ItemGroup> itemGroupCaptor;
 
     @Test
-    @DisplayName("Test certified cert standard delivery route to email service")
-    void testRouteToEmailServiceCert() {
+    @DisplayName("Router should route deliverable items to email service and missing image deliveries to chd item sender service")
+    void testRouteToAllRequiredServices() {
         // given
         Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
         Item certSameDay = getExpectedItem("item#certificate", DeliveryTimescale.SAME_DAY);
@@ -69,7 +80,7 @@ public class OrderItemRouterTest {
     }
 
     @Test
-    @DisplayName("Test route does not call send items to chd when there are no missing image delivery items")
+    @DisplayName("Router should not send items to chd when there are no missing image delivery items")
     void testOrderContainsNoMissingImageDeliveryItems() {
         // given
         Item cert = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
@@ -85,7 +96,7 @@ public class OrderItemRouterTest {
     }
 
     @Test
-    @DisplayName("Test route does not call send order confirmation when there are no deliverable items")
+    @DisplayName("Router should not send order confirmations when there are no deliverable items")
     void testOrderContainsNoDeliverableItems() {
         // given
         Item missingImageDelivery = getMissingImageDelivery();
@@ -101,7 +112,7 @@ public class OrderItemRouterTest {
     }
 
     @Test
-    @DisplayName("Test throws a non retryable exception when delivery timescale is null")
+    @DisplayName("Router should throw a non retryable exception when delivery timescale is null")
     void testOrderWithNullDeliveryTimescale() {
         // given
         Item cert = getExpectedItem("item#certificate", null);
