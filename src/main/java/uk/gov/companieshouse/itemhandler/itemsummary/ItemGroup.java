@@ -1,4 +1,7 @@
-package uk.gov.companieshouse.itemhandler.model;
+package uk.gov.companieshouse.itemhandler.itemsummary;
+
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.ArrayList;
 import java.util.List;

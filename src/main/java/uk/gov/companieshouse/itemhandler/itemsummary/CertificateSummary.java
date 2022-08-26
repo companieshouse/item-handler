@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.itemhandler.model;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import java.util.Objects;
 

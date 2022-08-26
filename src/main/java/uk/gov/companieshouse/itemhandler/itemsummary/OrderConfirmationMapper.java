@@ -1,8 +1,5 @@
-package uk.gov.companieshouse.itemhandler.mapper;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
-import uk.gov.companieshouse.itemhandler.model.EmailData;
-import uk.gov.companieshouse.itemhandler.model.PaymentDetails;
 import uk.gov.companieshouse.itemhandler.util.DateConstants;
 
 import java.time.format.DateTimeFormatter;

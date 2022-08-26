@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.itemhandler.mapper;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -17,19 +17,14 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.companieshouse.itemhandler.config.EmailConfig;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
-import uk.gov.companieshouse.itemhandler.model.CertificateEmailData;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.CertificateSummary;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
-import uk.gov.companieshouse.itemhandler.model.PaymentDetails;
 
 @ExtendWith(MockitoExtension.class)
 public class CertificateConfirmationMapperTest {

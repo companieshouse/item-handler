@@ -3,7 +3,7 @@ package uk.gov.companieshouse.itemhandler.service;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.kafka.ItemMessageProducer;
 import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.ItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logWithOrderReference;
@@ -27,7 +27,7 @@ public class ChdItemSenderService {
      *     <li>it only sends the first (assumed only) item</li>
      *     <li>it assumes that item is a missing image delivery item</li>
      * </ol>
-     * @param order the {@link OrderData} instance retrieved from the Orders API
+     * @param itemGroup a {@link ItemGroup group of missing image delivery items}.
      */
     public void sendItemsToChd(final ItemGroup itemGroup) {
         final String orderReference = itemGroup.getOrder().getReference();

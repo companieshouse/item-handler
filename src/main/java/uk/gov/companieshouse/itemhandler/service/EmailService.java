@@ -12,7 +12,7 @@ import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
@@ -99,7 +99,7 @@ public class EmailService {
     /**
      * Sends out a certificate or certified copy order confirmation email.
      *
-     * @param order the order information used to compose the order confirmation email.
+     * @param itemGroup a {@link DeliverableItemGroup group of deliverable items}.
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {

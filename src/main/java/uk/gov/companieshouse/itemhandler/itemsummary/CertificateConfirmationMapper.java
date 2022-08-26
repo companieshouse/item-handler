@@ -1,16 +1,12 @@
-package uk.gov.companieshouse.itemhandler.mapper;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.itemhandler.config.EmailConfig;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.model.CertificateEmailData;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
-import uk.gov.companieshouse.itemhandler.model.CertificateSummary;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 
+@Component
 public class CertificateConfirmationMapper extends OrderConfirmationMapper<CertificateEmailData> {
 
     private final EmailConfig config;
