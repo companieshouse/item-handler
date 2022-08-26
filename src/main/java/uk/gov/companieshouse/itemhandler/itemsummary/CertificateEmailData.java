@@ -76,7 +76,10 @@ public class CertificateEmailData extends EmailData {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof CertificateEmailData)) {
+            return false;
+        }
+        if (!super.equals(o)) {
             return false;
         }
         CertificateEmailData that = (CertificateEmailData) o;
@@ -85,6 +88,6 @@ public class CertificateEmailData extends EmailData {
 
     @Override
     public int hashCode() {
-        return Objects.hash(certificates);
+        return Objects.hash(super.hashCode(), certificates);
     }
 }

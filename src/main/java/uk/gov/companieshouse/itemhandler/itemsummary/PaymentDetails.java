@@ -35,15 +35,15 @@ public class PaymentDetails {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof PaymentDetails)) {
             return false;
         }
         PaymentDetails that = (PaymentDetails) o;
-        return Objects.equals(reference, that.reference) && Objects.equals(date, that.date);
+        return Objects.equals(getReference(), that.getReference()) && Objects.equals(getDate(), that.getDate());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(reference, date);
+        return Objects.hash(getReference(), getDate());
     }
 }

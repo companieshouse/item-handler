@@ -49,6 +49,14 @@
             **/config/FeatureOptions.java,
             **/config/FeatureOptionsConfig.java,
             **/email/CertificateOrderConfirmation.java
+            **/itemsummary/CertificateEmailConfig.java
+            **/itemsummary/CertificateEmailData.java
+            **/itemsummary/CertificateSummary.java
+            **/itemsummary/DeliverableItemGroup.java
+            **/itemsummary/EmailConfig.java
+            **/itemsummary/EmailData.java
+            **/itemsummary/ItemGroup.java
+            **/itemsummary/PaymentDetails.java
         </sonar.exclusions>
     </properties>
 

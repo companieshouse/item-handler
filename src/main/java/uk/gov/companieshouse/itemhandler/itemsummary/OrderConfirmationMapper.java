@@ -18,7 +18,6 @@ public abstract class OrderConfirmationMapper<T extends EmailData> {
     protected abstract void mapItems(DeliverableItemGroup itemGroup, T emailData);
 
     private void mapData(DeliverableItemGroup itemGroup, T emailData) {
-        emailData.setTo(itemGroup.getOrder().getOrderedBy().getEmail());
         emailData.setOrderReference(itemGroup.getOrder().getReference());
         emailData.setDeliveryDetails(itemGroup.getOrder().getDeliveryDetails());
         emailData.setPaymentDetails(new PaymentDetails(itemGroup.getOrder().getPaymentReference(), itemGroup.getOrder().getOrderedAt().format(DateTimeFormatter.ofPattern(DateConstants.PAYMENT_DATE_TIME_FORMAT))));

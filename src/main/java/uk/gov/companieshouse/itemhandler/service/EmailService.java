@@ -110,6 +110,7 @@ public class EmailService {
             email.setMessageId(UUID.randomUUID().toString());
             email.setData(objectMapper.writeValueAsString(confirmation));
             email.setCreatedAt(LocalDateTime.now().toString());
+
             String orderReference = confirmation.getOrderReferenceNumber();
             LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
             emailSendProducer.sendMessage(email, orderReference);

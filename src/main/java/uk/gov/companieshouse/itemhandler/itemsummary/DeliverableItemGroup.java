@@ -33,15 +33,18 @@ public class DeliverableItemGroup extends ItemGroup {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof DeliverableItemGroup)) {
+            return false;
+        }
+        if (!super.equals(o)) {
             return false;
         }
         DeliverableItemGroup that = (DeliverableItemGroup) o;
-        return timescale == that.timescale;
+        return getTimescale() == that.getTimescale();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(timescale);
+        return Objects.hash(super.hashCode(), getTimescale());
     }
 }

@@ -22,10 +22,11 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
 
     @Override
     protected void mapItems(DeliverableItemGroup itemGroup, CertificateEmailData certificateEmailData) {
+        certificateEmailData.setTo(config.getCertificate().getRecipient());
         if (itemGroup.getTimescale() == DeliveryTimescale.SAME_DAY) {
-            certificateEmailData.setSubject(config.getExpressCertificateSubjectLine());
+            certificateEmailData.setSubject(config.getCertificate().getExpressSubjectLine());
         } else {
-            certificateEmailData.setSubject(config.getStandardCertificateSubjectLine());
+            certificateEmailData.setSubject(config.getCertificate().getStandardSubjectLine());
         }
         itemGroup.getItems().stream()
                 .map(item -> new CertificateSummary(item.getId(),

@@ -67,16 +67,19 @@ public class EmailData {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof EmailData)) {
             return false;
         }
         EmailData emailData = (EmailData) o;
-        return Objects.equals(to, emailData.to) && Objects.equals(subject, emailData.subject) && Objects.equals(orderReference, emailData.orderReference) && Objects
-                .equals(deliveryDetails, emailData.deliveryDetails) && Objects.equals(paymentDetails, emailData.paymentDetails);
+        return Objects.equals(getTo(), emailData.getTo())
+                && Objects.equals(getSubject(), emailData.getSubject())
+                && Objects.equals(getOrderReference(), emailData.getOrderReference())
+                && Objects.equals(getDeliveryDetails(), emailData.getDeliveryDetails())
+                && Objects.equals(getPaymentDetails(), emailData.getPaymentDetails());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(to, subject, orderReference, deliveryDetails, paymentDetails);
+        return Objects.hash(getTo(), getSubject(), getOrderReference(), getDeliveryDetails(), getPaymentDetails());
     }
 }

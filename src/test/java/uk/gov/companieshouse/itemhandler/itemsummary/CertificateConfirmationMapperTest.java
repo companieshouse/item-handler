@@ -36,6 +36,9 @@ public class CertificateConfirmationMapperTest {
     private EmailConfig config;
 
     @Mock
+    private CertificateEmailConfig certificateEmailConfig;
+
+    @Mock
     private DeliverableItemGroup deliverableItemGroup;
 
     @Mock
@@ -58,9 +61,9 @@ public class CertificateConfirmationMapperTest {
     void testMapStandardDeliveryCertificatesToCertificateEmailData() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
-        when(order.getOrderedBy()).thenReturn(actionedBy);
-        when(actionedBy.getEmail()).thenReturn("example@companieshouse.gov.uk");
-        when(config.getStandardCertificateSubjectLine()).thenReturn("subject");
+        when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
+        when(certificateEmailConfig.getStandardSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));
@@ -92,9 +95,9 @@ public class CertificateConfirmationMapperTest {
     void testMapExpressDeliveryCertificatesToCertificateEmailData() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
-        when(order.getOrderedBy()).thenReturn(actionedBy);
-        when(actionedBy.getEmail()).thenReturn("example@companieshouse.gov.uk");
-        when(config.getExpressCertificateSubjectLine()).thenReturn("subject");
+        when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
+        when(certificateEmailConfig.getExpressSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));
@@ -126,9 +129,9 @@ public class CertificateConfirmationMapperTest {
     void testMapMultipleCertificatesToCertificateEmailData() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
-        when(order.getOrderedBy()).thenReturn(actionedBy);
-        when(actionedBy.getEmail()).thenReturn("example@companieshouse.gov.uk");
-        when(config.getStandardCertificateSubjectLine()).thenReturn("subject");
+        when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
+        when(certificateEmailConfig.getStandardSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));
@@ -161,9 +164,9 @@ public class CertificateConfirmationMapperTest {
     void testThrowNonRetryableExceptionIfCertificateTyoeUnhandled() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
-        when(order.getOrderedBy()).thenReturn(actionedBy);
-        when(actionedBy.getEmail()).thenReturn("example@companieshouse.gov.uk");
-        when(config.getExpressCertificateSubjectLine()).thenReturn("subject");
+        when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
+        when(certificateEmailConfig.getExpressSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));

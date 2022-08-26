@@ -55,18 +55,18 @@ public class CertificateSummary {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof CertificateSummary)) {
             return false;
         }
         CertificateSummary that = (CertificateSummary) o;
-        return Objects.equals(itemNumber, that.itemNumber)
-                && Objects.equals(certificateType, that.certificateType)
-                && Objects.equals(companyNumber, that.companyNumber)
-                && Objects.equals(fee, that.fee);
+        return Objects.equals(getItemNumber(), that.getItemNumber())
+                && Objects.equals(getCertificateType(), that.getCertificateType())
+                && Objects.equals(getCompanyNumber(), that.getCompanyNumber())
+                && Objects.equals(getFee(), that.getFee());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(itemNumber, certificateType, companyNumber, fee);
+        return Objects.hash(getItemNumber(), getCertificateType(), getCompanyNumber(), getFee());
     }
 }
