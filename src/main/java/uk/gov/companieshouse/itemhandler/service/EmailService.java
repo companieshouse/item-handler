@@ -114,7 +114,7 @@ public class EmailService {
                 final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
                 final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
                 final EmailSend email = orderConfirmationAndEmail.email;
-                email.setEmailAddress(TOKEN_EMAIL_ADDRESS); // replace with noreply@companieshouse.gov.uk
+                email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
                 email.setMessageId(UUID.randomUUID().toString());
                 email.setData(objectMapper.writeValueAsString(confirmation));
                 email.setCreatedAt(LocalDateTime.now().toString());
@@ -124,7 +124,17 @@ public class EmailService {
                 emailSendProducer.sendMessage(email, orderReference);
             } else {
                 EmailMetadata<?> emailMetadata = confirmationMapperFactory.getMapper(itemGroup).map(itemGroup);
-                //emailSendProducer.
+                EmailSend emailSend = new EmailSend();
+                emailSend.setAppId(emailMetadata.getAppId());
+                emailSend.setMessageType(emailMetadata.getMessageType());
+                emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
+                emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+                emailSend.setMessageId(UUID.randomUUID().toString());
+                emailSend.setCreatedAt(LocalDateTime.now().toString());
+
+                String orderReference = itemGroup.getOrder().getReference();
+                LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+                emailSendProducer.sendMessage(emailSend, orderReference);
             }
 
         } catch (JsonProcessingException exception) {

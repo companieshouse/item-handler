@@ -31,13 +31,12 @@ import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.itemsummary.CertificateConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
+import uk.gov.companieshouse.itemhandler.itemsummary.*;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
+import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -98,7 +97,7 @@ class EmailServiceTest {
     ConfirmationMapperFactory confirmationMapperFactory;
 
     @Mock
-    CertificateConfirmationMapper certificateConfirmationMapper;
+    OrderConfirmationMapper<?> certificateConfirmationMapper;
 
     /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
     private static class TestJsonProcessingException extends JsonProcessingException {
@@ -112,73 +111,13 @@ class EmailServiceTest {
     @DisplayName("Email service handles certified certificate emails correctly")
     void serviceCallsMapMethodOnCertificateConfirmationMapper(){
         // given
-        when(confirmationMapperFactory.getMapper(new DeliverableItemGroup(order, "#item#certificate", STANDARD)));
+        when(confirmationMapperFactory.getMapper(any())).thenReturn(certificateConfirmationMapper);
 
         // when
         emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "#item#certificate", STANDARD));
 
         // then
     }
-
-    /*@Test
-    @DisplayName("Sends certificate order confirmation successfully")
-    void sendsCertificateOrderConfirmation() throws Exception {
-
-        // Given
-        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-
-        // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
-        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
-
-        // Then
-        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-        final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.certificate-order-confirmation"));
-        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("certificate_order_confirmation_email"));
-        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
-    }
-
-    @Test
-    @DisplayName("Sends same day certificate order confirmation successfully")
-    void sendsSameDayCertificateOrderConfirmation() throws Exception {
-
-        // Given
-        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(SAME_DAY);
-
-        // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
-        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
-
-        // Then
-        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-        final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.same-day-certificate-order-confirmation"));
-        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("same_day_certificate_order_confirmation_email"));
-        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
-    }*/
 
     @Test
     @DisplayName("Sends certified copy order confirmation successfully")
@@ -296,5 +235,9 @@ class EmailServiceTest {
         final LocalDateTime createdAt = LocalDateTime.parse(emailSent.getCreatedAt());
         assertThat(createdAt.isAfter(intervalStart) || createdAt.isEqual(intervalStart), is(true));
         assertThat(createdAt.isBefore(intervalEnd) || createdAt.isEqual(intervalEnd), is(true));
+    }
+
+    private DeliverableItemGroup getDeliverableItemGroup(String itemKind, DeliveryTimescale timescale) {
+        return new DeliverableItemGroup(order, itemKind, timescale);
     }
 }
