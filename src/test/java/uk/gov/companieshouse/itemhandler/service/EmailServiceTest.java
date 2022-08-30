@@ -195,9 +195,9 @@ class EmailServiceTest {
         // Then
         verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
         final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.same-day-certified-copy-order-confirmation"));
+        assertThat(emailSent.getAppId(), is("item-handler.certified-copy-order-confirmation"));
         assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("same_day_certified_copy_order_confirmation_email"));
+        assertThat(emailSent.getMessageType(), is("certified_copy_order_confirmation_email"));
         assertThat(emailSent.getData(), is(EMAIL_CONTENT));
         assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
         verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);

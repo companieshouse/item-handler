@@ -34,9 +34,9 @@ public class EmailService {
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
     public static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
-            "item-handler.certificate-order-confirmation";
+            "item-handler.certificate-summary-order-confirmation";
     public static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "certificate_order_confirmation_email";
+            "certificate_summary_order_confirmation";
     public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.same-day-certificate-order-confirmation";
     public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
@@ -45,14 +45,6 @@ public class EmailService {
             "item-handler.certified-copy-order-confirmation";
     public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_order_confirmation_email";
-    public static final String SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID =
-            "item-handler.same-day-certified-copy-order-confirmation";
-    public static final String SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "same_day_certified_copy_order_confirmation_email";
-    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
-            "item-handler.missing-image-delivery-order-confirmation";
-    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "missing_image_delivery_order_confirmation_email";
     public static final String ITEM_TYPE_CERTIFICATE = "certificate";
     public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
@@ -86,8 +78,7 @@ public class EmailService {
     private String certificateOrderRecipient;
     @Value("${certified-copy.order.confirmation.recipient}")
     private String certifiedCopyOrderRecipient;
-    @Value("${missing-image-delivery.order.confirmation.recipient}")
-    private String missingImageDeliveryOrderRecipient;
+
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
@@ -165,9 +156,9 @@ public class EmailService {
             case ITEM_TYPE_CERTIFIED_COPY:
             case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
-                confirmation.setTo(missingImageDeliveryOrderRecipient);
-                email.setAppId(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+                confirmation.setTo(certifiedCopyOrderRecipient);
+                email.setAppId(CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
+                email.setMessageType(CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             default:
                 final Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(order.getReference());
