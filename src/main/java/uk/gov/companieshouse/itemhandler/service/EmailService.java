@@ -8,7 +8,9 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
+import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -55,6 +57,7 @@ public class EmailService {
     public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
     public static final String STANDARD_DELIVERY = "standard";
+    public static final String ITEM_KIND_CERTIFIED_COPY = "item#certified-copy";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
@@ -107,7 +110,7 @@ public class EmailService {
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
             // TODO: replace with call to abstract factory returning OrderConfirmationMapper parameterised by item kind
-            if ("item#certified-copy".equals(itemGroup.getKind())) {
+            if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
                 final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
                 final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
                 final EmailSend email = orderConfirmationAndEmail.email;
@@ -120,7 +123,8 @@ public class EmailService {
                 LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
                 emailSendProducer.sendMessage(email, orderReference);
             } else {
-                confirmationMapperFactory.getMapper(itemGroup);
+                EmailMetadata<?> emailMetadata = confirmationMapperFactory.getMapper(itemGroup).map(itemGroup);
+                //emailSendProducer.
             }
 
         } catch (JsonProcessingException exception) {
