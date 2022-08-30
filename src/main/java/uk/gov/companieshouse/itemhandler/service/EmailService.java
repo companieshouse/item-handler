@@ -103,10 +103,11 @@ public class EmailService {
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
+            // TODO: replace with call to abstract factory returning OrderConfirmationMapper parameterised by item kind
             final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
             final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
             final EmailSend email = orderConfirmationAndEmail.email;
-            email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+            email.setEmailAddress(TOKEN_EMAIL_ADDRESS); // replace with noreply@companieshouse.gov.uk
             email.setMessageId(UUID.randomUUID().toString());
             email.setData(objectMapper.writeValueAsString(confirmation));
             email.setCreatedAt(LocalDateTime.now().toString());
