@@ -5,13 +5,7 @@ public class CertificateEmailConfig {
     private String recipient;
     private String standardSubjectLine;
     private String expressSubjectLine;
-
-    public CertificateEmailConfig(String recipient, String standardCertificateSubjectLine, String expressCertificateSubjectLine) {
-        this.recipient = recipient;
-        this.standardSubjectLine = standardCertificateSubjectLine;
-        this.expressSubjectLine = expressCertificateSubjectLine;
-    }
-
+    
     public String getRecipient() {
         return recipient;
     }

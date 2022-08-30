@@ -14,11 +14,6 @@ public class EmailConfig {
     private CertificateEmailConfig certificate;
     private String senderEmail;
 
-    public EmailConfig(CertificateEmailConfig certificate, String senderEmail) {
-        this.certificate = certificate;
-        this.senderEmail = senderEmail;
-    }
-
     public CertificateEmailConfig getCertificate() {
         return certificate;
     }
