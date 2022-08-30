@@ -109,7 +109,6 @@ public class EmailService {
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
-            // TODO: replace with call to abstract factory returning OrderConfirmationMapper parameterised by item kind
             if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
                 final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
                 final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
@@ -136,11 +135,13 @@ public class EmailService {
                 LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
                 emailSendProducer.sendMessage(emailSend, orderReference);
             }
-
         } catch (JsonProcessingException exception) {
             String msg = String.format("Error converting order (%s) confirmation to JSON", itemGroup.getOrder().getReference());
             LOGGER.error(msg, exception);
             throw new NonRetryableException(msg);
+        } catch (IllegalArgumentException exception) {
+            LOGGER.error(exception);
+            throw new NonRetryableException(exception);
         }
     }
 
@@ -162,15 +163,6 @@ public class EmailService {
                 email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ? CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE : SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
                 return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_CERTIFIED_COPY:
-                confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
-                confirmation.setTo(certifiedCopyOrderRecipient);
-                email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ?
-                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID :
-                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ?
-                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE :
-                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-                return new OrderConfirmationAndEmail(confirmation, email);
             case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
                 confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
                 confirmation.setTo(missingImageDeliveryOrderRecipient);

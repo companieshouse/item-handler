@@ -2,11 +2,15 @@ package uk.gov.companieshouse.itemhandler.service;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.SAME_DAY;
@@ -88,16 +92,22 @@ class EmailServiceTest {
     private DeliveryItemOptions deliveryItemOptions;
 
     @Captor
-    ArgumentCaptor<EmailSend> emailCaptor;
+    private ArgumentCaptor<EmailSend> emailCaptor;
 
     @Mock
-    DeliverableItemGroup itemGroup;
+    private DeliverableItemGroup itemGroup;
 
     @Mock
-    ConfirmationMapperFactory confirmationMapperFactory;
+    private ConfirmationMapperFactory confirmationMapperFactory;
 
     @Mock
-    OrderConfirmationMapper<?> certificateConfirmationMapper;
+    private OrderConfirmationMapper<?> certificateConfirmationMapper;
+
+    @Mock
+    private EmailData data;
+
+    @Mock
+    private EmailMetadata<?> metadata;
 
     /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
     private static class TestJsonProcessingException extends JsonProcessingException {
@@ -109,14 +119,26 @@ class EmailServiceTest {
 
     @Test
     @DisplayName("Email service handles certified certificate emails correctly")
-    void serviceCallsMapMethodOnCertificateConfirmationMapper(){
+    void serviceCallsMapMethodOnCertificateConfirmationMapper() throws JsonProcessingException {
         // given
-        when(confirmationMapperFactory.getMapper(any())).thenReturn(certificateConfirmationMapper);
+        doReturn(certificateConfirmationMapper).when(confirmationMapperFactory).getMapper(any());
+        doReturn(metadata).when(certificateConfirmationMapper).map(any());
+        doReturn(data).when(metadata).getEmailData();
+        when(metadata.getAppId()).thenReturn("appId");
+        when(metadata.getMessageType()).thenReturn("messageType");
+        when(objectMapper.writeValueAsString(any())).thenReturn("data");
+        when(order.getReference()).thenReturn("ORD-123123-123123");
 
         // when
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "#item#certificate", STANDARD));
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
 
         // then
+        verify(producer).sendMessage(emailCaptor.capture(), eq("ORD-123123-123123"));
+        assertThat(emailCaptor.getValue().getAppId(), is(equalTo("appId")));
+        assertThat(emailCaptor.getValue().getMessageType(), is(equalTo("messageType")));
+        assertThat(emailCaptor.getValue().getData(), is(equalTo("data")));
+        assertThat(emailCaptor.getValue().getMessageId(), is(notNullValue()));
+        assertThat(emailCaptor.getValue().getCreatedAt(), is(notNullValue()));
     }
 
     @Test
@@ -222,6 +244,20 @@ class EmailServiceTest {
         // Then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
         assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
+    }
+
+    @DisplayName("Wraps IllegalArgumentException as NonRetryableException if thrown by ConfirmationMapperFactory")
+    @Test
+    void testWrapIllegalArgumentExceptionAsNonRetryableException() {
+        // given
+        doThrow(IllegalArgumentException.class).when(confirmationMapperFactory).getMapper(any());
+
+        // when
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
+
+        // then
+        NonRetryableException exception = assertThrows(NonRetryableException.class, executable);
+        assertThat(exception.getCause().getClass(), is(equalTo(IllegalArgumentException.class)));
     }
 
     /**

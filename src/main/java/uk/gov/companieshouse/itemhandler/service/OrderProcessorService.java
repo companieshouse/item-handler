@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemRouter;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 /**
@@ -26,10 +27,12 @@ public class OrderProcessorService {
 
     private final OrdersApiClientService ordersApi;
     private final OrderRouterService orderRouter;
+    private final OrderItemRouter orderItemRouter;
 
-    public OrderProcessorService(final OrdersApiClientService ordersApi, final OrderRouterService orderRouter) {
+    public OrderProcessorService(final OrdersApiClientService ordersApi, final OrderRouterService orderRouter, final OrderItemRouter orderItemRouter) {
         this.ordersApi = ordersApi;
         this.orderRouter = orderRouter;
+        this.orderItemRouter = orderItemRouter;
     }
 
     /**
@@ -49,7 +52,11 @@ public class OrderProcessorService {
 
             logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
             getLogger().info("Processing order received", logMap);
-            orderRouter.routeOrder(order);
+            if (order.getItems().size() > 1) {
+                orderItemRouter.route(order);
+            } else {
+                orderRouter.routeOrder(order);
+            }
             responseBuilder.withStatus(OrderProcessResponse.Status.OK);
         } catch (RetryableException exception) {
             String msg = String.format("Service unavailable %s", exception.getMessage());
