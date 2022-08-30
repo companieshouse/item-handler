@@ -9,6 +9,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 
 import static java.util.Arrays.stream;
 import static org.hamcrest.MatcherAssert.assertThat;

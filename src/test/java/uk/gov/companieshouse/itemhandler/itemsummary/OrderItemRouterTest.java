@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.itemhandler.service;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,13 +23,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
 
 @ExtendWith(MockitoExtension.class)
 class OrderItemRouterTest {
@@ -61,7 +61,7 @@ class OrderItemRouterTest {
         Item copy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
         Item copySameDay = getExpectedItem("item#certified-copy", DeliveryTimescale.SAME_DAY);
         Item missingImageDelivery = getMissingImageDelivery();
-        List<Item> items = Arrays.asList(cert, copySameDay, certSameDay, copy, missingImageDelivery);
+        List<Item> items = Arrays.asList(cert, cert, copySameDay, copySameDay, certSameDay, certSameDay, copy, copy, missingImageDelivery, missingImageDelivery);
         Collections.shuffle(items);
         when(order.getItems()).thenReturn(items);
 
@@ -72,11 +72,11 @@ class OrderItemRouterTest {
         verify(emailService, times(4)).sendOrderConfirmation(deliverableItemGroupCaptor.capture());
         verify(chdItemSenderService).sendItemsToChd(itemGroupCaptor.capture());
         List<DeliverableItemGroup> capturedValues = deliverableItemGroupCaptor.getAllValues();
-        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.STANDARD, new ArrayList<>(Collections.singletonList(cert)))));
-        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.SAME_DAY, new ArrayList<>(Collections.singletonList(certSameDay)))));
-        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.STANDARD, new ArrayList<>(Collections.singletonList(copy)))));
-        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.SAME_DAY, new ArrayList<>(Collections.singletonList(copySameDay)))));
-        assertEquals(new ItemGroup(order, "item#missing-image-delivery", new ArrayList<>(Collections.singletonList(missingImageDelivery))), itemGroupCaptor.getValue());
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.STANDARD, new ArrayList<>(Arrays.asList(cert, cert)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certificate", DeliveryTimescale.SAME_DAY, new ArrayList<>(Arrays.asList(certSameDay, certSameDay)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.STANDARD, new ArrayList<>(Arrays.asList(copy, copy)))));
+        assertTrue(capturedValues.contains(new DeliverableItemGroup(order, "item#certified-copy", DeliveryTimescale.SAME_DAY, new ArrayList<>(Arrays.asList(copySameDay, copySameDay)))));
+        assertEquals(new ItemGroup(order, "item#missing-image-delivery", new ArrayList<>(Arrays.asList(missingImageDelivery, missingImageDelivery))), itemGroupCaptor.getValue());
     }
 
     @Test

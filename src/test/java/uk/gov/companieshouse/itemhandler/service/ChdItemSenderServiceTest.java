@@ -13,7 +13,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import uk.gov.companieshouse.itemhandler.kafka.ItemMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.ItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.List;

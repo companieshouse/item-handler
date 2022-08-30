@@ -1,13 +1,15 @@
-package uk.gov.companieshouse.itemhandler.service;
+package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.model.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
-import uk.gov.companieshouse.itemhandler.model.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
+import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.itemhandler.service.Routable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,17 +55,10 @@ public class OrderItemRouter implements Routable {
     }
 
     private ItemGroup byMissingImageDelivery(OrderData order) {
-        return order.getItems()
+        List<Item> missingImageDeliveryItems = order.getItems()
                 .stream()
                 .filter(item -> !(item.getItemOptions() instanceof DeliveryItemOptions))
-                .reduce(new ItemGroup(order, "item#missing-image-delivery"),
-                        (a, b) -> {
-                            a.add(b);
-                            return a;
-                        },
-                        (a, b) -> {
-                            a.addAll(b.getItems());
-                            return a;
-                        });
+                .collect(Collectors.toList());
+        return new ItemGroup(order, "item#missing-image-delivery", missingImageDeliveryItems);
     }
 }

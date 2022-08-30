@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.service.ChdItemSenderService;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 
 public enum ItemType {
     CERTIFICATE("item#certificate"),

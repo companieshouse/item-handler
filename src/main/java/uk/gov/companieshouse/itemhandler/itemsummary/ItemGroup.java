@@ -1,4 +1,7 @@
-package uk.gov.companieshouse.itemhandler.model;
+package uk.gov.companieshouse.itemhandler.itemsummary;
+
+import uk.gov.companieshouse.itemhandler.model.Item;
+import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,15 +60,17 @@ public class ItemGroup {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof ItemGroup)) {
             return false;
         }
         ItemGroup itemGroup = (ItemGroup) o;
-        return Objects.equals(order, itemGroup.order) && Objects.equals(kind, itemGroup.kind) && Objects.equals(items, itemGroup.items);
+        return Objects.equals(getOrder(), itemGroup.getOrder())
+                && Objects.equals(getKind(), itemGroup.getKind())
+                && Objects.equals(getItems(), itemGroup.getItems());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(order, kind, items);
+        return Objects.hash(getOrder(), getKind(), getItems());
     }
 }
