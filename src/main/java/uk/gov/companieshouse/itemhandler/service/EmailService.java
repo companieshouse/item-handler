@@ -8,6 +8,7 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -76,6 +77,7 @@ public class EmailService {
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer emailSendProducer;
     private final FeatureOptions featureOptions;
+    private final ConfirmationMapperFactory confirmationMapperFactory;
 
     @Value("${certificate.order.confirmation.recipient}")
     private String certificateOrderRecipient;
@@ -88,12 +90,13 @@ public class EmailService {
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer emailSendProducer,
-            final FeatureOptions featureOptions) {
+            final FeatureOptions featureOptions, final ConfirmationMapperFactory confirmationMapperFactory) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.emailSendProducer = emailSendProducer;
         this.featureOptions = featureOptions;
+        this.confirmationMapperFactory = confirmationMapperFactory;
     }
 
     /**
@@ -104,17 +107,22 @@ public class EmailService {
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
             // TODO: replace with call to abstract factory returning OrderConfirmationMapper parameterised by item kind
-            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
-            final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
-            final EmailSend email = orderConfirmationAndEmail.email;
-            email.setEmailAddress(TOKEN_EMAIL_ADDRESS); // replace with noreply@companieshouse.gov.uk
-            email.setMessageId(UUID.randomUUID().toString());
-            email.setData(objectMapper.writeValueAsString(confirmation));
-            email.setCreatedAt(LocalDateTime.now().toString());
+            if ("item#certified-copy".equals(itemGroup.getKind())) {
+                final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
+                final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
+                final EmailSend email = orderConfirmationAndEmail.email;
+                email.setEmailAddress(TOKEN_EMAIL_ADDRESS); // replace with noreply@companieshouse.gov.uk
+                email.setMessageId(UUID.randomUUID().toString());
+                email.setData(objectMapper.writeValueAsString(confirmation));
+                email.setCreatedAt(LocalDateTime.now().toString());
 
-            String orderReference = confirmation.getOrderReferenceNumber();
-            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-            emailSendProducer.sendMessage(email, orderReference);
+                String orderReference = confirmation.getOrderReferenceNumber();
+                LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+                emailSendProducer.sendMessage(email, orderReference);
+            } else {
+                confirmationMapperFactory.getMapper(itemGroup);
+            }
+
         } catch (JsonProcessingException exception) {
             String msg = String.format("Error converting order (%s) confirmation to JSON", itemGroup.getOrder().getReference());
             LOGGER.error(msg, exception);

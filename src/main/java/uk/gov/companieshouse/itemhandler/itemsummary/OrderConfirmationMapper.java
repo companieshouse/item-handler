@@ -6,16 +6,18 @@ import java.time.format.DateTimeFormatter;
 
 public abstract class OrderConfirmationMapper<T extends EmailData> {
 
-    public T map(DeliverableItemGroup itemGroup) {
+    public EmailMetadata<T> map(DeliverableItemGroup itemGroup) {
         T emailData = newEmailDataInstance();
         mapData(itemGroup, emailData);
         mapItems(itemGroup, emailData);
-        return emailData;
+        return newEmailMetadataInstance(emailData);
     }
 
     protected abstract T newEmailDataInstance();
 
     protected abstract void mapItems(DeliverableItemGroup itemGroup, T emailData);
+
+    protected abstract EmailMetadata<T> newEmailMetadataInstance(T emailData);
 
     private void mapData(DeliverableItemGroup itemGroup, T emailData) {
         emailData.setOrderReference(itemGroup.getOrder().getReference());

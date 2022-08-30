@@ -15,6 +15,11 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
         this.config = emailConfig;
     }
 
+    public static final String CERTIFICATE_SUMMARY_ORDER_CONFIRMATION_APP_ID =
+            "item-handler.certificate-summary-order-confirmation";
+
+    public static final String CERTIFICATE_SUMMARY_ORDER_CONFIRMATION_MESSAGE_TYPE =
+            "certificate_summary_order_confirmation";
     @Override
     protected CertificateEmailData newEmailDataInstance() {
         return new CertificateEmailData();
@@ -34,6 +39,12 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
                         item.getCompanyNumber(),
                         "£" + item.getTotalItemCost())
                 ).forEach(certificateEmailData::add);
+    }
+
+    @Override
+    protected EmailMetadata<CertificateEmailData> newEmailMetadataInstance(CertificateEmailData emailData) {
+        return new EmailMetadata<>(CERTIFICATE_SUMMARY_ORDER_CONFIRMATION_APP_ID,
+                CERTIFICATE_SUMMARY_ORDER_CONFIRMATION_MESSAGE_TYPE, emailData);
     }
 
     private String mapCertificateType(CertificateType certificateType) {
