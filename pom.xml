@@ -55,6 +55,7 @@
             **/itemsummary/DeliverableItemGroup.java,
             **/itemsummary/EmailConfig.java,
             **/itemsummary/EmailData.java,
+            **/itemsummary/EmailMetadata.java,
             **/itemsummary/ItemGroup.java,
             **/itemsummary/PaymentDetails.java
         </sonar.exclusions>

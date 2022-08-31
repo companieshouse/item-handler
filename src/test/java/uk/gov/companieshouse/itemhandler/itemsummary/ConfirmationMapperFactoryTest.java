@@ -15,7 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ConfirmationMapperFactoryTest {
+class ConfirmationMapperFactoryTest {
 
     @Mock
     private CertificateConfirmationMapper certificateConfirmationMapper;
