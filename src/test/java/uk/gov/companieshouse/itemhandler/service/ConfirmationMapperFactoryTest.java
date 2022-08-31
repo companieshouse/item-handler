@@ -1,4 +1,4 @@
-package uk.gov.companieshouse.itemhandler.itemsummary;
+package uk.gov.companieshouse.itemhandler.service;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
@@ -13,6 +13,9 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateConfirmationMapper;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
 
 @ExtendWith(MockitoExtension.class)
 class ConfirmationMapperFactoryTest {
