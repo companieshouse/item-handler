@@ -272,8 +272,4 @@ class EmailServiceTest {
         assertThat(createdAt.isAfter(intervalStart) || createdAt.isEqual(intervalStart), is(true));
         assertThat(createdAt.isBefore(intervalEnd) || createdAt.isEqual(intervalEnd), is(true));
     }
-
-    private DeliverableItemGroup getDeliverableItemGroup(String itemKind, DeliveryTimescale timescale) {
-        return new DeliverableItemGroup(order, itemKind, timescale);
-    }
 }
