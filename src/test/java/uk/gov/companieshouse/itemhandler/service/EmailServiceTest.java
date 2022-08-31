@@ -35,12 +35,15 @@ import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.itemsummary.*;
+import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
+import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.EmailData;
+import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
-import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 

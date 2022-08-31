@@ -8,7 +8,7 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.itemsummary.EmailData;
+import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
 import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -111,7 +111,7 @@ public class EmailService {
                 LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
                 emailSendProducer.sendMessage(email, orderReference);
             } else {
-                EmailMetadata<? extends EmailData> emailMetadata = confirmationMapperFactory.getMapper(itemGroup).map(itemGroup);
+                EmailMetadata emailMetadata = confirmationMapperFactory.getMapper(itemGroup).map(itemGroup);
                 EmailSend emailSend = new EmailSend();
                 emailSend.setAppId(emailMetadata.getAppId());
                 emailSend.setMessageType(emailMetadata.getMessageType());
