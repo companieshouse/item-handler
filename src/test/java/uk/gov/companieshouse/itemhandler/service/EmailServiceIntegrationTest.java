@@ -72,25 +72,7 @@ class EmailServiceIntegrationTest {
     @MockBean
     private DeliveryItemOptions deliveryItemOptions;
 
-    /*@Test
-    @DisplayName("EmailService sets the to line on the confirmation to the configured " +
-            "certificate.order.confirmation.recipient value")
-    void usesConfiguredRecipientValueForCertificate() throws Exception {
-
-        // Given
-        when(orderToCertificateConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-
-        // When
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
-
-        // Then
-        verify(certificateOrderConfirmation).setTo("certificate-handler@nowhere.com");
-    }*/
+    //TODO: certificate case?
 
     @Test
     @DisplayName("EmailService sets the to line on the confirmation to the configured " +
