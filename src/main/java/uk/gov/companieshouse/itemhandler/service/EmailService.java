@@ -8,6 +8,7 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
 import uk.gov.companieshouse.itemhandler.itemsummary.EmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
@@ -112,7 +113,7 @@ public class EmailService {
                 LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
                 emailSendProducer.sendMessage(email, orderReference);
             } else {
-                EmailMetadata<? extends EmailData> emailMetadata = confirmationMapperFactory.getMapper(itemGroup).map(itemGroup);
+                EmailMetadata<CertificateEmailData> emailMetadata = confirmationMapperFactory.getCertificateMapper().map(itemGroup);
                 EmailSend emailSend = new EmailSend();
                 emailSend.setAppId(emailMetadata.getAppId());
                 emailSend.setMessageType(emailMetadata.getMessageType());
@@ -129,9 +130,6 @@ public class EmailService {
             String msg = String.format("Error converting order (%s) confirmation to JSON", itemGroup.getOrder().getReference());
             LOGGER.error(msg, exception);
             throw new NonRetryableException(msg);
-        } catch (IllegalArgumentException exception) {
-            LOGGER.error(exception);
-            throw new NonRetryableException(exception);
         }
     }
 

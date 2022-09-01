@@ -11,12 +11,7 @@ public class ConfirmationMapperFactory {
         this.certificateConfirmationMapper = certificateConfirmationMapper;
     }
 
-    public OrderConfirmationMapper<? extends EmailData> getMapper(ItemGroup itemGroup) {
-        String kind = itemGroup.getKind();
-        if ("item#certificate".equals(kind)) {
-            return certificateConfirmationMapper;
-        } else {
-            throw new IllegalArgumentException(String.format("Kind [%s] unhandled", kind));
-        }
+    public OrderConfirmationMapper<CertificateEmailData> getCertificateMapper() {
+        return certificateConfirmationMapper;
     }
 }

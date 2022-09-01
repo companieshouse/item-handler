@@ -9,8 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.SAME_DAY;
@@ -35,9 +33,9 @@ import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
 import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
-import uk.gov.companieshouse.itemhandler.itemsummary.EmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
@@ -104,13 +102,13 @@ class EmailServiceTest {
     private ConfirmationMapperFactory confirmationMapperFactory;
 
     @Mock
-    private OrderConfirmationMapper<?> certificateConfirmationMapper;
+    private OrderConfirmationMapper<CertificateEmailData> certificateConfirmationMapper;
 
     @Mock
-    private EmailData data;
+    private CertificateEmailData data;
 
     @Mock
-    private EmailMetadata<?> metadata;
+    private EmailMetadata<CertificateEmailData> metadata;
 
     /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
     private static class TestJsonProcessingException extends JsonProcessingException {
@@ -124,9 +122,10 @@ class EmailServiceTest {
     @DisplayName("Email service handles certified certificate emails correctly")
     void serviceCallsMapMethodOnCertificateConfirmationMapper() throws JsonProcessingException {
         // given
-        doReturn(certificateConfirmationMapper).when(confirmationMapperFactory).getMapper(any());
-        doReturn(metadata).when(certificateConfirmationMapper).map(any());
-        doReturn(data).when(metadata).getEmailData();
+        when(confirmationMapperFactory.getCertificateMapper()).thenReturn(certificateConfirmationMapper);
+        when(certificateConfirmationMapper.map(any())).thenReturn(metadata);
+
+        when(metadata.getEmailData()).thenReturn(data);
         when(metadata.getAppId()).thenReturn("appId");
         when(metadata.getMessageType()).thenReturn("messageType");
         when(objectMapper.writeValueAsString(any())).thenReturn("data");
@@ -247,20 +246,6 @@ class EmailServiceTest {
         // Then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
         assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
-    }
-
-    @DisplayName("Wraps IllegalArgumentException as NonRetryableException if thrown by ConfirmationMapperFactory")
-    @Test
-    void testWrapIllegalArgumentExceptionAsNonRetryableException() {
-        // given
-        doThrow(IllegalArgumentException.class).when(confirmationMapperFactory).getMapper(any());
-
-        // when
-        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
-
-        // then
-        NonRetryableException exception = assertThrows(NonRetryableException.class, executable);
-        assertThat(exception.getCause().getClass(), is(equalTo(IllegalArgumentException.class)));
     }
 
     /**
