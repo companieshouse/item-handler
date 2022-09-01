@@ -11,7 +11,7 @@ public class ConfirmationMapperFactory {
         this.certificateConfirmationMapper = certificateConfirmationMapper;
     }
 
-    public OrderConfirmationMapper getMapper(ItemGroup itemGroup) {
+    public OrderConfirmationMapper<? extends EmailData> getMapper(ItemGroup itemGroup) {
         String kind = itemGroup.getKind();
         if ("item#certificate".equals(kind)) {
             return certificateConfirmationMapper;
