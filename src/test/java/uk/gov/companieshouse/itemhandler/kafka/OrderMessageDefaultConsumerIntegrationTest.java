@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -144,6 +146,41 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
+    }
+
+    @Test
+    @DisplayName("Process an order containing certified certificates with different delivery timescales")
+    void testConsumesCertsOrderWithDifferentDeliveryTimescalesReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString("/fixtures/multi-certified-certificate-timescales.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals(2, actual.count());
+        for(ConsumerRecord<String, email_send> record : actual) {
+            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
+            assertNotNull(record.value().getMessageId());
+            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                    record.value().getMessageType());
+            assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
+            assertNotNull(record.value().getData());
+        }
     }
 
     @Test
