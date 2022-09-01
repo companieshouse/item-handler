@@ -14,6 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -22,7 +24,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockserver.client.MockServerClient;
@@ -107,8 +113,10 @@ class OrderMessageDefaultConsumerIntegrationTest {
         ++orderId;
     }
 
-    @Test
-    void testConsumesCertificateOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("certificateTestParameters")
+    @DisplayName("Process an order containing certified certificates")
+    void testConsumesCertificateOrderReceivedFromEmailSendTopic(String fixture, String description) throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
                         .withPath(getOrderReference())
@@ -116,8 +124,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .withBody(JsonBody.json(IOUtils.resourceToString(
-                                "/fixtures/certified-certificate.json",
+                        .withBody(JsonBody.json(IOUtils.resourceToString(fixture,
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
 
@@ -230,5 +237,12 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     private String getOrderReference() {
         return "/orders/ORD-111111-" + orderId;
+    }
+
+    private static Stream<Arguments> certificateTestParameters() {
+        return Stream.of(
+                Arguments.of("/fixtures/certified-certificate.json", "Order containing one certificate"),
+                Arguments.of("/fixtures/multi-certified-certificate.json", "Order containing multiple certificates")
+        );
     }
 }
