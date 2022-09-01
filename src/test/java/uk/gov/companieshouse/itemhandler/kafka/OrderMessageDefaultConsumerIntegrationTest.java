@@ -11,6 +11,7 @@ import static org.mockserver.model.HttpResponse.response;
 import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -60,6 +61,7 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 class OrderMessageDefaultConsumerIntegrationTest {
 
     private static int orderId = 123456;
+    private static int midId = 123123;
     private static MockServerContainer container;
     private MockServerClient client;
 
@@ -242,6 +244,38 @@ class OrderMessageDefaultConsumerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Should successfully process an order containing multiple missing image delivery items")
+    void testConsumesMultipleMissingImageDeliveriesFromOrderReceivedAndPublishesChsItemOrderedTwice() throws ExecutionException, InterruptedException, IOException {
+        // given
+        client.when(request()
+                .withPath(getOrderReference())
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/multiple-missing-image-delivery.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, 30000L, 2);
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals(2, actual.count());
+        actual.forEach(record -> {
+            assertEquals("ORD-123123-123123", record.value().getReference());
+            assertNotNull(record.value().getItem());
+            assertEquals(getMidId(), record.value().getItem().getId());
+        });
+    }
+
+    @Test
     void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException {
         //given
         client.when(request()
@@ -274,6 +308,10 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     private String getOrderReference() {
         return "/orders/ORD-111111-" + orderId;
+    }
+
+    private String getMidId() {
+        return "MID-123123-" + midId++;
     }
 
     private static Stream<Arguments> certificateTestParameters() {
