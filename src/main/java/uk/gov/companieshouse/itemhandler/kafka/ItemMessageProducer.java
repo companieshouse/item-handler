@@ -12,7 +12,6 @@ import java.util.Map;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 
@@ -30,16 +29,15 @@ public class ItemMessageProducer {
     /**
      * Sends (produces) a message to the Kafka <code>chd-item-ordered</code> topic representing the missing image
      * delivery item provided.
-     * @param orderItemPair the {@link OrderItemPair} of order and MID order item the from orders API
+     * @param orderItemPair the {@link OrderItemPair} of order and MID order item from the orders API
      */
     public void sendMessage(final OrderItemPair orderItemPair) {
         final Map<String, Object> logMap = createLogMap();
-        OrderData order = orderItemPair.getOrder();
         populateChdMessageLogMap(orderItemPair, logMap);
         LOGGER.info("Sending message to kafka", logMap);
 
         final Message message = itemMessageFactory.createMessage(orderItemPair);
-        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, order.getReference());
+        logIfNotNull(logMap, ORDER_REFERENCE_NUMBER, orderItemPair.getOrder().getReference());
         logIfNotNull(logMap, ITEM_ID, orderItemPair.getItem().getId());
         LOGGER.debug("Sending message to kafka", logMap);
         messageProducer.sendMessage(message,
@@ -48,7 +46,7 @@ public class ItemMessageProducer {
 
     /**
      * Logs the order reference, item ID, topic, partition and offset for the item message produced to a Kafka topic.
-     * @param orderItemPair the pairing originating order and MID order item
+     * @param orderItemPair the pairing of order and MID order item
      * @param recordMetadata the metadata for a record that has been acknowledged by the server for the message produced
      */
     void logOffsetFollowingSendIngOfMessage(final OrderItemPair orderItemPair,
@@ -60,7 +58,7 @@ public class ItemMessageProducer {
 
     /**
      * Populates the log map provided with key values for tracking of outgoing messages bound for CHD.
-     * @param orderItemPair the pairing originating order and MID order item
+     * @param orderItemPair the pairing of order and MID order item
      * @param logMap the log map to populate values form the order with
      */
     private void populateChdMessageLogMap(final OrderItemPair orderItemPair, final Map<String, Object> logMap) {

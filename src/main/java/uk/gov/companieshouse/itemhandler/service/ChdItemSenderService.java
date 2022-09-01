@@ -4,9 +4,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.kafka.ItemMessageProducer;
-import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
-import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMap;
@@ -27,11 +25,6 @@ public class ChdItemSenderService {
 
     /**
      * Sends each item on the order individually to CHD.
-     * This must be revisited post MVP as it currently is subject to the following limitations:
-     * <ol>
-     *     <li>it only sends the first (assumed only) item</li>
-     *     <li>it assumes that item is a missing image delivery item</li>
-     * </ol>
      * @param itemGroup a {@link ItemGroup group of missing image delivery items}.
      */
     public void sendItemsToChd(final ItemGroup itemGroup) {

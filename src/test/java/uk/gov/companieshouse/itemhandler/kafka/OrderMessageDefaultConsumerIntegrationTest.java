@@ -11,7 +11,6 @@ import static org.mockserver.model.HttpResponse.response;
 import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
