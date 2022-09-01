@@ -14,7 +14,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
 import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -22,7 +26,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockserver.client.MockServerClient;
@@ -107,8 +115,10 @@ class OrderMessageDefaultConsumerIntegrationTest {
         ++orderId;
     }
 
-    @Test
-    void testConsumesCertificateOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("certificateTestParameters")
+    @DisplayName("Process an order containing certified certificates")
+    void testConsumesCertificateOrderReceivedFromEmailSendTopic(String fixture, String description) throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
                         .withPath(getOrderReference())
@@ -116,8 +126,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-                        .withBody(JsonBody.json(IOUtils.resourceToString(
-                                "/fixtures/certified-certificate.json",
+                        .withBody(JsonBody.json(IOUtils.resourceToString(fixture,
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
 
@@ -137,6 +146,41 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
+    }
+
+    @Test
+    @DisplayName("Process an order containing certified certificates with different delivery timescales")
+    void testConsumesCertsOrderWithDifferentDeliveryTimescalesReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString("/fixtures/multi-certified-certificate-timescales.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals(2, actual.count());
+        for(ConsumerRecord<String, email_send> record : actual) {
+            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
+            assertNotNull(record.value().getMessageId());
+            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                    record.value().getMessageType());
+            assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
+            assertNotNull(record.value().getData());
+        }
     }
 
     @Test
@@ -230,5 +274,12 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     private String getOrderReference() {
         return "/orders/ORD-111111-" + orderId;
+    }
+
+    private static Stream<Arguments> certificateTestParameters() {
+        return Stream.of(
+                Arguments.of("/fixtures/certified-certificate.json", "Order containing one certificate"),
+                Arguments.of("/fixtures/multi-certified-certificate.json", "Order containing multiple certificates")
+        );
     }
 }
