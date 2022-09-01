@@ -17,6 +17,10 @@ public class CertificateEmailData extends EmailData {
         this.certificates.addAll(certificates);
     }
 
+    public List<CertificateSummary> getCertificates() {
+        return certificates;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
