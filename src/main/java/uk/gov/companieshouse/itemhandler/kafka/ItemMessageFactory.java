@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
@@ -55,14 +56,14 @@ public class ItemMessageFactory {
     /**
      * Creates an item message for onward production to an outbound Kafka topic.
      *
-     * @param order the {@link OrderData} instance retrieved from the Orders API
+     * @param orderItemPair the {@link OrderItemPair} of order and MID order item returned from orders API
      * @return the avro message representing the item (plus some order related information)
      */
-    public Message createMessage(final OrderData order) {
+    public Message createMessage(final OrderItemPair orderItemPair) {
         LOGGER.trace("Creating item message");
         final Message message;
         try {
-            final ChdItemOrdered outgoing = buildChdItemOrdered(order);
+            final ChdItemOrdered outgoing = buildChdItemOrdered(orderItemPair);
             final AvroSerializer<ChdItemOrdered> serializer =
                 serializerFactory.getGenericRecordSerializer(ChdItemOrdered.class);
             message = new Message();
@@ -72,8 +73,8 @@ public class ItemMessageFactory {
         } catch (Exception ex) {
             final String errorMessage =
                 format("Unable to create message for order %s item ID %s!",
-                    order.getReference(),
-                    order.getItems().get(0).getId());
+                        orderItemPair.getOrder().getReference(),
+                        orderItemPair.getItem().getId());
             LOGGER.error(errorMessage, ex);
             throw new KafkaMessagingException(errorMessage, ex);
         }
@@ -81,15 +82,16 @@ public class ItemMessageFactory {
     }
 
     /**
-     * Creates a {@link ChdItemOrdered} Kafka message content instance from the {@link OrderData} instance
+     * Creates a {@link ChdItemOrdered} Kafka message content instance from the {@link OrderItemPair} instance
      * provided.
      *
-     * @param order the original order from which the message content is built
+     * @param orderItemPair the original order and MID item pairing from which the message content is built
      * @return the resulting Kafka message content object
      * @throws JsonProcessingException should there be an error serialising order content
      */
-    ChdItemOrdered buildChdItemOrdered(final OrderData order) throws JsonProcessingException {
-        final uk.gov.companieshouse.itemhandler.model.Item firstItem = order.getItems().get(0);
+    ChdItemOrdered buildChdItemOrdered(final OrderItemPair orderItemPair) throws JsonProcessingException {
+        OrderData order = orderItemPair.getOrder();
+        final uk.gov.companieshouse.itemhandler.model.Item orderItem = orderItemPair.getItem();
         final ChdItemOrdered outgoing = new ChdItemOrdered();
         outgoing.setOrderedAt(order.getOrderedAt().toString());
         outgoing.setOrderedBy(createOrderedBy(order.getOrderedBy()));
@@ -98,24 +100,24 @@ public class ItemMessageFactory {
         outgoing.setTotalOrderCost(order.getTotalOrderCost());
 
         final Item item = new Item();
-        item.setId(firstItem.getId());
-        item.setCompanyName(firstItem.getCompanyName());
-        item.setCompanyNumber(firstItem.getCompanyNumber());
-        item.setCustomerReference(firstItem.getCustomerReference());
-        item.setDescription(firstItem.getDescription());
-        item.setDescriptionIdentifier(firstItem.getDescriptionIdentifier());
-        item.setDescriptionValues(firstItem.getDescriptionValues());
-        item.setItemCosts(createFirstItemCosts(firstItem));
-        item.setItemOptions(createFirstItemOptionsForMid(firstItem));
-        item.setItemUri(firstItem.getItemUri());
-        item.setKind(firstItem.getKind());
+        item.setId(orderItem.getId());
+        item.setCompanyName(orderItem.getCompanyName());
+        item.setCompanyNumber(orderItem.getCompanyNumber());
+        item.setCustomerReference(orderItem.getCustomerReference());
+        item.setDescription(orderItem.getDescription());
+        item.setDescriptionIdentifier(orderItem.getDescriptionIdentifier());
+        item.setDescriptionValues(orderItem.getDescriptionValues());
+        item.setItemCosts(createFirstItemCosts(orderItem));
+        item.setItemOptions(createFirstItemOptionsForMid(orderItem));
+        item.setItemUri(orderItem.getItemUri());
+        item.setKind(orderItem.getKind());
 
         item.setPostageCost(ZERO_POSTAGE_COST);
         item.setIsPostalDelivery(NO_POSTAL_DELIVERY);
 
-        item.setLinks(new Links(firstItem.getLinks().getSelf()));
-        item.setQuantity(firstItem.getQuantity());
-        item.setTotalItemCost(firstItem.getTotalItemCost());
+        item.setLinks(new Links(orderItem.getLinks().getSelf()));
+        item.setQuantity(orderItem.getQuantity());
+        item.setTotalItemCost(orderItem.getTotalItemCost());
 
         outgoing.setItem(item);
         return outgoing;
@@ -125,12 +127,11 @@ public class ItemMessageFactory {
      * Creates a List of {@link ItemCosts} from the first item's List of
      * {@link uk.gov.companieshouse.itemhandler.model.ItemCosts}.
      *
-     * @param firstItem {@link uk.gov.companieshouse.itemhandler.model.Item}, assumed to be the first (only) item
-     *                  in the order
+     * @param item {@link uk.gov.companieshouse.itemhandler.model.Item} the current MID item being processed in the order
      * @return list item costs
      */
-    private List<ItemCosts> createFirstItemCosts(final uk.gov.companieshouse.itemhandler.model.Item firstItem) {
-        return firstItem.getItemCosts().stream().map(costs ->
+    private List<ItemCosts> createFirstItemCosts(final uk.gov.companieshouse.itemhandler.model.Item item) {
+        return item.getItemCosts().stream().map(costs ->
             new ItemCosts(costs.getCalculatedCost(),
                 costs.getDiscountApplied(),
                 costs.getItemCost(),
@@ -142,15 +143,14 @@ public class ItemMessageFactory {
     /**
      * Creates a suitable map of values representing MID item options ready for use as part of a Kafka message.
      *
-     * @param firstItem {@link uk.gov.companieshouse.itemhandler.model.Item}, assumed to be the first (only) item in
-     *                  the order
+     * @param item {@link uk.gov.companieshouse.itemhandler.model.Item} the current MID item being processed in the order
      * @return map of values representing MID item options
      * @throws JsonProcessingException should there be an error serialising filing history description values
      */
-    private Map<String, String> createFirstItemOptionsForMid(final uk.gov.companieshouse.itemhandler.model.Item firstItem)
+    private Map<String, String> createFirstItemOptionsForMid(final uk.gov.companieshouse.itemhandler.model.Item item)
         throws JsonProcessingException {
         // For now we know we are dealing with MID only.
-        final MissingImageDeliveryItemOptions options = (MissingImageDeliveryItemOptions) firstItem.getItemOptions();
+        final MissingImageDeliveryItemOptions options = (MissingImageDeliveryItemOptions) item.getItemOptions();
         final Map<String, String> optionsForMid = new HashMap<>();
         optionsForMid.put(FILING_HISTORY_ID, options.getFilingHistoryId());
         optionsForMid.put(FILING_HISTORY_DATE, options.getFilingHistoryDate());

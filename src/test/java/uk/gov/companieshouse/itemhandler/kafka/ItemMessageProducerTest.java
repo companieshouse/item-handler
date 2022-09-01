@@ -15,25 +15,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
-import uk.gov.companieshouse.logging.Logger;
 
 /**
  * Unit tests the {@link ItemMessageProducer} class.
  */
 @ExtendWith(MockitoExtension.class)
-@PrepareForTest({LoggingUtils.class, Logger.class})
-@SuppressWarnings("squid:S5786") // public class access modifier required for JUnit 4 test
-public class ItemMessageProducerTest {
+class ItemMessageProducerTest {
 
     private static final String COMPANY_NUMBER = "00006444";
     private static final String PAYMENT_REF = "payment-ref-xyz";
     private static final Item ITEM;
     private static final OrderData ORDER;
+    private static final OrderItemPair ORDER_ITEM_PAIR;
 
     static {
         ORDER = new OrderData();
@@ -43,6 +40,7 @@ public class ItemMessageProducerTest {
         ITEM.setId(MISSING_IMAGE_DELIVERY_ITEM_ID);
         ITEM.setCompanyNumber(COMPANY_NUMBER);
         ORDER.setItems(singletonList(ITEM));
+        ORDER_ITEM_PAIR = new OrderItemPair(ORDER, ITEM);
     }
 
     @InjectMocks
@@ -62,19 +60,19 @@ public class ItemMessageProducerTest {
     void sendMessageDelegatesMessageCreation() {
 
         // When
-        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
+        messageProducerUnderTest.sendMessage(ORDER_ITEM_PAIR);
 
         // Then
-        verify(itemMessageFactory).createMessage(ORDER);
+        verify(itemMessageFactory).createMessage(ORDER_ITEM_PAIR);
     }
 
     @Test
     void sendMessageCallsMessageProducer() {
 
         // Given
-        when(itemMessageFactory.createMessage(ORDER)).thenReturn(message);
+        when(itemMessageFactory.createMessage(ORDER_ITEM_PAIR)).thenReturn(message);
 
-        messageProducerUnderTest.sendMessage(ORDER, ORDER_REFERENCE, MISSING_IMAGE_DELIVERY_ITEM_ID);
+        messageProducerUnderTest.sendMessage(ORDER_ITEM_PAIR);
 
         verify(messageProducer).sendMessage(eq(message), any(Consumer.class));
     }
