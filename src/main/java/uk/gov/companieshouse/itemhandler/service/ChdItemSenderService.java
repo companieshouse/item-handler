@@ -1,11 +1,16 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import java.util.Map;
 import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.kafka.ItemMessageProducer;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.createLogMap;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logIfNotNull;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.logWithOrderReference;
 
 /**
@@ -32,7 +37,10 @@ public class ChdItemSenderService {
     public void sendItemsToChd(final ItemGroup itemGroup) {
         final String orderReference = itemGroup.getOrder().getReference();
         logWithOrderReference("Sending items for order to CHD", orderReference);
-        final Item firstItem = itemGroup.getOrder().getItems().get(0);
-        itemMessageProducer.sendMessage(itemGroup.getOrder(), orderReference, firstItem.getId());
+        final Map<String, Object> logMap = createLogMap();
+        itemGroup.getItems().forEach(item -> {
+            logIfNotNull(logMap, ITEM_ID, item.getId());
+            itemMessageProducer.sendMessage(new OrderItemPair(itemGroup.getOrder(), item));
+        });
     }
 }
