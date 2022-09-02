@@ -4,12 +4,12 @@ import java.util.Objects;
 
 public class CertifiedCopySummary {
     private String itemNumber;
-    private String filingHistoryId;
     private String dateFiled;
     private String type;
     private String description;
     private String companyNumber;
     private String fee;
+    private String viewFormLink;
 
     public CertifiedCopySummary() {
     }
@@ -17,7 +17,6 @@ public class CertifiedCopySummary {
     public CertifiedCopySummary(String itemNumber, String filingHistoryId, String dateFiled, String type,
                                 String description, String companyNumber, String fee) {
         this.itemNumber = itemNumber;
-        this.filingHistoryId = filingHistoryId;
         this.dateFiled = dateFiled;
         this.type = type;
         this.description = description;
@@ -31,14 +30,6 @@ public class CertifiedCopySummary {
 
     public void setItemNumber(String itemNumber) {
         this.itemNumber = itemNumber;
-    }
-
-    public String getFilingHistoryId() {
-        return filingHistoryId;
-    }
-
-    public void setFilingHistoryId(String filingHistoryId) {
-        this.filingHistoryId = filingHistoryId;
     }
 
     public String getDateFiled() {
@@ -77,6 +68,14 @@ public class CertifiedCopySummary {
         return fee;
     }
 
+    public String getViewFormLink() {
+        return viewFormLink;
+    }
+
+    public void setViewFormLink(String viewFormLink) {
+        this.viewFormLink = viewFormLink;
+    }
+
     public void setFee(String fee) {
         this.fee = fee;
     }
@@ -87,20 +86,15 @@ public class CertifiedCopySummary {
 
     public static class Builder {
         private String itemNumber;
-        private String filingHistoryId;
         private String dateFiled;
         private String type;
         private String description;
         private String companyNumber;
         private String fee;
+        private String viewFormLink;
 
         public Builder withItemNumber(String itemNumber) {
             this.itemNumber = itemNumber;
-            return this;
-        }
-
-        public Builder withFilingHistoryId(String filingHistoryId) {
-            this.filingHistoryId = filingHistoryId;
             return this;
         }
 
@@ -129,8 +123,13 @@ public class CertifiedCopySummary {
             return this;
         }
 
+        public Builder withViewFormLink(String viewFormLink) {
+            this.viewFormLink = viewFormLink;
+            return this;
+        }
+
         public CertifiedCopySummary build() {
-            return new CertifiedCopySummary(itemNumber, filingHistoryId, dateFiled, type, description, companyNumber, fee);
+            return new CertifiedCopySummary(itemNumber, dateFiled, type, description, companyNumber, fee, viewFormLink);
         }
     }
 
@@ -144,16 +143,16 @@ public class CertifiedCopySummary {
         }
         CertifiedCopySummary that = (CertifiedCopySummary) o;
         return Objects.equals(itemNumber, that.itemNumber) &&
-                Objects.equals(filingHistoryId, that.filingHistoryId) &&
                 Objects.equals(dateFiled, that.dateFiled) &&
                 Objects.equals(type, that.type) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(companyNumber, that.companyNumber) &&
-                Objects.equals(fee, that.fee);
+                Objects.equals(fee, that.fee) &&
+                Objects.equals(viewFormLink, that.viewFormLink);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(itemNumber, filingHistoryId, dateFiled, type, description, companyNumber, fee);
+        return Objects.hash(itemNumber, dateFiled, type, description, companyNumber, fee, viewFormLink);
     }
 }

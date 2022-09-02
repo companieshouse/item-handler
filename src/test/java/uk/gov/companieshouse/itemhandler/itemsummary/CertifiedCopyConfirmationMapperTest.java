@@ -64,6 +64,7 @@ public class CertifiedCopyConfirmationMapperTest {
         when(certifiedCopyEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certifiedCopyEmailConfig.getStandardSubjectLine()).thenReturn("standard delivery subject");
         when(certifiedCopyEmailConfig.getDateFiledFormat()).thenReturn("dd MMM yyyy");
+        when(certifiedCopyEmailConfig.getFilingHistoryFormLink()).thenReturn("host/company/%s/filing-history/%s/document?format=pdf&download=0");
         when(deliverableItemGroup.getItems()).thenReturn(Collections.singletonList(getItem("CCD-123456-123456",false)));
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(any(), any())).thenReturn("ad01-description");
 
@@ -80,12 +81,12 @@ public class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                     CertifiedCopySummary.builder()
                         .withCompanyNumber("12345678")
-                        .withFilingHistoryId("ABC123456DEF")
                         .withDateFiled("02 Sep 2022")
                         .withType("AD01")
                         .withDescription("ad01-description")
                         .withItemNumber("CCD-123456-123456")
                         .withFee("£15")
+                        .withViewFormLink("host/company/12345678/filing-history/ABC123456DEF/document?format=pdf&download=0")
                     .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));
@@ -109,6 +110,7 @@ public class CertifiedCopyConfirmationMapperTest {
         when(certifiedCopyEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certifiedCopyEmailConfig.getExpressSubjectLine()).thenReturn("express delivery subject");
         when(certifiedCopyEmailConfig.getDateFiledFormat()).thenReturn("dd MMM yyyy");
+        when(certifiedCopyEmailConfig.getFilingHistoryFormLink()).thenReturn("host/company/%s/filing-history/%s/document?format=pdf&download=0");
         when(deliverableItemGroup.getItems()).thenReturn(Collections.singletonList(getItem("CCD-123456-123456", true)));
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(any(), any())).thenReturn("ad01-description");
 
@@ -125,12 +127,12 @@ public class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withCompanyNumber("12345678")
-                                .withFilingHistoryId("ABC123456DEF")
                                 .withDateFiled("02 Sep 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withItemNumber("CCD-123456-123456")
                                 .withFee("£50")
+                                .withViewFormLink("host/company/12345678/filing-history/ABC123456DEF/document?format=pdf&download=0")
                                 .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));
@@ -154,6 +156,7 @@ public class CertifiedCopyConfirmationMapperTest {
         when(certifiedCopyEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certifiedCopyEmailConfig.getExpressSubjectLine()).thenReturn("express delivery subject");
         when(certifiedCopyEmailConfig.getDateFiledFormat()).thenReturn("dd MMM yyyy");
+        when(certifiedCopyEmailConfig.getFilingHistoryFormLink()).thenReturn("host/company/%s/filing-history/%s/document?format=pdf&download=0");
         when(deliverableItemGroup.getItems()).thenReturn(Arrays.asList(
                 getItem("CCD-123456-123456", true),
                 getItem("CCD-456789-456789", true)));
@@ -173,22 +176,22 @@ public class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withCompanyNumber("12345678")
-                                .withFilingHistoryId("ABC123456DEF")
                                 .withDateFiled("02 Sep 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withItemNumber("CCD-123456-123456")
                                 .withFee("£50")
+                                .withViewFormLink("host/company/12345678/filing-history/ABC123456DEF/document?format=pdf&download=0")
                                 .build())
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withCompanyNumber("12345678")
-                                .withFilingHistoryId("ABC123456DEF")
                                 .withDateFiled("02 Sep 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withItemNumber("CCD-456789-456789")
                                 .withFee("£50")
+                                .withViewFormLink("host/company/12345678/filing-history/ABC123456DEF/document?format=pdf&download=0")
                                 .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));

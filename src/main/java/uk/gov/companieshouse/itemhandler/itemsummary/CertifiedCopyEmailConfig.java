@@ -5,6 +5,7 @@ public class CertifiedCopyEmailConfig {
     private String standardSubjectLine;
     private String expressSubjectLine;
     private String dateFiledFormat;
+    private String filingHistoryFormLink;
 
     public String getRecipient() {
         return recipient;
@@ -36,5 +37,13 @@ public class CertifiedCopyEmailConfig {
 
     public void setDateFiledFormat(String dateFiledFormat) {
         this.dateFiledFormat = dateFiledFormat;
+    }
+
+    public String getFilingHistoryFormLink() {
+        return filingHistoryFormLink;
+    }
+
+    public void setFilingHistoryFormLink(String filingHistoryFormLink) {
+        this.filingHistoryFormLink = filingHistoryFormLink;
     }
 }

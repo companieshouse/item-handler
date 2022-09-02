@@ -52,7 +52,6 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
                             ((CertifiedCopyItemOptions)item.getItemOptions()).getFilingHistoryDocuments().get(0);
                     return CertifiedCopySummary.builder()
                         .withItemNumber(item.getId())
-                        .withFilingHistoryId(filingHistoryDocument.getFilingHistoryId())
                         .withDateFiled(mapDateFiledFormat(filingHistoryDocument))
                         .withType(filingHistoryDocument.getFilingHistoryType())
                         .withDescription(
@@ -62,6 +61,8 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
                             ))
                         .withCompanyNumber(item.getCompanyNumber())
                         .withFee("£" + item.getTotalItemCost())
+                        .withViewFormLink(String.format(emailConfig.getCertifiedCopy().getFilingHistoryFormLink(),
+                                item.getCompanyNumber(), filingHistoryDocument.getFilingHistoryId()))
                     .build();
                 }).forEach(certifiedCopyEmailData::add);
     }
