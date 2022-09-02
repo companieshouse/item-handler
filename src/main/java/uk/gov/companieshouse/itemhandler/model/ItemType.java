@@ -72,7 +72,8 @@ public enum ItemType {
      */
     public void sendMessages(final OrderData order) {
         emailer.sendOrderConfirmation(new DeliverableItemGroup(order, order.getItems().get(0).getKind(),
-                DeliveryTimescale.STANDARD, order.getItems()));
+                ((DeliveryItemOptions)order.getItems().get(0).getItemOptions()).getDeliveryTimescale(),
+                Collections.singletonList(order.getItems().get(0))));
     }
 
     protected void setEmailer(EmailService emailer) {
