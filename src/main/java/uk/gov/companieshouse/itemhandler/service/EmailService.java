@@ -8,6 +8,9 @@ import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.OrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
+import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
+import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
@@ -31,9 +34,9 @@ public class EmailService {
     private static final Logger LOGGER = LoggingUtils.getLogger();
 
     public static final String CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
-            "item-handler.certificate-order-confirmation";
+            "item-handler.certificate-summary-order-confirmation";
     public static final String CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "certificate_order_confirmation_email";
+            "certificate_summary_order_confirmation";
     public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID =
             "item-handler.same-day-certificate-order-confirmation";
     public static final String SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
@@ -46,14 +49,11 @@ public class EmailService {
             "item-handler.same-day-certified-copy-order-confirmation";
     public static final String SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "same_day_certified_copy_order_confirmation_email";
-    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID =
-            "item-handler.missing-image-delivery-order-confirmation";
-    public static final String MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
-            "missing_image_delivery_order_confirmation_email";
     public static final String ITEM_TYPE_CERTIFICATE = "certificate";
     public static final String ITEM_TYPE_CERTIFIED_COPY = "certified-copy";
     public static final String ITEM_TYPE_MISSING_IMAGE_DELIVERY = "missing-image-delivery";
     public static final String STANDARD_DELIVERY = "standard";
+    public static final String ITEM_KIND_CERTIFIED_COPY = "item#certified-copy";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
@@ -76,24 +76,24 @@ public class EmailService {
     private final ObjectMapper objectMapper;
     private final EmailSendMessageProducer emailSendProducer;
     private final FeatureOptions featureOptions;
+    private final ConfirmationMapperFactory confirmationMapperFactory;
 
     @Value("${certificate.order.confirmation.recipient}")
     private String certificateOrderRecipient;
     @Value("${certified-copy.order.confirmation.recipient}")
     private String certifiedCopyOrderRecipient;
-    @Value("${missing-image-delivery.order.confirmation.recipient}")
-    private String missingImageDeliveryOrderRecipient;
 
     public EmailService(
             final OrderDataToCertificateOrderConfirmationMapper orderToConfirmationMapper,
             final OrderDataToItemOrderConfirmationMapper orderToItemOrderConfirmationMapper,
             final ObjectMapper objectMapper, final EmailSendMessageProducer emailSendProducer,
-            final FeatureOptions featureOptions) {
+            final FeatureOptions featureOptions, final ConfirmationMapperFactory confirmationMapperFactory) {
         this.orderToCertificateOrderConfirmationMapper = orderToConfirmationMapper;
         this.orderToItemOrderConfirmationMapper = orderToItemOrderConfirmationMapper;
         this.objectMapper = objectMapper;
         this.emailSendProducer = emailSendProducer;
         this.featureOptions = featureOptions;
+        this.confirmationMapperFactory = confirmationMapperFactory;
     }
 
     /**
@@ -103,17 +103,32 @@ public class EmailService {
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
-            final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
-            final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
-            final EmailSend email = orderConfirmationAndEmail.email;
-            email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
-            email.setMessageId(UUID.randomUUID().toString());
-            email.setData(objectMapper.writeValueAsString(confirmation));
-            email.setCreatedAt(LocalDateTime.now().toString());
+            if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
+                final OrderConfirmationAndEmail orderConfirmationAndEmail = buildOrderConfirmationAndEmail(itemGroup.getOrder());
+                final OrderConfirmation confirmation = orderConfirmationAndEmail.confirmation;
+                final EmailSend email = orderConfirmationAndEmail.email;
+                email.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+                email.setMessageId(UUID.randomUUID().toString());
+                email.setData(objectMapper.writeValueAsString(confirmation));
+                email.setCreatedAt(LocalDateTime.now().toString());
 
-            String orderReference = confirmation.getOrderReferenceNumber();
-            LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
-            emailSendProducer.sendMessage(email, orderReference);
+                String orderReference = confirmation.getOrderReferenceNumber();
+                LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+                emailSendProducer.sendMessage(email, orderReference);
+            } else {
+                EmailMetadata<CertificateEmailData> emailMetadata = confirmationMapperFactory.getCertificateMapper().map(itemGroup);
+                EmailSend emailSend = new EmailSend();
+                emailSend.setAppId(emailMetadata.getAppId());
+                emailSend.setMessageType(emailMetadata.getMessageType());
+                emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
+                emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+                emailSend.setMessageId(UUID.randomUUID().toString());
+                emailSend.setCreatedAt(LocalDateTime.now().toString());
+
+                String orderReference = itemGroup.getOrder().getReference();
+                LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
+                emailSendProducer.sendMessage(emailSend, orderReference);
+            }
         } catch (JsonProcessingException exception) {
             String msg = String.format("Error converting order (%s) confirmation to JSON", itemGroup.getOrder().getReference());
             LOGGER.error(msg, exception);
@@ -127,40 +142,17 @@ public class EmailService {
      * @return a {@link OrderConfirmationAndEmail} holding both the confirmation and its email envelope
      */
     private OrderConfirmationAndEmail buildOrderConfirmationAndEmail(final OrderData order) {
-        final String descriptionId = order.getItems().get(0).getDescriptionIdentifier();
         final String deliveryTimescale = ((DeliveryItemOptions) order.getItems().get(0).getItemOptions()).getDeliveryTimescale().getJsonName();
         final EmailSend email = new EmailSend();
         final OrderConfirmation confirmation;
-        switch (descriptionId) {
-            case ITEM_TYPE_CERTIFICATE:
-                confirmation = orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions);
-                confirmation.setTo(certificateOrderRecipient);
-                email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ? CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID : SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ? CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE : SAME_DAY_CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-                return new OrderConfirmationAndEmail(confirmation, email);
-            case ITEM_TYPE_CERTIFIED_COPY:
-                confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
-                confirmation.setTo(certifiedCopyOrderRecipient);
-                email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ?
-                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID :
-                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ?
-                        CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE :
-                        SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-                return new OrderConfirmationAndEmail(confirmation, email);
-            case ITEM_TYPE_MISSING_IMAGE_DELIVERY:
-                confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
-                confirmation.setTo(missingImageDeliveryOrderRecipient);
-                email.setAppId(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_APP_ID);
-                email.setMessageType(MISSING_IMAGE_DELIVERY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
-                return new OrderConfirmationAndEmail(confirmation, email);
-            default:
-                final Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(order.getReference());
-                final String error = "Unable to determine order confirmation type from description ID " +
-                        descriptionId + "!";
-                LOGGER.error(error, logMap);
-                throw new NonRetryableException(error);
-        }
+        confirmation = orderToItemOrderConfirmationMapper.orderToConfirmation(order);
+        confirmation.setTo(certifiedCopyOrderRecipient);
+        email.setAppId(deliveryTimescale.equals(STANDARD_DELIVERY) ?
+                CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID :
+                SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID);
+        email.setMessageType(deliveryTimescale.equals(STANDARD_DELIVERY) ?
+                CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE :
+                SAME_DAY_CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE);
+        return new OrderConfirmationAndEmail(confirmation, email);
     }
-
 }

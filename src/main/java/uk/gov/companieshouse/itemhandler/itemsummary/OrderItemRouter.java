@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.itemsummary;
 
+import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
@@ -14,9 +15,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Component
 public class OrderItemRouter implements Routable {
-    private EmailService emailService;
-    private ChdItemSenderService chdItemSenderService;
+    private final EmailService emailService;
+    private final ChdItemSenderService chdItemSenderService;
 
     public OrderItemRouter(EmailService emailService, ChdItemSenderService chdItemSenderService) {
         this.emailService = emailService;

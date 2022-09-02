@@ -1,12 +1,13 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.SAME_DAY;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,10 +33,14 @@ import uk.gov.companieshouse.itemhandler.config.FeatureOptions;
 import uk.gov.companieshouse.itemhandler.email.CertificateOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.email.ItemOrderConfirmation;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
+import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
+import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToCertificateOrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.mapper.OrderDataToItemOrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
@@ -87,7 +93,22 @@ class EmailServiceTest {
     private DeliveryItemOptions deliveryItemOptions;
 
     @Captor
-    ArgumentCaptor<EmailSend> emailCaptor;
+    private ArgumentCaptor<EmailSend> emailCaptor;
+
+    @Mock
+    private DeliverableItemGroup itemGroup;
+
+    @Mock
+    private ConfirmationMapperFactory confirmationMapperFactory;
+
+    @Mock
+    private OrderConfirmationMapper<CertificateEmailData> certificateConfirmationMapper;
+
+    @Mock
+    private CertificateEmailData data;
+
+    @Mock
+    private EmailMetadata<CertificateEmailData> metadata;
 
     /** Extends {@link JsonProcessingException} so it can be instantiated in these tests. */
     private static class TestJsonProcessingException extends JsonProcessingException {
@@ -98,63 +119,27 @@ class EmailServiceTest {
     }
 
     @Test
-    @DisplayName("Sends certificate order confirmation successfully")
-    void sendsCertificateOrderConfirmation() throws Exception {
+    @DisplayName("Email service handles certified certificate emails correctly")
+    void serviceCallsMapMethodOnCertificateConfirmationMapper() throws JsonProcessingException {
+        // given
+        when(confirmationMapperFactory.getCertificateMapper()).thenReturn(certificateConfirmationMapper);
+        when(certificateConfirmationMapper.map(any())).thenReturn(metadata);
+        when(metadata.getEmailData()).thenReturn(data);
+        when(metadata.getAppId()).thenReturn("appId");
+        when(metadata.getMessageType()).thenReturn("messageType");
+        when(objectMapper.writeValueAsString(any())).thenReturn("data");
+        when(order.getReference()).thenReturn("ORD-123123-123123");
 
-        // Given
-        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
+        // when
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
 
-        // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
-        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
-
-        // Then
-        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-        final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.certificate-order-confirmation"));
-        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("certificate_order_confirmation_email"));
-        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
-    }
-
-    @Test
-    @DisplayName("Sends same day certificate order confirmation successfully")
-    void sendsSameDayCertificateOrderConfirmation() throws Exception {
-
-        // Given
-        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(certificateOrderConfirmation.getOrderReferenceNumber()).thenReturn("123");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(SAME_DAY);
-
-        // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
-        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
-
-        // Then
-        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-        final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.same-day-certificate-order-confirmation"));
-        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("same_day_certificate_order_confirmation_email"));
-        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
+        // then
+        verify(producer).sendMessage(emailCaptor.capture(), eq("ORD-123123-123123"));
+        assertThat(emailCaptor.getValue().getAppId(), is(equalTo("appId")));
+        assertThat(emailCaptor.getValue().getMessageType(), is(equalTo("messageType")));
+        assertThat(emailCaptor.getValue().getData(), is(equalTo("data")));
+        assertThat(emailCaptor.getValue().getMessageId(), is(notNullValue()));
+        assertThat(emailCaptor.getValue().getCreatedAt(), is(notNullValue()));
     }
 
     @Test
@@ -171,10 +156,9 @@ class EmailServiceTest {
         when(items.get(0)).thenReturn(item);
         when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certified-copy", STANDARD));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -202,10 +186,9 @@ class EmailServiceTest {
         when(items.get(0)).thenReturn(item);
         when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(SAME_DAY);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFIED_COPY);
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
+        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certified-copy", SAME_DAY));
         final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
 
         // Then
@@ -220,74 +203,36 @@ class EmailServiceTest {
     }
 
     @Test
-    @DisplayName("Sends missing image delivery order confirmation successfully")
-    void sendMissingImageDeliveryOrderConfirmation() throws Exception {
+    void propagatesNonRetryableExceptionIfJsonProcessExceptionThrownWhenSerialisingCertificate() throws Exception  {
 
         // Given
-        final LocalDateTime intervalStart = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
-        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order))
-            .thenReturn(itemOrderConfirmation);
-        when(objectMapper.writeValueAsString(itemOrderConfirmation)).thenReturn(EMAIL_CONTENT);
-        when(itemOrderConfirmation.getOrderReferenceNumber()).thenReturn("456");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_MISSING_IMAGE_DELIVERY);
+        when(confirmationMapperFactory.getCertificateMapper()).thenReturn(certificateConfirmationMapper);
+        when(certificateConfirmationMapper.map(any())).thenReturn(metadata);
+        when(metadata.getEmailData()).thenReturn(data);
+        when(objectMapper.writeValueAsString(data)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
+        when(order.getReference()).thenReturn("ORD-123456-123456");
 
         // When
-        emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
-        final LocalDateTime intervalEnd = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS).plusNanos(1000000);
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
 
         // Then
-        verify(producer).sendMessage(emailCaptor.capture(), any(String.class));
-        final EmailSend emailSent = emailCaptor.getValue();
-        assertThat(emailSent.getAppId(), is("item-handler.missing-image-delivery-order-confirmation"));
-        assertThat(emailSent.getMessageId(), is(notNullValue(String.class)));
-        assertThat(emailSent.getMessageType(), is("missing_image_delivery_order_confirmation_email"));
-        assertThat(emailSent.getData(), is(EMAIL_CONTENT));
-        assertThat(emailSent.getEmailAddress(), is("chs-orders@ch.gov.uk"));
-        verifyCreationTimestampWithinExecutionInterval(emailSent, intervalStart, intervalEnd);
-
+        NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
+        assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
     }
 
     @Test
-    @DisplayName("Errors clearly for unknown description ID value (item type)")
-    void errorsClearlyForUnknownItemType() {
+    void propagatesNonRetryableExceptionIfJsonProcessExceptionThrownWhenSerialisingCertifiedCopy() throws Exception  {
 
         // Given
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_UNKNOWN);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
+        when(order.getItems()).thenReturn(Collections.singletonList(item));
+        when(item.getItemOptions()).thenReturn(deliveryItemOptions);
         when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
-        when(order.getReference()).thenReturn("456");
-
-        DeliverableItemGroup deliverableItemGroup = new DeliverableItemGroup(order, "", STANDARD);
-
-        // When and then
-        assertThatExceptionOfType(NonRetryableException.class).isThrownBy(() ->
-                emailServiceUnderTest.sendOrderConfirmation(deliverableItemGroup))
-                .withMessage("Unable to determine order confirmation type from description ID unknown!")
-                .withNoCause();
-
-    }
-
-    @Test
-    void propagatesNonRetryableExceptionWhenJsonProcessException() throws Exception  {
-
-        // Given
-        when(orderToCertificateOrderConfirmationMapper.orderToConfirmation(order, featureOptions)).thenReturn(certificateOrderConfirmation);
-        when(objectMapper.writeValueAsString(certificateOrderConfirmation)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
+        when(orderToItemOrderConfirmationMapper.orderToConfirmation(order)).thenReturn(itemOrderConfirmation);
+        when(objectMapper.writeValueAsString(itemOrderConfirmation)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
         when(order.getReference()).thenReturn("ORD-123456-123456");
-        when(order.getItems()).thenReturn(items);
-        when(items.get(0)).thenReturn(item);
-        when(item.getDescriptionIdentifier()).thenReturn(ITEM_TYPE_CERTIFICATE);
-        when(((DeliveryItemOptions) item.getItemOptions())).thenReturn(deliveryItemOptions);
-        when(deliveryItemOptions.getDeliveryTimescale()).thenReturn(STANDARD);
 
         // When
-        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "", STANDARD));
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certified-copy", STANDARD));
 
         // Then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);

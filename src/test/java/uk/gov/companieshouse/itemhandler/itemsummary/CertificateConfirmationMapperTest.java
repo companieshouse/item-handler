@@ -77,10 +77,10 @@ public class CertificateConfirmationMapperTest {
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
 
         // when
-        CertificateEmailData data = mapper.map(deliverableItemGroup);
+        EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
 
         // then
-        assertThat(data, is(equalTo(CertificateEmailData.builder()
+        assertThat(emailMetadata.getEmailData(), is(equalTo(CertificateEmailData.builder()
                                                         .withTo("example@companieshouse.gov.uk")
                                                         .withSubject("subject")
                                                         .withOrderReference("ORD-123123-123123")
@@ -88,6 +88,8 @@ public class CertificateConfirmationMapperTest {
                                                         .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
                                                         .addCertificate(new CertificateSummary("CRT-123123-123123", "Incorporation with all company name changes", "12345678", "£15"))
                                                         .build())));
+        assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
+        assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
     }
 
     @Test
@@ -111,10 +113,10 @@ public class CertificateConfirmationMapperTest {
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.SAME_DAY);
 
         // when
-        CertificateEmailData data = mapper.map(deliverableItemGroup);
+        EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
 
         // then
-        assertThat(data, is(equalTo(CertificateEmailData.builder()
+        assertThat(emailMetadata.getEmailData(), is(equalTo(CertificateEmailData.builder()
                 .withTo("example@companieshouse.gov.uk")
                 .withSubject("subject")
                 .withOrderReference("ORD-123123-123123")
@@ -122,6 +124,8 @@ public class CertificateConfirmationMapperTest {
                 .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
                 .addCertificate(new CertificateSummary("CRT-123123-123123", "Dissolution with all company name changes", "12345678", "£15"))
                 .build())));
+        assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
+        assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
     }
 
     @Test
@@ -145,10 +149,10 @@ public class CertificateConfirmationMapperTest {
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
 
         // when
-        CertificateEmailData data = mapper.map(deliverableItemGroup);
+        EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
 
         // then
-        assertThat(data, is(equalTo(CertificateEmailData.builder()
+        assertThat(emailMetadata.getEmailData(), is(equalTo(CertificateEmailData.builder()
                 .withTo("example@companieshouse.gov.uk")
                 .withSubject("subject")
                 .withOrderReference("ORD-123123-123123")
@@ -157,6 +161,8 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123", "Incorporation with all company name changes", "12345678", "£15"))
                 .addCertificate(new CertificateSummary("CRT-123123-123123", "Dissolution with all company name changes", "12345678", "£15"))
                 .build())));
+        assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
+        assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
     }
 
     @Test
