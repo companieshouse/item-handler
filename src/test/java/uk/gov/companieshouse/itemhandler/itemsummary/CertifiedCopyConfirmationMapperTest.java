@@ -225,7 +225,6 @@ class CertifiedCopyConfirmationMapperTest {
         filingHistoryDocument.setFilingHistoryDescriptionValues(Collections.singletonMap("ad01-desc-values-key", "ad01-desc-values-value"));
         return filingHistoryDocument;
     }
-
 }
 
 
