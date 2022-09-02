@@ -81,6 +81,59 @@ public class CertifiedCopySummary {
         this.fee = fee;
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String itemNumber;
+        private String filingHistoryId;
+        private String dateFiled;
+        private String type;
+        private String description;
+        private String companyNumber;
+        private String fee;
+
+        public Builder withItemNumber(String itemNumber) {
+            this.itemNumber = itemNumber;
+            return this;
+        }
+
+        public Builder withFilingHistoryId(String filingHistoryId) {
+            this.filingHistoryId = filingHistoryId;
+            return this;
+        }
+
+        public Builder withDateFiled(String dateFiled) {
+            this.dateFiled = dateFiled;
+            return this;
+        }
+
+        public Builder withType(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public Builder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder withCompanyNumber(String companyNumber) {
+            this.companyNumber = companyNumber;
+            return this;
+        }
+
+        public Builder withFee(String fee) {
+            this.fee = fee;
+            return this;
+        }
+
+        public CertifiedCopySummary build() {
+            return new CertifiedCopySummary(itemNumber, filingHistoryId, dateFiled, type, description, companyNumber, fee);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -102,18 +155,5 @@ public class CertifiedCopySummary {
     @Override
     public int hashCode() {
         return Objects.hash(itemNumber, filingHistoryId, dateFiled, type, description, companyNumber, fee);
-    }
-
-    @Override
-    public String toString() {
-        return "CertifiedCopySummary{" +
-                "itemNumber='" + itemNumber + '\'' +
-                ", filingHistoryId='" + filingHistoryId + '\'' +
-                ", dateFiled='" + dateFiled + '\'' +
-                ", type='" + type + '\'' +
-                ", description='" + description + '\'' +
-                ", companyNumber='" + companyNumber + '\'' +
-                ", fee='" + fee + '\'' +
-                '}';
     }
 }

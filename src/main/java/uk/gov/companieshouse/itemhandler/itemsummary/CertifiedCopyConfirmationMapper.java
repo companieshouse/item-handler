@@ -48,22 +48,21 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
 
         itemGroup.getItems().stream()
                 .map(item -> {
-                    CertifiedCopySummary certifiedCopySummary = new CertifiedCopySummary();
-                    certifiedCopySummary.setItemNumber(item.getId());
                     FilingHistoryDocument filingHistoryDocument =
                             ((CertifiedCopyItemOptions)item.getItemOptions()).getFilingHistoryDocuments().get(0);
-                    certifiedCopySummary.setFilingHistoryId(filingHistoryDocument.getFilingHistoryId());
-                    certifiedCopySummary.setDateFiled(mapDateFiledFormat(filingHistoryDocument));
-                    certifiedCopySummary.setType(filingHistoryDocument.getFilingHistoryType());
-                    certifiedCopySummary.setDescription(
+                    return CertifiedCopySummary.builder()
+                        .withItemNumber(item.getId())
+                        .withFilingHistoryId(filingHistoryDocument.getFilingHistoryId())
+                        .withDateFiled(mapDateFiledFormat(filingHistoryDocument))
+                        .withType(filingHistoryDocument.getFilingHistoryType())
+                        .withDescription(
                             filingHistoryDescriptionProviderService.mapFilingHistoryDescription(
                                     filingHistoryDocument.getFilingHistoryDescription(),
                                     filingHistoryDocument.getFilingHistoryDescriptionValues()
-                            )
-                    );
-                    certifiedCopySummary.setCompanyNumber(item.getCompanyNumber());
-                    certifiedCopySummary.setFee("£" + item.getTotalItemCost());
-                    return certifiedCopySummary;
+                            ))
+                        .withCompanyNumber(item.getCompanyNumber())
+                        .withFee("£" + item.getTotalItemCost())
+                    .build();
                 }).forEach(certifiedCopyEmailData::add);
     }
 

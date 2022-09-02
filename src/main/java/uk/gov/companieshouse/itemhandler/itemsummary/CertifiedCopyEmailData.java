@@ -18,6 +18,10 @@ public class CertifiedCopyEmailData extends EmailData {
         this.certifiedCopies.addAll(certifiedCopies);
     }
 
+    public List<CertifiedCopySummary> getCertifiedCopies() {
+        return certifiedCopies;
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -90,12 +94,5 @@ public class CertifiedCopyEmailData extends EmailData {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), certifiedCopies);
-    }
-
-    @Override
-    public String toString() {
-        return "CertifiedCopyEmailData{" +
-                "certifiedCopies=" + certifiedCopies +
-                '}';
     }
 }

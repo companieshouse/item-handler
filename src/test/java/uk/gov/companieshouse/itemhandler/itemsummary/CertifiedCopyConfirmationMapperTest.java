@@ -77,8 +77,16 @@ public class CertifiedCopyConfirmationMapperTest {
                 .withOrderReference("ORD-123456-123456")
                 .withDeliveryDetails(deliveryDetails)
                 .withPaymentDetails(new PaymentDetails("payment reference", "02 September 2022 - 12:18:00"))
-                .addCertifiedCopy(new CertifiedCopySummary("CCD-123456-123456", "ABC123456DEF", "02 Sep 2022",
-                        "AD01", "ad01-description", "12345678", "£15"))
+                .addCertifiedCopy(
+                    CertifiedCopySummary.builder()
+                        .withCompanyNumber("12345678")
+                        .withFilingHistoryId("ABC123456DEF")
+                        .withDateFiled("02 Sep 2022")
+                        .withType("AD01")
+                        .withDescription("ad01-description")
+                        .withItemNumber("CCD-123456-123456")
+                        .withFee("£15")
+                    .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certified_copy_summary_order_confirmation"));
@@ -114,8 +122,16 @@ public class CertifiedCopyConfirmationMapperTest {
                 .withOrderReference("ORD-123456-123456")
                 .withDeliveryDetails(deliveryDetails)
                 .withPaymentDetails(new PaymentDetails("payment reference", "02 September 2022 - 12:18:00"))
-                .addCertifiedCopy(new CertifiedCopySummary("CCD-123456-123456", "ABC123456DEF", "02 Sep 2022",
-                        "AD01", "ad01-description", "12345678", "£50"))
+                .addCertifiedCopy(
+                        CertifiedCopySummary.builder()
+                                .withCompanyNumber("12345678")
+                                .withFilingHistoryId("ABC123456DEF")
+                                .withDateFiled("02 Sep 2022")
+                                .withType("AD01")
+                                .withDescription("ad01-description")
+                                .withItemNumber("CCD-123456-123456")
+                                .withFee("£50")
+                                .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certified_copy_summary_order_confirmation"));
@@ -154,10 +170,26 @@ public class CertifiedCopyConfirmationMapperTest {
                 .withOrderReference("ORD-123456-123456")
                 .withDeliveryDetails(deliveryDetails)
                 .withPaymentDetails(new PaymentDetails("payment reference", "02 September 2022 - 12:18:00"))
-                .addCertifiedCopy(new CertifiedCopySummary("CCD-123456-123456", "ABC123456DEF", "02 Sep 2022",
-                        "AD01", "ad01-description", "12345678", "£50"))
-                .addCertifiedCopy(new CertifiedCopySummary("CCD-456789-456789", "ABC123456DEF", "02 Sep 2022",
-                        "AD01", "ad01-description", "12345678", "£50"))
+                .addCertifiedCopy(
+                        CertifiedCopySummary.builder()
+                                .withCompanyNumber("12345678")
+                                .withFilingHistoryId("ABC123456DEF")
+                                .withDateFiled("02 Sep 2022")
+                                .withType("AD01")
+                                .withDescription("ad01-description")
+                                .withItemNumber("CCD-123456-123456")
+                                .withFee("£50")
+                                .build())
+                .addCertifiedCopy(
+                        CertifiedCopySummary.builder()
+                                .withCompanyNumber("12345678")
+                                .withFilingHistoryId("ABC123456DEF")
+                                .withDateFiled("02 Sep 2022")
+                                .withType("AD01")
+                                .withDescription("ad01-description")
+                                .withItemNumber("CCD-456789-456789")
+                                .withFee("£50")
+                                .build())
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certified-copy-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certified_copy_summary_order_confirmation"));
