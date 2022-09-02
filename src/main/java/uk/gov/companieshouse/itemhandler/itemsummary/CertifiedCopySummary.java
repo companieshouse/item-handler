@@ -14,14 +14,15 @@ public class CertifiedCopySummary {
     public CertifiedCopySummary() {
     }
 
-    public CertifiedCopySummary(String itemNumber, String filingHistoryId, String dateFiled, String type,
-                                String description, String companyNumber, String fee) {
+    public CertifiedCopySummary(String itemNumber, String dateFiled, String type, String description,
+                                String companyNumber, String fee, String viewFormLink) {
         this.itemNumber = itemNumber;
         this.dateFiled = dateFiled;
         this.type = type;
         this.description = description;
         this.companyNumber = companyNumber;
         this.fee = fee;
+        this.viewFormLink = viewFormLink;
     }
 
     public String getItemNumber() {
