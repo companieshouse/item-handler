@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 public class EmailConfig {
 
     private CertificateEmailConfig certificate;
+    private CertifiedCopyEmailConfig certifiedCopy;
     private String senderEmail;
 
     public CertificateEmailConfig getCertificate() {
@@ -20,6 +21,14 @@ public class EmailConfig {
 
     public void setCertificate(CertificateEmailConfig certificate) {
         this.certificate = certificate;
+    }
+
+    public CertifiedCopyEmailConfig getCertifiedCopy() {
+        return certifiedCopy;
+    }
+
+    public void setCertifiedCopy(CertifiedCopyEmailConfig certifiedCopy) {
+        this.certifiedCopy = certifiedCopy;
     }
 
     public String getSenderEmail() {

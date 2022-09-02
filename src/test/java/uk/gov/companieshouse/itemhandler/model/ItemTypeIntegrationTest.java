@@ -1,5 +1,14 @@
 package uk.gov.companieshouse.itemhandler.model;
 
+import static java.util.Arrays.stream;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.verify;
+import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFICATE;
+import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFIED_COPY;
+import static uk.gov.companieshouse.itemhandler.model.ItemType.MISSING_IMAGE_DELIVERY;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -12,17 +21,7 @@ import uk.gov.companieshouse.itemhandler.service.EmailService;
 import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
 import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 
-import java.util.Arrays;
-
-import static java.util.Arrays.stream;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFICATE;
-import static uk.gov.companieshouse.itemhandler.model.ItemType.CERTIFIED_COPY;
-import static uk.gov.companieshouse.itemhandler.model.ItemType.MISSING_IMAGE_DELIVERY;
+import java.util.Collections;
 
 /**
  * Integration tests the {@link ItemType} enum.
@@ -65,14 +64,14 @@ class ItemTypeIntegrationTest {
         OrderData orderData = new OrderData();
         Item certificate = new Item();
         certificate.setKind("item#certificate");
-        orderData.setItems(Arrays.asList(certificate));
+        orderData.setItems(Collections.singletonList(certificate));
 
         // When
         CERTIFICATE.sendMessages(orderData);
 
         // Then
-        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(orderData, "item#certificate", DeliveryTimescale.STANDARD));
-
+        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(orderData, "item#certificate",
+                DeliveryTimescale.STANDARD, Collections.singletonList(certificate)));
     }
 
     @Test
@@ -82,13 +81,14 @@ class ItemTypeIntegrationTest {
         OrderData orderData = new OrderData();
         Item certCopy = new Item();
         certCopy.setKind("item#certified-copy");
-        orderData.setItems(Arrays.asList(certCopy));
+        orderData.setItems(Collections.singletonList(certCopy));
 
         // When
         CERTIFIED_COPY.sendMessages(orderData);
 
         // Then
-        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(orderData, "item#certified-copy", DeliveryTimescale.STANDARD));
+        verify(emailer).sendOrderConfirmation(new DeliverableItemGroup(orderData, "item#certified-copy",
+                DeliveryTimescale.STANDARD, Collections.singletonList(certCopy)));
 
     }
 

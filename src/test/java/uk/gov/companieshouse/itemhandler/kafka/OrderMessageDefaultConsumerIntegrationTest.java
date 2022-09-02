@@ -49,6 +49,7 @@ import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
@@ -140,9 +141,9 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
@@ -174,31 +175,33 @@ class OrderMessageDefaultConsumerIntegrationTest {
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(2, actual.count());
         for(ConsumerRecord<String, email_send> record : actual) {
-            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
+            assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
             assertNotNull(record.value().getMessageId());
-            assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+            assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                     record.value().getMessageType());
             assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
             assertNotNull(record.value().getData());
         }
     }
 
-    @Test
-    void testConsumesCertifiedDocumentOrderReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
-        // given
+    @ParameterizedTest(name = "{1}")
+    @MethodSource("certifiedCopyTestParameters")
+    @DisplayName("Process an order containing certified copies")
+    void testConsumesCertifiedCopyOrderReceivedFromEmailSendTopic(String fixture, String description) throws ExecutionException, InterruptedException, IOException {
+        //given
         client.when(request()
-                        .withPath(getOrderReference())
-                        .withMethod(HttpMethod.GET.toString()))
+                .withPath(getOrderReference())
+                .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
-                        .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
-                        .withBody(JsonBody.json(IOUtils.resourceToString(
-                                "/fixtures/certified-copy.json",
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(fixture,
                                 StandardCharsets.UTF_8))));
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
-        orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
@@ -206,12 +209,47 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
+    }
+
+    @Test
+    @DisplayName("Process an order containing certified copies with different delivery timescales")
+    void testConsumesCertCopiesOrderWithDifferentDeliveryTimescalesReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                .withPath(getOrderReference())
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString("/fixtures/multi-certified-copy-timescales.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals(2, actual.count());
+        for(ConsumerRecord<String, email_send> record : actual) {
+            assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
+            assertNotNull(record.value().getMessageId());
+            assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+                    record.value().getMessageType());
+            assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
+            assertNotNull(record.value().getData());
+        }
     }
 
     @Test
@@ -280,6 +318,13 @@ class OrderMessageDefaultConsumerIntegrationTest {
         return Stream.of(
                 Arguments.of("/fixtures/certified-certificate.json", "Order containing one certificate"),
                 Arguments.of("/fixtures/multi-certified-certificate.json", "Order containing multiple certificates")
+        );
+    }
+
+    private static Stream<Arguments> certifiedCopyTestParameters() {
+        return Stream.of(
+                Arguments.of("/fixtures/certified-copy.json", "Order containing one certified copy"),
+                Arguments.of("/fixtures/multi-certified-copy.json", "Order containing multiple certified copies")
         );
     }
 }
