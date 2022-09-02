@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 
 @ExtendWith(MockitoExtension.class)
-public class CertifiedCopyConfirmationMapperTest {
+class CertifiedCopyConfirmationMapperTest {
 
     @InjectMocks
     private CertifiedCopyConfirmationMapper mapper;
