@@ -223,5 +223,3 @@ class CertifiedCopyConfirmationMapperTest {
         return filingHistoryDocument;
     }
 }
-
-

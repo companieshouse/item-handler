@@ -104,5 +104,4 @@ class ItemTypeIntegrationTest {
         // Then
         verify(itemSender).sendItemsToChd(new ItemGroup(order, "item#missing-image-delivery"));
     }
-
 }
