@@ -60,7 +60,6 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 class OrderMessageDefaultConsumerIntegrationTest {
 
     private static int orderId = 123456;
-    private static int midId = 123123;
     private static MockServerContainer container;
     private MockServerClient client;
 
@@ -246,6 +245,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     @DisplayName("Should successfully process an order containing multiple missing image delivery items")
     void testConsumesMultipleMissingImageDeliveriesFromOrderReceivedAndPublishesChsItemOrderedTwice() throws ExecutionException, InterruptedException, IOException {
         // given
+        int midId = 123123;
         client.when(request()
                 .withPath(getOrderReference())
                 .withMethod(HttpMethod.GET.toString()))
@@ -267,11 +267,11 @@ class OrderMessageDefaultConsumerIntegrationTest {
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(2, actual.count());
-        actual.forEach(record -> {
+        for(ConsumerRecord<String, ChdItemOrdered> record : actual) {
             assertEquals("ORD-123123-123123", record.value().getReference());
             assertNotNull(record.value().getItem());
-            assertEquals(getMidId(), record.value().getItem().getId());
-        });
+            assertEquals("MID-123123-" + midId++, record.value().getItem().getId());
+        }
     }
 
     @Test
@@ -307,10 +307,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     private String getOrderReference() {
         return "/orders/ORD-111111-" + orderId;
-    }
-
-    private String getMidId() {
-        return "MID-123123-" + midId++;
     }
 
     private static Stream<Arguments> certificateTestParameters() {
