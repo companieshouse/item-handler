@@ -13,6 +13,7 @@ public class EmailConfig {
 
     private CertificateEmailConfig certificate;
     private String senderEmail;
+    private String ordersAdminHost;
 
     public CertificateEmailConfig getCertificate() {
         return certificate;
@@ -28,5 +29,13 @@ public class EmailConfig {
 
     public void setSenderEmail(String senderEmail) {
         this.senderEmail = senderEmail;
+    }
+
+    public String getOrdersAdminHost() {
+        return ordersAdminHost;
+    }
+
+    public void setOrdersAdminHost(String ordersAdminHost) {
+        this.ordersAdminHost = ordersAdminHost;
     }
 }

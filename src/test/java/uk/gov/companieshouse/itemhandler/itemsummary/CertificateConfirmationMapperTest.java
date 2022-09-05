@@ -62,6 +62,7 @@ public class CertificateConfirmationMapperTest {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
         when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(config.getOrdersAdminHost()).thenReturn("host");
         when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certificateEmailConfig.getStandardSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
@@ -86,7 +87,11 @@ public class CertificateConfirmationMapperTest {
                                                         .withOrderReference("ORD-123123-123123")
                                                         .withDeliveryDetails(deliveryDetails)
                                                         .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
-                                                        .addCertificate(new CertificateSummary("CRT-123123-123123", "Incorporation with all company name changes", "12345678", "£15"))
+                                                        .addCertificate(new CertificateSummary("CRT-123123-123123",
+                                                                "Incorporation with all company name changes",
+                                                                "12345678",
+                                                                "£15",
+                                                                "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
                                                         .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
@@ -98,6 +103,7 @@ public class CertificateConfirmationMapperTest {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
         when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(config.getOrdersAdminHost()).thenReturn("host");
         when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certificateEmailConfig.getExpressSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
@@ -122,7 +128,11 @@ public class CertificateConfirmationMapperTest {
                 .withOrderReference("ORD-123123-123123")
                 .withDeliveryDetails(deliveryDetails)
                 .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
-                .addCertificate(new CertificateSummary("CRT-123123-123123", "Dissolution with all company name changes", "12345678", "£15"))
+                .addCertificate(new CertificateSummary("CRT-123123-123123",
+                        "Dissolution with all company name changes",
+                        "12345678",
+                        "£15",
+                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
@@ -134,17 +144,18 @@ public class CertificateConfirmationMapperTest {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
         when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(config.getOrdersAdminHost()).thenReturn("host");
         when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
         when(certificateEmailConfig.getStandardSubjectLine()).thenReturn("subject");
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));
         when(deliverableItemGroup.getItems()).thenReturn(Arrays.asList(item, item));
-        when(item.getId()).thenReturn("CRT-123123-123123");
+        when(item.getId()).thenReturn("CRT-123123-123123", "CRT-123123-123123", "CRT-123123-123124", "CRT-123123-123124");
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES, CertificateType.DISSOLUTION);
-        when(item.getCompanyNumber()).thenReturn("12345678");
-        when(item.getTotalItemCost()).thenReturn("15");
+        when(item.getCompanyNumber()).thenReturn("12345678", "87654321");
+        when(item.getTotalItemCost()).thenReturn("15", "50");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
 
@@ -158,8 +169,16 @@ public class CertificateConfirmationMapperTest {
                 .withOrderReference("ORD-123123-123123")
                 .withDeliveryDetails(deliveryDetails)
                 .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
-                .addCertificate(new CertificateSummary("CRT-123123-123123", "Incorporation with all company name changes", "12345678", "£15"))
-                .addCertificate(new CertificateSummary("CRT-123123-123123", "Dissolution with all company name changes", "12345678", "£15"))
+                .addCertificate(new CertificateSummary("CRT-123123-123123",
+                        "Incorporation with all company name changes",
+                        "12345678",
+                        "£15",
+                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
+                .addCertificate(new CertificateSummary("CRT-123123-123124",
+                        "Dissolution with all company name changes",
+                        "87654321",
+                        "£50",
+                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123124"))
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
