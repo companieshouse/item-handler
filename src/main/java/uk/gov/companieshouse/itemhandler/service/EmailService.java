@@ -51,9 +51,7 @@ public class EmailService {
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
-            EmailSend emailSend = new EmailSend();
-            setEmailSendFields(itemGroup, emailSend);
-
+            EmailSend emailSend = createEmailSendBasedOnKind(itemGroup);
             emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
             emailSend.setMessageId(UUID.randomUUID().toString());
             emailSend.setCreatedAt(LocalDateTime.now().toString());
@@ -68,7 +66,8 @@ public class EmailService {
         }
     }
 
-    private void setEmailSendFields(DeliverableItemGroup itemGroup, EmailSend emailSend) throws JsonProcessingException {
+    private EmailSend createEmailSendBasedOnKind(DeliverableItemGroup itemGroup) throws JsonProcessingException {
+        EmailSend emailSend = new EmailSend();
         if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
             EmailMetadata<CertifiedCopyEmailData> emailMetadata = confirmationMapperFactory.getCertifiedCopyMapper().map(itemGroup);
             emailSend.setAppId(emailMetadata.getAppId());
@@ -80,5 +79,6 @@ public class EmailService {
             emailSend.setMessageType(emailMetadata.getMessageType());
             emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
         }
+        return emailSend;
     }
 }
