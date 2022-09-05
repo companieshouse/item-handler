@@ -242,6 +242,39 @@ class OrderMessageDefaultConsumerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Should successfully process an order containing multiple missing image delivery items")
+    void testConsumesMultipleMissingImageDeliveriesFromOrderReceivedAndPublishesChsItemOrderedTwice() throws ExecutionException, InterruptedException, IOException {
+        // given
+        int midId = 123123;
+        client.when(request()
+                .withPath(getOrderReference())
+                .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/multiple-missing-image-delivery.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, 30000L, 2);
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals(2, actual.count());
+        for(ConsumerRecord<String, ChdItemOrdered> record : actual) {
+            assertEquals("ORD-123123-123123", record.value().getReference());
+            assertNotNull(record.value().getItem());
+            assertEquals("MID-123123-" + midId++, record.value().getItem().getId());
+        }
+    }
+
+    @Test
     void testLogAnErrorWhenOrdersApiReturnsOrderNotFound() throws ExecutionException, InterruptedException {
         //given
         client.when(request()

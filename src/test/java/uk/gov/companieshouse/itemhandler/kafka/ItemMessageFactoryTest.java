@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
 import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemLinks;
@@ -23,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -69,17 +69,21 @@ class ItemMessageFactoryTest {
     @Mock
     private AvroSerializer<ChdItemOrdered> serializer;
 
+    @Mock
+    private OrderItemPair orderItemPair;
+
     @Test
     @DisplayName("createMessage is able to create a message from a ChdItemOrdered object")
     void createMessageCreatesMessageFromOrder() throws Exception {
 
         // Given
-        when(order.getItems()).thenReturn(singletonList(item));
         when(order.getOrderedAt()).thenReturn(LocalDateTime.now());
         when(order.getOrderedBy()).thenReturn(actionedBy);
         when(item.getItemOptions()).thenReturn(options);
         when(options.getFilingHistoryDescriptionValues()).thenReturn(new HashMap<>());
         when(item.getLinks()).thenReturn(itemLinks);
+        when(orderItemPair.getOrder()).thenReturn(order);
+        when(orderItemPair.getItem()).thenReturn(item);
 
         when(serializerFactory.getGenericRecordSerializer(ChdItemOrdered.class)).thenReturn(serializer);
         when(serializer.toBinary(any(ChdItemOrdered.class))).thenReturn(MESSAGE_CONTENT);
@@ -87,7 +91,7 @@ class ItemMessageFactoryTest {
         final LocalDateTime intervalStart = LocalDateTime.now();
 
         // When
-        final Message message = factoryUnderTest.createMessage(order);
+        final Message message = factoryUnderTest.createMessage(orderItemPair);
 
         final LocalDateTime intervalEnd = LocalDateTime.now();
 
@@ -107,17 +111,18 @@ class ItemMessageFactoryTest {
     void createMessageThrowsNonRetryableExceptionIfFieldIsNull() {
 
         // Given
-        when(order.getItems()).thenReturn(singletonList(item));
         when(order.getOrderedAt()).thenReturn(LocalDateTime.now());
         when(order.getOrderedBy()).thenReturn(actionedBy);
         when(order.getReference()).thenReturn(ORDER_REFERENCE);
         when(item.getItemOptions()).thenReturn(options);
         when(item.getId()).thenReturn(MISSING_IMAGE_DELIVERY_ITEM_ID);
         when(options.getFilingHistoryDescriptionValues()).thenReturn(new HashMap<>());
+        when(orderItemPair.getOrder()).thenReturn(order);
+        when(orderItemPair.getItem()).thenReturn(item);
 
         // When and then
         assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
-                factoryUnderTest.createMessage(order))
+                factoryUnderTest.createMessage(orderItemPair))
                 .withMessage("Unable to create message for order ORD-432118-793830 item ID MID-242116-007650!")
                 .withCause(new NullPointerException());
 
