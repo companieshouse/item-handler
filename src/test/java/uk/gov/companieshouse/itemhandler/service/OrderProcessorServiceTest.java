@@ -1,21 +1,15 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.util.Arrays;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,9 +34,6 @@ class OrderProcessorServiceTest {
     private OrdersApiClientService ordersApi;
 
     @Mock
-    private OrderRouterService orderRouter;
-
-    @Mock
     private OrderData order;
 
     @Mock
@@ -63,7 +54,7 @@ class OrderProcessorServiceTest {
 
         // Then
         verify(ordersApi).getOrderData(ORDER_URI);
-        verify(orderRouter).routeOrder(any(OrderData.class));
+        verify(orderItemRouter).route(any(OrderData.class));
     }
 
     @Test
