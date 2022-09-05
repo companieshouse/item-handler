@@ -19,6 +19,6 @@ public class ConfirmationMapperFactory {
     }
 
     public OrderConfirmationMapper<CertifiedCopyEmailData> getCertifiedCopyMapper() {
-        return  certifiedCopyConfirmationMapper;
+        return certifiedCopyConfirmationMapper;
     }
 }

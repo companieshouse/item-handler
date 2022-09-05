@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
-import uk.gov.companieshouse.itemhandler.itemsummary.CertifiedCopyEmailData;
 import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
 import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
+import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
 import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
@@ -23,9 +22,9 @@ import java.util.UUID;
  */
 @Service
 public class EmailService {
-
     private static final Logger LOGGER = LoggingUtils.getLogger();
     private static final String ITEM_KIND_CERTIFIED_COPY = "item#certified-copy";
+    private static final String ITEM_KIND_CERTIFICATE = "item#certificate";
 
     /**
      * This email address is supplied only to satisfy Avro contract.
@@ -51,11 +50,14 @@ public class EmailService {
      */
     public void sendOrderConfirmation(DeliverableItemGroup itemGroup) {
         try {
-            EmailSend emailSend = createEmailSendBasedOnKind(itemGroup);
-            emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
-            emailSend.setMessageId(UUID.randomUUID().toString());
-            emailSend.setCreatedAt(LocalDateTime.now().toString());
-
+            EmailSend emailSend;
+            if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
+                 emailSend = mapEmailSend(itemGroup, confirmationMapperFactory.getCertifiedCopyMapper());
+            } else if (ITEM_KIND_CERTIFICATE.equals(itemGroup.getKind())) {
+                emailSend = mapEmailSend(itemGroup, confirmationMapperFactory.getCertificateMapper());
+            } else {
+                throw new NonRetryableException(String.format("Unknown item kind: [%s]", itemGroup.getKind()));
+            }
             String orderReference = itemGroup.getOrder().getReference();
             LoggingUtils.logWithOrderReference("Sending confirmation email for order", orderReference);
             emailSendProducer.sendMessage(emailSend, orderReference);
@@ -66,19 +68,15 @@ public class EmailService {
         }
     }
 
-    private EmailSend createEmailSendBasedOnKind(DeliverableItemGroup itemGroup) throws JsonProcessingException {
+    private EmailSend mapEmailSend(DeliverableItemGroup itemGroup, OrderConfirmationMapper<?> mapper) throws JsonProcessingException {
         EmailSend emailSend = new EmailSend();
-        if (ITEM_KIND_CERTIFIED_COPY.equals(itemGroup.getKind())) {
-            EmailMetadata<CertifiedCopyEmailData> emailMetadata = confirmationMapperFactory.getCertifiedCopyMapper().map(itemGroup);
-            emailSend.setAppId(emailMetadata.getAppId());
-            emailSend.setMessageType(emailMetadata.getMessageType());
-            emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
-        } else {
-            EmailMetadata<CertificateEmailData> emailMetadata = confirmationMapperFactory.getCertificateMapper().map(itemGroup);
-            emailSend.setAppId(emailMetadata.getAppId());
-            emailSend.setMessageType(emailMetadata.getMessageType());
-            emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
-        }
+        EmailMetadata<?> emailMetadata = mapper.map(itemGroup);
+        emailSend.setAppId(emailMetadata.getAppId());
+        emailSend.setMessageType(emailMetadata.getMessageType());
+        emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
+        emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
+        emailSend.setMessageId(UUID.randomUUID().toString());
+        emailSend.setCreatedAt(LocalDateTime.now().toString());
         return emailSend;
     }
 }
