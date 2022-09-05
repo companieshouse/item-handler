@@ -58,6 +58,7 @@
             **/itemsummary/EmailMetadata.java,
             **/itemsummary/ItemGroup.java,
             **/itemsummary/PaymentDetails.java
+            **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
     </properties>
 
