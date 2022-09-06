@@ -56,9 +56,6 @@ class EmailServiceTest {
     private ArgumentCaptor<EmailSend> emailCaptor;
 
     @Mock
-    private DeliverableItemGroup itemGroup;
-
-    @Mock
     private ConfirmationMapperFactory confirmationMapperFactory;
 
     @Mock
@@ -135,40 +132,34 @@ class EmailServiceTest {
         assertThat(emailCaptor.getValue().getCreatedAt(), is(notNullValue()));
     }
 
-
     @Test
-    void propagatesNonRetryableExceptionIfJsonProcessExceptionThrownWhenSerialisingCertificate() throws Exception  {
-
-        // Given
+    @DisplayName("Email service throws NonRetryableException when object mappers fails to serialise")
+    void serviceThrowsNonRetryableExceptionWhenSerialisationFails() throws Exception  {
+        // given
         when(confirmationMapperFactory.getCertificateMapper()).thenReturn(certificateConfirmationMapper);
         when(certificateConfirmationMapper.map(any())).thenReturn(metadata);
         when(metadata.getEmailData()).thenReturn(data);
         when(objectMapper.writeValueAsString(data)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
         when(order.getReference()).thenReturn("ORD-123456-123456");
 
-        // When
+        // when
         Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
 
-        // Then
+        // then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
         assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
     }
 
     @Test
-    void propagatesNonRetryableExceptionIfJsonProcessExceptionThrownWhenSerialisingCertifiedCopy() throws Exception  {
+    @DisplayName("Email service throws NonRetryableException for non valid item kinds")
+    void serviceThrowsNonRetryableExceptionWhenItemKindIsNotValid() {
+        // given
 
-        // Given
-        when(confirmationMapperFactory.getCertifiedCopyMapper()).thenReturn(certifiedCopyConfirmationMapper);
-        when(certifiedCopyConfirmationMapper.map(any())).thenReturn(certCopyMetadata);
-        when(certCopyMetadata.getEmailData()).thenReturn(certCopyData);
-        when(objectMapper.writeValueAsString(certCopyData)).thenThrow(new TestJsonProcessingException(TEST_EXCEPTION_MESSAGE));
-        when(order.getReference()).thenReturn("ORD-123456-123456");
+        // when
+        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#unknowntype", STANDARD));
 
-        // When
-        Executable executable = () -> emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certified-copy", STANDARD));
-
-        // Then
+        // then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
-        assertEquals("Error converting order (ORD-123456-123456) confirmation to JSON", actual.getMessage());
+        assertEquals("Unknown item kind: [item#unknowntype]", actual.getMessage());
     }
 }

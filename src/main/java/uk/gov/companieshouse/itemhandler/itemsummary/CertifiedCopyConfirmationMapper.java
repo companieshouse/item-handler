@@ -5,9 +5,9 @@ import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.service.FilingHistoryDescriptionProviderService;
+import uk.gov.companieshouse.itemhandler.util.DateConstants;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<CertifiedCopyEmailData> {
@@ -25,6 +25,9 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
 
     public static final String CERTIFIED_COPY_SUMMARY_ORDER_CONFIRMATION_MESSAGE_TYPE =
             "certified_copy_summary_order_confirmation";
+
+    public static final String FILING_HISTORY_VIEW_FORM_LINK =
+            "%s/company/%s/filing-history/%s/document?format=pdf&download=0";
 
     @Override
     protected CertifiedCopyEmailData newEmailDataInstance() {
@@ -61,14 +64,16 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
                             ))
                         .withCompanyNumber(item.getCompanyNumber())
                         .withFee("£" + item.getTotalItemCost())
-                        .withViewFormLink(String.format(emailConfig.getCertifiedCopy().getFilingHistoryFormLink(),
-                                item.getCompanyNumber(), filingHistoryDocument.getFilingHistoryId()))
+                        .withViewFormLink(String.format(FILING_HISTORY_VIEW_FORM_LINK,
+                                emailConfig.getOrdersAdminHost(),
+                                item.getCompanyNumber(),
+                                filingHistoryDocument.getFilingHistoryId()))
                     .build();
                 }).forEach(certifiedCopyEmailData::add);
     }
 
     private String mapDateFiledFormat(FilingHistoryDocument filingHistoryDocument) {
         final LocalDate parsedDate = LocalDate.parse(filingHistoryDocument.getFilingHistoryDate());
-        return parsedDate.format(DateTimeFormatter.ofPattern(emailConfig.getCertifiedCopy().getDateFiledFormat()));
+        return parsedDate.format(DateConstants.DATE_FILED_FORMATTER);
     }
 }
