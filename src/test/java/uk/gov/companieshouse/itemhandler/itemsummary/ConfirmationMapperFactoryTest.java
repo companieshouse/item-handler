@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,9 @@ class ConfirmationMapperFactoryTest {
 
     @Mock
     private CertificateConfirmationMapper certificateConfirmationMapper;
+
+    @Mock
+    private CertifiedCopyConfirmationMapper certifiedCopyConfirmationMapper;
 
     @InjectMocks
     private ConfirmationMapperFactory confirmationMapperFactory;
@@ -30,5 +32,15 @@ class ConfirmationMapperFactoryTest {
 
         //then
         assertEquals(certificateConfirmationMapper, actual);
+    }
+
+    @Test
+    @DisplayName("Factory returns CertifiedCopyConfirmationMapper")
+    void testFactoryReturnsCertifiedCopyConfirmationMapper() {
+        // when
+        OrderConfirmationMapper<CertifiedCopyEmailData> actual = confirmationMapperFactory.getCertifiedCopyMapper();
+
+        //then
+        assertEquals(certifiedCopyConfirmationMapper, actual);
     }
 }

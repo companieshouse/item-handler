@@ -36,6 +36,7 @@ import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
+import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
@@ -128,9 +129,9 @@ class OrderMessageRetryConsumerIntegrationTest {
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
@@ -160,9 +161,9 @@ class OrderMessageRetryConsumerIntegrationTest {
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
@@ -239,9 +240,9 @@ class OrderMessageRetryConsumerIntegrationTest {
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
         assertNotNull(actual.getMessageId());
-        assertEquals(EmailService.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
+        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
