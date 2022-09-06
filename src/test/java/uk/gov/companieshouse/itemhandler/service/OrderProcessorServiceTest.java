@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ORDER_REFERENCE_NUMBER;
 
-import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.ApiException;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemRouter;
-import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
 /** Unit tests the {@link OrderProcessorService} class. */
@@ -35,9 +33,6 @@ class OrderProcessorServiceTest {
 
     @Mock
     private OrderData order;
-
-    @Mock
-    private Item item;
 
     @Mock
     private OrderItemRouter orderItemRouter;
@@ -76,7 +71,6 @@ class OrderProcessorServiceTest {
     @Test
     void testProcessOrderWithMultipleItems() {
         // given
-        when(order.getItems()).thenReturn(Arrays.asList(item, item));
         when(ordersApi.getOrderData(any())).thenReturn(order);
 
         // when

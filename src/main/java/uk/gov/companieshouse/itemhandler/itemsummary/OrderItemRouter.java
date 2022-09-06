@@ -29,7 +29,7 @@ public class OrderItemRouter implements Routable {
     public void route(OrderData order) {
         Map<String, Map<DeliveryTimescale, DeliverableItemGroup>> deliverableItemGroupMap = deliverableItemsByKindAndDeliveryTimescale(order);
         ItemGroup missingImageDeliveryItems = byMissingImageDelivery(order);
-        deliverableItemGroupMap.values().forEach(timescaleToGroup -> timescaleToGroup.values().forEach(g -> emailService.sendOrderConfirmation(g)));
+        deliverableItemGroupMap.values().forEach(timescaleToGroup -> timescaleToGroup.values().forEach(emailService::sendOrderConfirmation));
         if (!missingImageDeliveryItems.empty()) {
             this.chdItemSenderService.sendItemsToChd(missingImageDeliveryItems);
         }
