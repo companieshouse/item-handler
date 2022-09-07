@@ -2,15 +2,20 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.verify;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -63,6 +68,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
     private static int orderId = 123456;
     private static MockServerContainer container;
     private MockServerClient client;
+
+    private static final String DELIVERY_DETAILS_COMPANY_NAME = "Synergia";
 
     @Autowired
     private KafkaConsumer<String, email_send> emailSendConsumer;
@@ -147,6 +154,12 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
+
+        final JsonNode data = new ObjectMapper().readTree(actual.getData());
+        final String companyName = (data.get("delivery_details") != null &&
+                                    data.get("delivery_details").findValue("company_name") != null) ?
+                data.get("delivery_details").findValue("company_name").textValue() : "";
+        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
     }
 
     @Test

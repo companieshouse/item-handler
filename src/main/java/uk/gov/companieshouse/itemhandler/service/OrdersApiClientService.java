@@ -51,10 +51,7 @@ public class OrdersApiClientService {
             LOGGER.debug(String.format("Order API got order %s", ordersApi.getReference()));
             orderData = ordersApiToOrderDataMapper.ordersApiToOrderData(ordersApi);
         } catch (ApiErrorResponseException exception) {
-            String message = String.format("Order URI %s, API exception %s, HTTP status %d",
-                    orderUri,
-                    exception.getMessage(),
-                    exception.getStatusCode());
+            String message = String.format("Order URI %s, API exception %s", orderUri, exception);
             if (exception.getStatusCode() != HttpStatusCodes.STATUS_CODE_NOT_FOUND) {
                 LOGGER.info(message);
                 throw new ApiException(message, exception);
