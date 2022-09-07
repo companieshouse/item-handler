@@ -2,6 +2,7 @@
   "payment_reference": "F00DFACE",
   "etag": "F00DFACE",
   "delivery_details": {
+    "company_name": "Synergia",
     "country": "Great Britain",
     "forename": "Forename",
     "locality": "Locality",
