@@ -6,6 +6,10 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 public class DeliveryDetails {
 
+    @Field("company_name")
+    @JsonProperty("company_name")
+    private String companyName;
+
     @Field("address_line_1")
     @JsonProperty("address_line_1")
     private String addressLine1;
@@ -30,6 +34,13 @@ public class DeliveryDetails {
 
     private String surname;
 
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
 
     public String getAddressLine1() {
         return addressLine1;
