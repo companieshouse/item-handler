@@ -19,7 +19,6 @@ import uk.gov.companieshouse.itemhandler.model.CompanyStatus;
 import uk.gov.companieshouse.itemhandler.model.CompanyType;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemOptions;
-import uk.gov.companieshouse.itemhandler.model.ItemType;
 import uk.gov.companieshouse.itemhandler.model.MissingImageDeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -42,10 +41,10 @@ public interface OrdersApiToOrderDataMapper {
     default void apiToItemOptions(BaseItemApi baseItemApi, @MappingTarget Item item) {
         final String itemKind = baseItemApi.getKind();
         final BaseItemOptionsApi baseItemOptionsApi = baseItemApi.getItemOptions();
-        if (itemKind.equals(ItemType.CERTIFICATE.getKind())) {
+        if ("item#certificate".equals(itemKind)) {
             item.setItemOptions(apiToCertificateItemOptions((CertificateItemOptionsApi) baseItemOptionsApi));
         }
-        else if (itemKind.equals(ItemType.CERTIFIED_COPY.getKind())){
+        else if ("item#certified-copy".equals(itemKind)){
             item.setItemOptions(apiToCertifiedCopyItemOptions((CertifiedCopyItemOptionsApi) baseItemOptionsApi));
         } else {
             item.setItemOptions(apiToMissingImageDeliveryOptions((MissingImageDeliveryItemOptionsApi) baseItemOptionsApi));
