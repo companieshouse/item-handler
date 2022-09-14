@@ -91,7 +91,7 @@ public class CertificateConfirmationMapperTest {
                                                                 "Incorporation with all company name changes",
                                                                 "12345678",
                                                                 "£15",
-                                                                "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
+                                                                "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                                                         .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
@@ -132,7 +132,7 @@ public class CertificateConfirmationMapperTest {
                         "Dissolution with all company name changes",
                         "12345678",
                         "£15",
-                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
+                        "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
@@ -173,12 +173,12 @@ public class CertificateConfirmationMapperTest {
                         "Incorporation with all company name changes",
                         "12345678",
                         "£15",
-                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123123"))
+                        "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .addCertificate(new CertificateSummary("CRT-123123-123124",
                         "Dissolution with all company name changes",
                         "87654321",
                         "£50",
-                        "host/orders-admin/orders/ORD-123123-123123/items/CRT-123123-123124"))
+                        "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123124"))
                 .build())));
         assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
         assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
