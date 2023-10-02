@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.ApiException;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.DigitalOrderItemRouter;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemRouter;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -37,6 +38,9 @@ class OrderProcessorServiceTest {
     @Mock
     private OrderItemRouter orderItemRouter;
 
+    @Mock
+    private DigitalOrderItemRouter digitalOrderItemRouter;
+
     @Test
     void getsOrderAndSendsOutConfirmation() {
 
@@ -49,7 +53,8 @@ class OrderProcessorServiceTest {
 
         // Then
         verify(ordersApi).getOrderData(ORDER_URI);
-        verify(orderItemRouter).route(any(OrderData.class));
+        verify(orderItemRouter).route(order);
+        verify(digitalOrderItemRouter).route(order);
     }
 
     @Test
@@ -79,5 +84,6 @@ class OrderProcessorServiceTest {
         // then
         assertThat(actual.getStatus(), is(equalTo(OrderProcessResponse.Status.OK)));
         verify(orderItemRouter).route(order);
+        verify(digitalOrderItemRouter).route(order);
     }
 }
