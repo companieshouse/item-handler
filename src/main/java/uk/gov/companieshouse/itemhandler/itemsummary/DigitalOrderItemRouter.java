@@ -29,11 +29,16 @@ public class DigitalOrderItemRouter implements Routable {
     public void route(final OrderData order) {
         // TODO DCAC-253 Structured logging?
         logger.info("Routing digital items from order " + order.getReference());
+        createItemGroups(order);
+    }
+
+    List<ItemGroup> createItemGroups(final OrderData order) {
         final List<ItemGroup> digitalItemGroups = order.getItems().stream()
                 .filter(item -> !item.getKind().equals(KIND_MISSING_IMAGE_DELIVERY) && !item.isPostalDelivery())
                 .map(item -> new ItemGroup(order, item.getKind(), singletonList(item)))
                 .collect(Collectors.toList());
         logItemGroupsCreated(order, digitalItemGroups);
+        return digitalItemGroups;
     }
 
     private void logItemGroupsCreated(final OrderData order, final List<ItemGroup> digitalItemGroups) {
