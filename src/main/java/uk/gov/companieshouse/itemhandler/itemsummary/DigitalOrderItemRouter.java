@@ -5,9 +5,10 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.Routable;
 import uk.gov.companieshouse.logging.Logger;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Routes any digital items within the order on to digital processing
@@ -15,6 +16,8 @@ import java.util.stream.Collectors;
  */
 @Component
 public class DigitalOrderItemRouter implements Routable {
+
+    private static final String KIND_MISSING_IMAGE_DELIVERY = "item#missing-image-delivery";
 
     private final Logger logger;
 
@@ -27,8 +30,8 @@ public class DigitalOrderItemRouter implements Routable {
         // TODO DCAC-253 Structured logging?
         logger.info("Routing digital items from order " + order.getReference());
         final List<ItemGroup> digitalItemGroups = order.getItems().stream()
-                .filter(item -> !item.isPostalDelivery())
-                .map(item -> new ItemGroup(order, item.getKind(), Collections.singletonList(item)))
+                .filter(item -> !item.getKind().equals(KIND_MISSING_IMAGE_DELIVERY) && !item.isPostalDelivery())
+                .map(item -> new ItemGroup(order, item.getKind(), singletonList(item)))
                 .collect(Collectors.toList());
         logItemGroupsCreated(order, digitalItemGroups);
     }
