@@ -44,7 +44,7 @@ public class DigitalOrderItemRouter implements Routable {
                 " digital item groups:\n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
-            sb.append(" + IG " + i + 1 + " with kind " + ig.getKind() + " and " + ig.getItems().size() + " items:\n"
+            sb.append("\n + IG " + (i + 1) + " with kind " + ig.getKind() + " and " + ig.getItems().size() + " items:\n"
                     + describeItemGroup(digitalItemGroups.get(i)));
         }
         logger.info(sb.toString());
