@@ -10,6 +10,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
 import uk.gov.companieshouse.itemhandler.exception.RetryableException;
+import uk.gov.companieshouse.itemhandler.itemsummary.DigitalOrderItemRouter;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemRouter;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
@@ -27,11 +28,11 @@ public class OrderProcessorService {
 
     private final OrdersApiClientService ordersApi;
     private final OrderItemRouter orderItemRouter;
-    private final Routable digitalOrderItemRouter;
+    private final DigitalOrderItemRouter digitalOrderItemRouter;
 
     public OrderProcessorService(final OrdersApiClientService ordersApi,
                                  final OrderItemRouter orderItemRouter,
-                                 final Routable digitalOrderItemRouter) {
+                                 final DigitalOrderItemRouter digitalOrderItemRouter) {
         this.ordersApi = ordersApi;
         this.orderItemRouter = orderItemRouter;
         this.digitalOrderItemRouter = digitalOrderItemRouter;
