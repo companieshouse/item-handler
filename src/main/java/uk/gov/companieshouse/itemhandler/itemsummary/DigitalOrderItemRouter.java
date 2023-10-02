@@ -36,16 +36,16 @@ public class DigitalOrderItemRouter implements Routable {
     private void logItemGroupsCreated(final OrderData order, final List<ItemGroup> digitalItemGroups) {
         // TODO DCAC-253 Structured logging?
         if (digitalItemGroups.isEmpty()) {
-            logger.info("No digital items were found, no digital item groups were created.");
+            logger.info("No digital items were found, no digital item groups were created.\n");
             return;
         }
         final StringBuilder sb = new StringBuilder();
         sb.append("For order " + order.getReference() + " created " + digitalItemGroups.size() +
-                " digital item groups:\n");
+                " digital item groups:\n \n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
             sb.append("\n + IG " + (i + 1) + " with kind " + ig.getKind() + " and " + ig.getItems().size() + " items:\n"
-                    + describeItemGroup(digitalItemGroups.get(i)));
+                    + describeItemGroup(digitalItemGroups.get(i)) + "\n \n");
         }
         logger.info(sb.toString());
     }
