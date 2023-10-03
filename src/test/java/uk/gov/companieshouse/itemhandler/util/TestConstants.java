@@ -12,4 +12,8 @@ public class TestConstants {
             "item-handler.certified-copy-summary-order-confirmation";
     public static final String CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE =
             "certified_copy_summary_order_confirmation";
+
+    public static final String KIND_CERTIFICATE = "item#certificate";
+    public static final String KIND_CERTIFIED_COPY = "item#certified-copy";
+    public static final String KIND_MISSING_IMAGE_DELIVERY  = "item#missing-image-delivery";
 }
