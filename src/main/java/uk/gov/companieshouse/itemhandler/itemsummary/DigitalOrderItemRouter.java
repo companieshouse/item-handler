@@ -4,8 +4,10 @@ import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.Routable;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.util.DataMap;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
@@ -27,8 +29,8 @@ public class DigitalOrderItemRouter implements Routable {
 
     @Override
     public void route(final OrderData order) {
-        // TODO DCAC-253 Structured logging?
-        logger.info("Routing digital items from order " + order.getReference());
+        final String orderNumber = order.getReference();
+        logger.info("Routing digital items from order " + orderNumber + ".", getLogMap(orderNumber));
         createItemGroups(order);
     }
 
@@ -42,25 +44,32 @@ public class DigitalOrderItemRouter implements Routable {
     }
 
     private void logItemGroupsCreated(final OrderData order, final List<ItemGroup> digitalItemGroups) {
-        // TODO DCAC-253 Structured logging?
+        final String orderNumber = order.getReference();
         if (digitalItemGroups.isEmpty()) {
-            logger.info("No digital items were found, no digital item groups were created.\n");
+            logger.info("No digital items were found, no digital item groups were created for order "
+                    + orderNumber + ".\n", getLogMap(orderNumber));
             return;
         }
         final StringBuilder sb = new StringBuilder();
-        sb.append("For order " + order.getReference() + " created " + digitalItemGroups.size() +
-                " digital item groups:\n \n");
+        sb.append("For order " + orderNumber + " created " + digitalItemGroups.size() + " digital item groups:\n \n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
             sb.append("\n + IG " + (i + 1) + " with kind " + ig.getKind() + " and " + ig.getItems().size() + " items:\n"
                     + describeItemGroup(digitalItemGroups.get(i)) + "\n \n");
         }
-        logger.info(sb.toString());
+        logger.info(sb.toString(), getLogMap(orderNumber));
     }
 
     private String describeItemGroup(final ItemGroup itemGroup) {
         return itemGroup.getItems().stream()
                 .map(item -> " - + " + item.getId() + " [" + item.getKind() + "]")
                 .collect(Collectors.joining("\n"));
+    }
+
+    private static Map<String, Object> getLogMap(final String orderNumber) {
+        return new DataMap.Builder()
+                .orderId(orderNumber)
+                .build()
+                .getLogMap();
     }
 }
