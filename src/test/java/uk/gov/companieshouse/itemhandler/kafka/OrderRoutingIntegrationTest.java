@@ -1,0 +1,143 @@
+package uk.gov.companieshouse.itemhandler.kafka;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockserver.client.MockServerClient;
+import org.mockserver.model.JsonBody;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.MockServerContainer;
+import org.testcontainers.utility.DockerImageName;
+import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
+import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
+import uk.gov.companieshouse.itemhandler.service.ChdItemSenderServiceAspect;
+import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderServiceAspect;
+import uk.gov.companieshouse.itemhandler.service.EmailServiceAspect;
+import uk.gov.companieshouse.orders.OrderReceived;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
+@SpringBootTest
+@Import(EmbeddedKafkaBrokerConfiguration.class)
+@TestPropertySource(locations = "classpath:application.properties",
+        properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
+class OrderRoutingIntegrationTest {
+
+    private static MockServerContainer container;
+    private MockServerClient client;
+
+    @Autowired
+    private KafkaProducer<String, OrderReceived> orderReceivedProducer;
+
+    @Autowired
+    private KafkaTopics kafkaTopics;
+
+    @Autowired
+    private ChdItemSenderServiceAspect chdItemSenderService;
+
+    @Autowired
+    private EmailServiceAspect emailService;
+
+    @Autowired
+    private DigitalItemGroupSenderServiceAspect digitalItemGroupSenderService;
+
+    @BeforeAll
+    static void before() {
+        container = new MockServerContainer(DockerImageName.parse(
+                "jamesdbloom/mockserver:mockserver-5.5.4"));
+        container.start();
+        TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
+        TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
+    }
+
+    @AfterAll
+    static void after() {
+        container.stop();
+    }
+
+    @BeforeEach
+    void setup() {
+        client = new MockServerClient(container.getHost(), container.getServerPort());
+    }
+
+    @AfterEach
+    void teardown() {
+        client.reset();
+    }
+
+    @Test
+    @DisplayName("All items within order are routed correctly")
+    void orderItemsRoutedCorrectly()  throws ExecutionException, InterruptedException, IOException {
+        // given
+        client.when(request()
+                        .withPath("/orders/ORD-111111-123123")
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString(
+                                "/fixtures/mixed-order.json",
+                                StandardCharsets.UTF_8))));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+
+        chdItemSenderService.getLatch().await(30, SECONDS);
+        emailService.getLatch().await(30, SECONDS);
+        digitalItemGroupSenderService.getLatch().await(30, SECONDS);
+
+        // then
+        assertEquals(0, chdItemSenderService.getLatch().getCount());
+        assertNotNull(chdItemSenderService.getItemGroupSent());
+        assertThat(chdItemSenderService.getItemGroupSent().getItems().size(), is(1));
+        assertThat(chdItemSenderService.getItemGroupSent().getItems().get(0).getId(), is("MID-107116-962328"));
+
+        assertEquals(0, emailService.getLatch().getCount());
+        assertNotNull(emailService.getItemGroupSent());
+        assertThat(emailService.getItemGroupSent().getItems().size(), is(1));
+        assertThat(emailService.getItemGroupSent().getItems().get(0).getId(), is("CCD-289716-962308"));
+
+        assertEquals(0, digitalItemGroupSenderService.getLatch().getCount());
+        assertNotNull(digitalItemGroupSenderService.getItemGroupSent());
+        assertThat(digitalItemGroupSenderService.getItemGroupSent().getItems().size(), is(1));
+        assertThat(digitalItemGroupSenderService.getItemGroupSent().getItems().get(0).getId(), is("CCD-289716-962308"));
+    }
+
+    private OrderReceived getOrderReceived() {
+        OrderReceived orderReceived = new OrderReceived();
+        orderReceived.setOrderUri(getOrderReference());
+        return orderReceived;
+    }
+
+    private String getOrderReference() {
+        return "/orders/ORD-111111-123123";
+    }
+
+}
