@@ -1,7 +1,6 @@
 package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderService;
 import uk.gov.companieshouse.itemhandler.service.Routable;
@@ -59,15 +58,9 @@ public class DigitalOrderItemRouter implements Routable {
         sb.append("For order " + orderNumber + " created " + digitalItemGroups.size() + " digital item groups:\n \n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
-            sb.append("\n + IG " + (i + 1) + " | " + describeItemGroup(ig) + "\n");
+            sb.append("\n + IG " + (i + 1) + " | " + ig + "\n");
         }
         logger.info(sb.toString(), getLogMap(orderNumber));
-    }
-
-    private String describeItemGroup(final ItemGroup itemGroup) {
-        return itemGroup.getKind() + " | " + itemGroup.getItems().size() + " items | " + itemGroup.getItems().stream()
-                .map(Item::getId)
-                .collect(Collectors.joining(" | "));
     }
 
     private static Map<String, Object> getLogMap(final String orderNumber) {

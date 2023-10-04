@@ -6,6 +6,7 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ItemGroup {
 
@@ -72,5 +73,13 @@ public class ItemGroup {
     @Override
     public int hashCode() {
         return Objects.hash(getOrder(), getKind(), getItems());
+    }
+
+    @Override
+    public String toString() {
+        final String numberOfItems = getItems().size() + "" + (getItems().size() > 1 ? " items | " : " item | ");
+        return getKind() + " | " + numberOfItems + getItems().stream()
+                .map(Item::getId)
+                .collect(Collectors.joining(" | "));
     }
 }
