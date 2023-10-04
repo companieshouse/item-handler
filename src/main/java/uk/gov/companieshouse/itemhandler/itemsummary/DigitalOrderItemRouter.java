@@ -5,13 +5,12 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderService;
 import uk.gov.companieshouse.itemhandler.service.Routable;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.util.DataMap;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
 
 /**
  * Routes any digital items within the order on to digital processing
@@ -63,10 +62,4 @@ public class DigitalOrderItemRouter implements Routable {
         logger.info(sb.toString(), getLogMap(orderNumber));
     }
 
-    private static Map<String, Object> getLogMap(final String orderNumber) {
-        return new DataMap.Builder()
-                .orderId(orderNumber)
-                .build()
-                .getLogMap();
-    }
 }
