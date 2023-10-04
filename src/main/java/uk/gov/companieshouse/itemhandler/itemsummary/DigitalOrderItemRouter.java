@@ -1,7 +1,9 @@
 package uk.gov.companieshouse.itemhandler.itemsummary;
 
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderService;
 import uk.gov.companieshouse.itemhandler.service.Routable;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.util.DataMap;
@@ -21,9 +23,11 @@ public class DigitalOrderItemRouter implements Routable {
 
     private static final String KIND_MISSING_IMAGE_DELIVERY = "item#missing-image-delivery";
 
+    private final DigitalItemGroupSenderService digitalItemGroupSenderService;
     private final Logger logger;
 
-    public DigitalOrderItemRouter(Logger logger) {
+    public DigitalOrderItemRouter(DigitalItemGroupSenderService digitalItemGroupSenderService, Logger logger) {
+        this.digitalItemGroupSenderService = digitalItemGroupSenderService;
         this.logger = logger;
     }
 
@@ -31,7 +35,8 @@ public class DigitalOrderItemRouter implements Routable {
     public void route(final OrderData order) {
         final String orderNumber = order.getReference();
         logger.info("Routing digital items from order " + orderNumber + ".", getLogMap(orderNumber));
-        createItemGroups(order);
+        final List<ItemGroup> groups = createItemGroups(order);
+        groups.forEach(digitalItemGroupSenderService::sendItemGroupForDigitalProcessing);
     }
 
     List<ItemGroup> createItemGroups(final OrderData order) {
@@ -54,16 +59,15 @@ public class DigitalOrderItemRouter implements Routable {
         sb.append("For order " + orderNumber + " created " + digitalItemGroups.size() + " digital item groups:\n \n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
-            sb.append("\n + IG " + (i + 1) + " with kind " + ig.getKind() + " and " + ig.getItems().size() + " items:\n"
-                    + describeItemGroup(digitalItemGroups.get(i)) + "\n \n");
+            sb.append("\n + IG " + (i + 1) + " | " + describeItemGroup(ig) + "\n");
         }
         logger.info(sb.toString(), getLogMap(orderNumber));
     }
 
     private String describeItemGroup(final ItemGroup itemGroup) {
-        return itemGroup.getItems().stream()
-                .map(item -> " - + " + item.getId() + " [" + item.getKind() + "]")
-                .collect(Collectors.joining("\n"));
+        return itemGroup.getKind() + " | " + itemGroup.getItems().size() + " items | " + itemGroup.getItems().stream()
+                .map(Item::getId)
+                .collect(Collectors.joining(" | "));
     }
 
     private static Map<String, Object> getLogMap(final String orderNumber) {
