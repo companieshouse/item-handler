@@ -100,6 +100,24 @@ class OrderItemRouterTest {
     void testOrderContainsNoDeliverableItems() {
         // given
         Item missingImageDelivery = getMissingImageDelivery();
+        missingImageDelivery.setPostalDelivery(true);
+        when(order.getItems()).thenReturn(Collections.singletonList(missingImageDelivery));
+
+        // when
+        orderItemRouter.route(order);
+
+        // then
+        verify(chdItemSenderService).sendItemsToChd(itemGroupCaptor.capture());
+        verifyNoInteractions(emailService);
+        assertEquals(new ItemGroup(order, "item#missing-image-delivery", new ArrayList<>(Collections.singletonList(missingImageDelivery))), itemGroupCaptor.getValue());
+    }
+
+    @Test
+    @DisplayName("Router ignores the postal delivery flag on MID items")
+    void testOrderContainsPostalMID() {
+        // given
+        final Item missingImageDelivery = getMissingImageDelivery();
+        missingImageDelivery.setPostalDelivery(true);
         when(order.getItems()).thenReturn(Collections.singletonList(missingImageDelivery));
 
         // when
