@@ -27,7 +27,7 @@ test: test-unit test-integration
 
 .PHONY: test-unit
 test-unit: clean
-	mvn test
+	mvn -Dtest=!*IntegrationTest test
 
 .PHONY: test-integration
 test-integration: clean
