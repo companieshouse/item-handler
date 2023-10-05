@@ -112,6 +112,23 @@ class OrderItemRouterTest {
     }
 
     @Test
+    @DisplayName("Router should not send order confirmations when order only contains digital items")
+    void testOrderContainsOnlyDigitalItems() {
+        // given
+        final Item digitalCertificate = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
+        digitalCertificate.setPostalDelivery(false);
+        final Item digitalCopy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
+        digitalCopy.setPostalDelivery(false);
+        when(order.getItems()).thenReturn(Arrays.asList(digitalCertificate, digitalCopy));
+
+        // when
+        orderItemRouter.route(order);
+
+        // then
+        verifyNoInteractions(emailService);
+    }
+
+    @Test
     @DisplayName("Router should throw a non retryable exception when delivery timescale is null")
     void testOrderWithNullDeliveryTimescale() {
         // given
