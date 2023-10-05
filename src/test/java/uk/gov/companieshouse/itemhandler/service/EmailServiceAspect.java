@@ -3,19 +3,19 @@ package uk.gov.companieshouse.itemhandler.service;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
+import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 
 import java.util.concurrent.CountDownLatch;
 
 @Aspect
 @Component
-public class EmailServiceAspect {
+public class EmailServiceAspect implements SenderServiceAspect {
 
     private final CountDownLatch latch = new CountDownLatch(1);
-    private DeliverableItemGroup itemGroupSent;
+    private ItemGroup itemGroupSent;
 
     @After(value = "execution(* uk.gov.companieshouse.itemhandler.service.EmailService.sendOrderConfirmation(..)) && args(itemGroup)")
-    public void sendOrderConfirmation(final DeliverableItemGroup itemGroup) {
+    public void sendOrderConfirmation(final ItemGroup itemGroup) {
         latch.countDown();
         itemGroupSent = itemGroup;
     }
@@ -24,7 +24,7 @@ public class EmailServiceAspect {
         return latch;
     }
 
-    public DeliverableItemGroup getItemGroupSent() {
+    public ItemGroup getItemGroupSent() {
         return itemGroupSent;
     }
 }

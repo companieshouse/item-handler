@@ -9,7 +9,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Aspect
 @Component
-public class ChdItemSenderServiceAspect {
+public class ChdItemSenderServiceAspect implements SenderServiceAspect {
 
     private final CountDownLatch latch = new CountDownLatch(1);
     private ItemGroup itemGroupSent;

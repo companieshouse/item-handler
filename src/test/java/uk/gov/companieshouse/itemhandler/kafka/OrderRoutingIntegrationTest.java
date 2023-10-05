@@ -27,6 +27,7 @@ import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.ChdItemSenderServiceAspect;
 import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderServiceAspect;
 import uk.gov.companieshouse.itemhandler.service.EmailServiceAspect;
+import uk.gov.companieshouse.itemhandler.service.SenderServiceAspect;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
@@ -102,10 +103,10 @@ class OrderRoutingIntegrationTest {
 
     @Test
     @DisplayName("All items within order are routed correctly")
-    void orderItemsRoutedCorrectly()  throws ExecutionException, InterruptedException, IOException {
+    void orderItemsRoutedCorrectly() throws ExecutionException, InterruptedException, IOException {
         // given
         client.when(request()
-                        .withPath("/orders/ORD-111111-123123")
+                        .withPath(getOrderReference())
                         .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
@@ -126,20 +127,16 @@ class OrderRoutingIntegrationTest {
         digitalItemGroupSenderService.getLatch().await(30, SECONDS);
 
         // then
-        assertEquals(0, chdItemSenderService.getLatch().getCount());
-        assertNotNull(chdItemSenderService.getItemGroupSent());
-        assertThat(chdItemSenderService.getItemGroupSent().getItems().size(), is(1));
-        assertThat(chdItemSenderService.getItemGroupSent().getItems().get(0).getId(), is("MID-107116-962328"));
+        verifyItemIsSentToService("MID-107116-962328", chdItemSenderService);
+        verifyItemIsSentToService("CRT-113516-962308", emailService);
+        verifyItemIsSentToService("CCD-289716-962308", digitalItemGroupSenderService);
+    }
 
-        assertEquals(0, emailService.getLatch().getCount());
-        assertNotNull(emailService.getItemGroupSent());
-        assertThat(emailService.getItemGroupSent().getItems().size(), is(1));
-        assertThat(emailService.getItemGroupSent().getItems().get(0).getId(), is("CRT-113516-962308"));
-
-        assertEquals(0, digitalItemGroupSenderService.getLatch().getCount());
-        assertNotNull(digitalItemGroupSenderService.getItemGroupSent());
-        assertThat(digitalItemGroupSenderService.getItemGroupSent().getItems().size(), is(1));
-        assertThat(digitalItemGroupSenderService.getItemGroupSent().getItems().get(0).getId(), is("CCD-289716-962308"));
+    private void verifyItemIsSentToService(final String itemId, final SenderServiceAspect senderService) {
+        assertEquals(0, senderService.getLatch().getCount());
+        assertNotNull(senderService.getItemGroupSent());
+        assertThat(senderService.getItemGroupSent().getItems().size(), is(1));
+        assertThat(senderService.getItemGroupSent().getItems().get(0).getId(), is(itemId));
     }
 
     private OrderReceived getOrderReceived() {
