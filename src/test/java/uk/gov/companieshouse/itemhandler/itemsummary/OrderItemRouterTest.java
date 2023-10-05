@@ -134,6 +134,7 @@ class OrderItemRouterTest {
         item.setKind("item#missing-image-delivery");
 
         item.setItemOptions(new MissingImageDeliveryItemOptions());
+        item.setPostalDelivery(false);
         return item;
     }
 
@@ -144,6 +145,7 @@ class OrderItemRouterTest {
         DeliveryItemOptions itemOptions = new DeliveryItemOptions();
         itemOptions.setDeliveryTimescale(timescale);
         item.setItemOptions(itemOptions);
+        item.setPostalDelivery(true);
         return item;
     }
 }

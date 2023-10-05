@@ -134,7 +134,7 @@ class OrderRoutingIntegrationTest {
         assertEquals(0, emailService.getLatch().getCount());
         assertNotNull(emailService.getItemGroupSent());
         assertThat(emailService.getItemGroupSent().getItems().size(), is(1));
-        assertThat(emailService.getItemGroupSent().getItems().get(0).getId(), is("CCD-289716-962308"));
+        assertThat(emailService.getItemGroupSent().getItems().get(0).getId(), is("CRT-113516-962308"));
 
         assertEquals(0, digitalItemGroupSenderService.getLatch().getCount());
         assertNotNull(digitalItemGroupSenderService.getItemGroupSent());
