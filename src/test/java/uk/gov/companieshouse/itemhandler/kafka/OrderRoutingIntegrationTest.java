@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import email.email_send;
 import org.apache.commons.io.IOUtils;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.jupiter.api.AfterAll;
@@ -16,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -25,6 +28,7 @@ import uk.gov.companieshouse.itemhandler.service.ChdItemSenderServiceAspect;
 import uk.gov.companieshouse.itemhandler.service.DigitalItemGroupSenderServiceAspect;
 import uk.gov.companieshouse.itemhandler.service.EmailServiceAspect;
 import uk.gov.companieshouse.orders.OrderReceived;
+import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -62,6 +66,12 @@ class OrderRoutingIntegrationTest {
 
     @Autowired
     private DigitalItemGroupSenderServiceAspect digitalItemGroupSenderService;
+
+    @Autowired
+    private KafkaConsumer<String, email_send> emailSendConsumer;
+
+    @Autowired
+    private KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer;
 
     @BeforeAll
     static void before() {
@@ -110,7 +120,9 @@ class OrderRoutingIntegrationTest {
                 getOrderReceived())).get();
 
         chdItemSenderService.getLatch().await(30, SECONDS);
+        KafkaTestUtils.getSingleRecord(chdItemOrderedConsumer, kafkaTopics.getChdItemOrdered()).value();
         emailService.getLatch().await(30, SECONDS);
+        KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
         digitalItemGroupSenderService.getLatch().await(30, SECONDS);
 
         // then
