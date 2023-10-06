@@ -9,7 +9,7 @@ public class EmailSendFactory {
     public email_send buildMessage(final ItemGroup digitalItemGroup) {
         return email_send.newBuilder()
                 .setAppId("item-handler")
-                .setMessageId(digitalItemGroup.getOrder().getReference())
+                .setMessageId(digitalItemGroup.getItems().get(0).getId())
                 .setMessageType("TBD")
                 .setData("TBD")
                 .setCreatedAt("TBD")

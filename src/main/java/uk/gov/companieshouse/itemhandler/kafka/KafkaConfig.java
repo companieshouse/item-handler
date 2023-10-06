@@ -131,7 +131,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, email_send> signKafkaTemplate(
+    public KafkaTemplate<String, email_send> emailSendKafkaTemplate(
             @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
         return new KafkaTemplate<>(emailSendProducerFactory(bootstrapServers));
     }
