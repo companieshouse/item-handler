@@ -6,6 +6,7 @@ import org.springframework.messaging.MessageHeaders;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.util.DataMap;
 import uk.gov.companieshouse.orders.OrderReceived;
 
 import java.util.HashMap;
@@ -105,5 +106,12 @@ public class LoggingUtils {
         logIfNotNull(logMap, ORDER_URI, message.getPayload().getOrderUri());
 
         return logMap;
+    }
+
+    public static Map<String, Object> getLogMap(final String orderNumber) {
+        return new DataMap.Builder()
+                .orderId(orderNumber)
+                .build()
+                .getLogMap();
     }
 }

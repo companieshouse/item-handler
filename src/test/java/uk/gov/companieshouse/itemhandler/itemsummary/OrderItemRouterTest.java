@@ -100,6 +100,7 @@ class OrderItemRouterTest {
     void testOrderContainsNoDeliverableItems() {
         // given
         Item missingImageDelivery = getMissingImageDelivery();
+        missingImageDelivery.setPostalDelivery(true);
         when(order.getItems()).thenReturn(Collections.singletonList(missingImageDelivery));
 
         // when
@@ -109,6 +110,40 @@ class OrderItemRouterTest {
         verify(chdItemSenderService).sendItemsToChd(itemGroupCaptor.capture());
         verifyNoInteractions(emailService);
         assertEquals(new ItemGroup(order, "item#missing-image-delivery", new ArrayList<>(Collections.singletonList(missingImageDelivery))), itemGroupCaptor.getValue());
+    }
+
+    @Test
+    @DisplayName("Router ignores the postal delivery flag on MID items")
+    void testOrderContainsPostalMID() {
+        // given
+        final Item missingImageDelivery = getMissingImageDelivery();
+        missingImageDelivery.setPostalDelivery(true);
+        when(order.getItems()).thenReturn(Collections.singletonList(missingImageDelivery));
+
+        // when
+        orderItemRouter.route(order);
+
+        // then
+        verify(chdItemSenderService).sendItemsToChd(itemGroupCaptor.capture());
+        verifyNoInteractions(emailService);
+        assertEquals(new ItemGroup(order, "item#missing-image-delivery", new ArrayList<>(Collections.singletonList(missingImageDelivery))), itemGroupCaptor.getValue());
+    }
+
+    @Test
+    @DisplayName("Router should not send order confirmations when order only contains digital items")
+    void testOrderContainsOnlyDigitalItems() {
+        // given
+        final Item digitalCertificate = getExpectedItem("item#certificate", DeliveryTimescale.STANDARD);
+        digitalCertificate.setPostalDelivery(false);
+        final Item digitalCopy = getExpectedItem("item#certified-copy", DeliveryTimescale.STANDARD);
+        digitalCopy.setPostalDelivery(false);
+        when(order.getItems()).thenReturn(Arrays.asList(digitalCertificate, digitalCopy));
+
+        // when
+        orderItemRouter.route(order);
+
+        // then
+        verifyNoInteractions(emailService);
     }
 
     @Test
@@ -134,6 +169,7 @@ class OrderItemRouterTest {
         item.setKind("item#missing-image-delivery");
 
         item.setItemOptions(new MissingImageDeliveryItemOptions());
+        item.setPostalDelivery(false);
         return item;
     }
 
@@ -144,6 +180,7 @@ class OrderItemRouterTest {
         DeliveryItemOptions itemOptions = new DeliveryItemOptions();
         itemOptions.setDeliveryTimescale(timescale);
         item.setItemOptions(itemOptions);
+        item.setPostalDelivery(true);
         return item;
     }
 }
