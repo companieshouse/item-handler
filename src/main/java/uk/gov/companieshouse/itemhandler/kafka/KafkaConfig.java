@@ -1,7 +1,9 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import email.email_send;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -9,10 +11,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import uk.gov.companieshouse.email.EmailSend;
-import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.kafka.producer.Acks;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
@@ -112,6 +116,29 @@ public class KafkaConfig {
     @Bean
     PartitionOffset errorRecoveryOffset() {
         return new PartitionOffset();
+    }
+
+    @Bean
+    public ProducerFactory<String, email_send> emailSendProducerFactory(
+            @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
+        final Map<String, Object> config = new HashMap<>();
+        config.put(
+                org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer.class);
+        config.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, EmailSendAvroSerializer.class);
+        config.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean
+    public KafkaTemplate<String, email_send> signKafkaTemplate(
+            @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
+        return new KafkaTemplate<>(emailSendProducerFactory(bootstrapServers));
+    }
+
+    @Bean
+    public EmailSendAvroSerializer avroSerializer() {
+        return new EmailSendAvroSerializer();
     }
 
     private ConcurrentKafkaListenerContainerFactory<String, OrderReceived> getContainerFactory(Map<String, Object> props) {
