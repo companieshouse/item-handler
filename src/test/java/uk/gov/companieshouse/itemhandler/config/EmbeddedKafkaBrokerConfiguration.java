@@ -71,6 +71,16 @@ public class EmbeddedKafkaBrokerConfiguration {
     }
 
     @Bean
+    KafkaConsumer<String, email_send> itemGroupOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
+        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, email_send> kafkaConsumer = new KafkaConsumer<>(props,
+                new StringDeserializer(),
+                new MessageDeserialiser<>(email_send.class));
+        embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getItemGroupOrdered());
+        return kafkaConsumer;
+    }
+
+    @Bean
     KafkaProducer<String, OrderReceived> myProducer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         return createProducer(bootstrapServers, OrderReceived.class);
     }

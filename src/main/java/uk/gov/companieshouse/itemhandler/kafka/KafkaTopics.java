@@ -7,6 +7,8 @@ public class KafkaTopics {
     private String orderReceivedError;
     private String chdItemOrdered;
 
+    private String itemGroupOrdered;
+
     public void setEmailSend(String emailSend) {
         this.emailSend = emailSend;
     }
@@ -27,6 +29,10 @@ public class KafkaTopics {
         this.chdItemOrdered = chdItemOrdered;
     }
 
+    public void setItemGroupOrdered(String itemGroupOrdered) {
+        this.itemGroupOrdered = itemGroupOrdered;
+    }
+
     public String getEmailSend() {
         return emailSend;
     }
@@ -45,5 +51,9 @@ public class KafkaTopics {
 
     public String getChdItemOrdered() {
         return chdItemOrdered;
+    }
+
+    public String getItemGroupOrdered() {
+        return itemGroupOrdered;
     }
 }

@@ -1,26 +1,8 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.verify;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
 import email.email_send;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -59,6 +41,21 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.verify;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
 @TestPropertySource(locations = "classpath:application.properties",
@@ -76,6 +73,9 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     @Autowired
     private KafkaConsumer<String, ChdItemOrdered> chsItemOrderedConsumer;
+
+    @Autowired
+    private KafkaConsumer<String, email_send> itemGroupOrderedConsumer;
 
     @Autowired
     private KafkaProducer<String, OrderReceived> orderReceivedProducer;
@@ -163,6 +163,45 @@ class OrderMessageDefaultConsumerIntegrationTest {
     }
 
     @Test
+    @DisplayName("Process an order containing a single digital certificate")
+    void testDigitalCertificateResultsInItemGroupOrderedMessage() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString("/fixtures/digital-certificate.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        email_send itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
+                kafkaTopics.getItemGroupOrdered()).value();
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals("item-handler", itemGroupOrdered.getAppId());
+        assertNotNull(itemGroupOrdered.getMessageId());
+        assertEquals("TBD", itemGroupOrdered.getMessageType());
+        assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
+        assertNotNull(itemGroupOrdered.getData());
+
+// TODO DCAC-264 - what should we check here?
+//        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
+//        final String companyName = (data.get("delivery_details") != null &&
+//                data.get("delivery_details").findValue("company_name") != null) ?
+//                data.get("delivery_details").findValue("company_name").textValue() : "";
+//        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
+    }
+
+    @Test
     @DisplayName("Process an order containing certified certificates with different delivery timescales")
     void testConsumesCertsOrderWithDifferentDeliveryTimescalesReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
         //given
@@ -228,6 +267,45 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 actual.getMessageType());
         assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
         assertNotNull(actual.getData());
+    }
+
+    @Test
+    @DisplayName("Process an order containing a single digital copy")
+    void testDigitalCopyResultsInItemGroupOrderedMessage() throws ExecutionException, InterruptedException, IOException {
+        //given
+        client.when(request()
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
+                .respond(response()
+                        .withStatusCode(HttpStatus.OK.value())
+                        .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
+                        .withBody(JsonBody.json(IOUtils.resourceToString("/fixtures/digital-copy.json",
+                                StandardCharsets.UTF_8))));
+        orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
+
+        // when
+        orderReceivedProducer.send(new ProducerRecord<>(
+                kafkaTopics.getOrderReceived(),
+                kafkaTopics.getOrderReceived(),
+                getOrderReceived())).get();
+        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+        email_send itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
+                kafkaTopics.getItemGroupOrdered()).value();
+
+        // then
+        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
+        assertEquals("item-handler", itemGroupOrdered.getAppId());
+        assertNotNull(itemGroupOrdered.getMessageId());
+        assertEquals("TBD", itemGroupOrdered.getMessageType());
+        assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
+        assertNotNull(itemGroupOrdered.getData());
+
+// TODO DCAC-264 - what should we check here?
+//        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
+//        final String companyName = (data.get("delivery_details") != null &&
+//                data.get("delivery_details").findValue("company_name") != null) ?
+//                data.get("delivery_details").findValue("company_name").textValue() : "";
+//        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
     }
 
     @Test
