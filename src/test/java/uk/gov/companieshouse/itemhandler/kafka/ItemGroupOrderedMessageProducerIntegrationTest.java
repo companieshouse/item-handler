@@ -29,6 +29,7 @@ import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.config.LoggerConfig;
 import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -56,7 +57,7 @@ import static org.hamcrest.core.Is.is;
 @SpringBootTest
 @SpringJUnitConfig(classes={
         ItemGroupOrderedMessageProducer.class,
-        EmailSendFactory.class,
+        ItemGroupOrderedFactory.class,
         ItemGroupOrderedMessageProducerIntegrationTest.Config.class,
         LoggerConfig.class,
         ItemMessageFactory.class
@@ -89,7 +90,7 @@ class ItemGroupOrderedMessageProducerIntegrationTest {
     static class Config {
 
         @Bean
-        public ConsumerFactory<String, email_send> consumerFactory(
+        public ConsumerFactory<String, ItemGroupOrdered> consumerFactory(
                 @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
             return new DefaultKafkaConsumerFactory<>(
                     new HashMap<String, Object>() {{
@@ -102,13 +103,13 @@ class ItemGroupOrderedMessageProducerIntegrationTest {
                         put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
                     }},
                     new StringDeserializer(),
-                    new ErrorHandlingDeserializer<>(new AvroDeserializer<>(email_send.class)));
+                    new ErrorHandlingDeserializer<>(new AvroDeserializer<>(ItemGroupOrdered.class)));
         }
 
         @Bean
-        public ConcurrentKafkaListenerContainerFactory<String, email_send> kafkaListenerContainerFactory(
-                ConsumerFactory<String, email_send> consumerFactory) {
-            ConcurrentKafkaListenerContainerFactory<String, email_send> factory =
+        public ConcurrentKafkaListenerContainerFactory<String, ItemGroupOrdered> kafkaListenerContainerFactory(
+                ConsumerFactory<String, ItemGroupOrdered> consumerFactory) {
+            ConcurrentKafkaListenerContainerFactory<String, ItemGroupOrdered> factory =
                     new ConcurrentKafkaListenerContainerFactory<>();
             factory.setConsumerFactory(consumerFactory);
             factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
@@ -116,21 +117,22 @@ class ItemGroupOrderedMessageProducerIntegrationTest {
         }
 
         @Bean
-        public ProducerFactory<String, email_send> emailSendProducerFactory(
+        public ProducerFactory<String, ItemGroupOrdered> itemGroupOrderedProducerFactory(
                 @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
             final Map<String, Object> config = new HashMap<>();
             config.put(
                     org.apache.kafka.clients.producer.ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                     StringSerializer.class);
-            config.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, EmailSendAvroSerializer.class);
+            config.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                    ItemGroupOrderedAvroSerializer.class);
             config.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
             return new DefaultKafkaProducerFactory<>(config);
         }
 
         @Bean
-        public KafkaTemplate<String, email_send> emailSendKafkaTemplate(
+        public KafkaTemplate<String, ItemGroupOrdered> itemGroupOrderedKafkaTemplate(
                 @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
-            return new KafkaTemplate<>(emailSendProducerFactory(bootstrapServers));
+            return new KafkaTemplate<>(itemGroupOrderedProducerFactory(bootstrapServers));
         }
 
         @Bean

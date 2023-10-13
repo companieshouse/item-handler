@@ -193,7 +193,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
         assertNotNull(itemGroupOrdered.getData());
 
-// TODO DCAC-264 - what should we check here?
+// TODO DCAC-254 - what should we check here?
 //        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
 //        final String companyName = (data.get("delivery_details") != null &&
 //                data.get("delivery_details").findValue("company_name") != null) ?
@@ -300,7 +300,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
         assertNotNull(itemGroupOrdered.getData());
 
-// TODO DCAC-264 - what should we check here?
+// TODO DCAC-254 - what should we check here?
 //        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
 //        final String companyName = (data.get("delivery_details") != null &&
 //                data.get("delivery_details").findValue("company_name") != null) ?
