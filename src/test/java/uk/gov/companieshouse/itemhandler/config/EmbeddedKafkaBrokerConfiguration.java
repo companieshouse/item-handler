@@ -15,6 +15,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.kafka.KafkaTopics;
 import uk.gov.companieshouse.itemhandler.kafka.MessageDeserialiser;
 import uk.gov.companieshouse.kafka.exceptions.SerializationException;
@@ -71,11 +72,15 @@ public class EmbeddedKafkaBrokerConfiguration {
     }
 
     @Bean
-    KafkaConsumer<String, email_send> itemGroupOrderedConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
-        Map<String, Object> props = KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
-        KafkaConsumer<String, email_send> kafkaConsumer = new KafkaConsumer<>(props,
+    KafkaConsumer<String, ItemGroupOrdered> itemGroupOrderedConsumer(
+            @Value("${spring.kafka.bootstrap-servers}") String bootstrapServers,
+            EmbeddedKafkaBroker embeddedKafkaBroker,
+            KafkaTopics kafkaTopics) {
+        Map<String, Object> props =
+                KafkaTestUtils.consumerProps(bootstrapServers, UUID.randomUUID().toString(), Boolean.toString(true));
+        KafkaConsumer<String, ItemGroupOrdered> kafkaConsumer = new KafkaConsumer<>(props,
                 new StringDeserializer(),
-                new MessageDeserialiser<>(email_send.class));
+                new MessageDeserialiser<>(ItemGroupOrdered.class));
         embeddedKafkaBroker.consumeFromAnEmbeddedTopic(kafkaConsumer, kafkaTopics.getItemGroupOrdered());
         return kafkaConsumer;
     }

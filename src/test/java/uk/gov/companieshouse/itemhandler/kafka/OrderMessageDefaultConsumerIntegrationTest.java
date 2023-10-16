@@ -33,6 +33,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
+import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.EmailService;
@@ -75,7 +76,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
     private KafkaConsumer<String, ChdItemOrdered> chsItemOrderedConsumer;
 
     @Autowired
-    private KafkaConsumer<String, email_send> itemGroupOrderedConsumer;
+    private KafkaConsumer<String, ItemGroupOrdered> itemGroupOrderedConsumer;
 
     @Autowired
     private KafkaProducer<String, OrderReceived> orderReceivedProducer;
@@ -182,23 +183,13 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
+        final ItemGroupOrdered itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
                 kafkaTopics.getItemGroupOrdered()).value();
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals("item-handler", itemGroupOrdered.getAppId());
-        assertNotNull(itemGroupOrdered.getMessageId());
-        assertEquals("TBD", itemGroupOrdered.getMessageType());
-        assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
-        assertNotNull(itemGroupOrdered.getData());
-
-// TODO DCAC-254 - what should we check here?
-//        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
-//        final String companyName = (data.get("delivery_details") != null &&
-//                data.get("delivery_details").findValue("company_name") != null) ?
-//                data.get("delivery_details").findValue("company_name").textValue() : "";
-//        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
+        // TODO DCAC-254 Come up with some sensible assertions
+        assertNotNull(itemGroupOrdered.getOrderId());
     }
 
     @Test
@@ -289,23 +280,14 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
+        final ItemGroupOrdered itemGroupOrdered = KafkaTestUtils.getSingleRecord(itemGroupOrderedConsumer,
                 kafkaTopics.getItemGroupOrdered()).value();
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals("item-handler", itemGroupOrdered.getAppId());
-        assertNotNull(itemGroupOrdered.getMessageId());
-        assertEquals("TBD", itemGroupOrdered.getMessageType());
-        assertEquals("unknown@unknown.com", itemGroupOrdered.getEmailAddress());
-        assertNotNull(itemGroupOrdered.getData());
+        // TODO DCAC-254 Come up with some sensible assertions
+        assertNotNull(itemGroupOrdered.getOrderId());
 
-// TODO DCAC-254 - what should we check here?
-//        final JsonNode data = new ObjectMapper().readTree(itemGroupOrdered.getData());
-//        final String companyName = (data.get("delivery_details") != null &&
-//                data.get("delivery_details").findValue("company_name") != null) ?
-//                data.get("delivery_details").findValue("company_name").textValue() : "";
-//        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
     }
 
     @Test
