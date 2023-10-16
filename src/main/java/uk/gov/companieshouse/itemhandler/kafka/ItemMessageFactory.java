@@ -72,7 +72,7 @@ public class ItemMessageFactory {
             message.setTimestamp(new Date().getTime());
         } catch (Exception ex) {
             final String errorMessage =
-                format("Unable to create message for order %s item ID %s!",
+                format("Unable to create ChdItemOrdered message for order %s item ID %s!",
                         orderItemPair.getOrder().getReference(),
                         orderItemPair.getItem().getId());
             LOGGER.error(errorMessage, ex);

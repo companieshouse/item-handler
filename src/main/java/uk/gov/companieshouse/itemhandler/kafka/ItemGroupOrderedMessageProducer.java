@@ -38,7 +38,7 @@ public class ItemGroupOrderedMessageProducer {
         // TODO DCAC-254 Structured logging
         logger.info("Sending a message for item group " + digitalItemGroup + " from order "
                 + digitalItemGroup.getOrder().getReference() + ".");
-        final ItemGroupOrdered message = itemGroupOrderedFactory.buildMessage(digitalItemGroup);
+        final ItemGroupOrdered message = itemGroupOrderedFactory.createMessage(digitalItemGroup);
         final ListenableFuture<SendResult<String, ItemGroupOrdered>> future =
                 kafkaTemplate.send(itemGroupOrderedTopic, message);
         future.addCallback(new ListenableFutureCallback<SendResult<String, ItemGroupOrdered>>() {
