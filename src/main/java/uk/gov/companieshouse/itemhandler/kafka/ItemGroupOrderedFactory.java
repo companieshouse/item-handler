@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
-import uk.gov.companieshouse.itemgroupordered.Links;
 import uk.gov.companieshouse.itemgroupordered.OrderedBy;
 import uk.gov.companieshouse.itemhandler.exception.KafkaMessagingException;
 import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
@@ -13,7 +12,6 @@ import uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions;
 import uk.gov.companieshouse.itemhandler.model.FilingHistoryDocument;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.ItemCosts;
-import uk.gov.companieshouse.itemhandler.model.ItemLinks;
 import uk.gov.companieshouse.itemhandler.model.ItemOptions;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
@@ -56,6 +54,7 @@ public class ItemGroupOrderedFactory {
                     .setReference(order.getReference())
                     .setTotalOrderCost(order.getTotalOrderCost())
                     .setItems(singletonList(createItem(item)))
+                    .setLinks(createOrderLinks(order))
                     .build();
         } catch (Exception ex) {
             // TODO DCAC-254 Structured logging
@@ -87,7 +86,7 @@ public class ItemGroupOrderedFactory {
                 createFilingHistoryItemOptions(item.getItemOptions()),
                 item.getItemUri(),
                 item.getKind(),
-                createLinks(item.getLinks()),
+                createItemLinks(item),
                 item.getPostageCost(),
                 item.isPostalDelivery(),
                 item.getQuantity(),
@@ -142,8 +141,13 @@ public class ItemGroupOrderedFactory {
         return filingHistoryOptions;
     }
 
-    private uk.gov.companieshouse.itemgroupordered.Links createLinks(final ItemLinks links) {
-        return new Links(links.getSelf());
+    private uk.gov.companieshouse.itemgroupordered.ItemLinks createItemLinks(final Item item) {
+        return new uk.gov.companieshouse.itemgroupordered.ItemLinks(item.getLinks().getSelf());
+    }
+
+    private uk.gov.companieshouse.itemgroupordered.OrderLinks createOrderLinks(final OrderData order) {
+        return order.getLinks() != null ?
+                new uk.gov.companieshouse.itemgroupordered.OrderLinks(order.getLinks().getSelf()) : null;
     }
 
 }
