@@ -15,7 +15,6 @@ import org.springframework.kafka.support.SendResult;
 @Component
 public class ItemGroupOrderedMessageProducer {
 
-    // TODO DCAC-254 Replace email_send with ItemGroupOrdered
     private final KafkaTemplate<String, ItemGroupOrdered> kafkaTemplate;
     private final ItemGroupOrderedFactory itemGroupOrderedFactory;
 

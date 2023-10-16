@@ -81,7 +81,6 @@ public class ItemGroupOrderedFactory {
                 item.getDescription(),
                 item.getDescriptionIdentifier(),
                 item.getDescriptionValues(),
-                "digital document location"/* TODO DCAC-254 digital document location */,
                 item.getEtag(),
                 item.getId(),
                 createItemCosts(item.getItemCosts()),
@@ -121,7 +120,6 @@ public class ItemGroupOrderedFactory {
        return null;
     }
 
-
     /**
      * Creates a suitable map of values representing copy filing history item options ready for use as part of a
      * Kafka message.
@@ -145,8 +143,7 @@ public class ItemGroupOrderedFactory {
     }
 
     private uk.gov.companieshouse.itemgroupordered.Links createLinks(final ItemLinks links) {
-        return new Links("fetch_document"/* TODO DCAC-254 links fetch_document */, links.getSelf());
+        return new Links(links.getSelf());
     }
-
 
 }
