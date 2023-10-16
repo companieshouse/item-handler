@@ -44,7 +44,7 @@ public class ItemGroupOrderedFactory {
 
     public ItemGroupOrdered createMessage(final ItemGroup digitalItemGroup) {
         final OrderData order = digitalItemGroup.getOrder();
-        final Item item = order.getItems().get(0);
+        final Item item = digitalItemGroup.getItems().get(0);
         // TODO DCAC-254 Structured logging
         logger.info("Creating ItemGroupOrdered message for order " + order.getReference() + ".");
         try {
