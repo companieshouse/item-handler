@@ -18,10 +18,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
+import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
 import uk.gov.companieshouse.itemhandler.service.ChdItemSenderServiceAspect;
@@ -38,11 +38,11 @@ import java.util.concurrent.ExecutionException;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
+import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
@@ -73,6 +73,9 @@ class OrderRoutingIntegrationTest {
 
     @Autowired
     private KafkaConsumer<String, ChdItemOrdered> chdItemOrderedConsumer;
+
+    @Autowired
+    private KafkaConsumer<String, ItemGroupOrdered> itemGroupOrderedConsumer;
 
     @BeforeAll
     static void before() {
@@ -120,19 +123,19 @@ class OrderRoutingIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
 
-        chdItemSenderService.getLatch().await(30, SECONDS);
-        KafkaTestUtils.getSingleRecord(chdItemOrderedConsumer, kafkaTopics.getChdItemOrdered()).value();
-        emailService.getLatch().await(30, SECONDS);
-        KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
-        digitalItemGroupSenderService.getLatch().await(30, SECONDS);
-
         // then
         verifyItemIsSentToService("MID-107116-962328", chdItemSenderService);
         verifyItemIsSentToService("CRT-113516-962308", emailService);
         verifyItemIsSentToService("CCD-289716-962308", digitalItemGroupSenderService);
+
+        getSingleRecord(chdItemOrderedConsumer, kafkaTopics.getChdItemOrdered());
+        getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend());
+        getSingleRecord(itemGroupOrderedConsumer, kafkaTopics.getItemGroupOrdered());
     }
 
-    private void verifyItemIsSentToService(final String itemId, final SenderServiceAspect senderService) {
+    private void verifyItemIsSentToService(final String itemId, final SenderServiceAspect senderService)
+            throws InterruptedException {
+        senderService.getLatch().await(30, SECONDS);
         assertEquals(0, senderService.getLatch().getCount());
         assertNotNull(senderService.getItemGroupSent());
         assertThat(senderService.getItemGroupSent().getItems().size(), is(1));
