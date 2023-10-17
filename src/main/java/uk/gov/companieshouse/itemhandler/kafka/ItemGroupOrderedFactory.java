@@ -27,10 +27,10 @@ import static java.util.Collections.singletonList;
 @Component
 public class ItemGroupOrderedFactory {
 
-    private static final String FILING_HISTORY_ID = "filingHistoryId";
-    private static final String FILING_HISTORY_DESCRIPTION = "filingHistoryDescription";
-    private static final String FILING_HISTORY_DESCRIPTION_VALUES = "filingHistoryDescriptionValues";
-    private static final String FILING_HISTORY_TYPE = "filingHistoryType";
+    static final String FILING_HISTORY_ID = "filingHistoryId";
+    static final String FILING_HISTORY_DESCRIPTION = "filingHistoryDescription";
+    static final String FILING_HISTORY_DESCRIPTION_VALUES = "filingHistoryDescriptionValues";
+    static final String FILING_HISTORY_TYPE = "filingHistoryType";
 
     private final Logger logger;
     private final ObjectMapper objectMapper;

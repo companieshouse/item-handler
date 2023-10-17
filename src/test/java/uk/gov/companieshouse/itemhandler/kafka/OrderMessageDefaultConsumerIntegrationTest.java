@@ -44,11 +44,16 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -56,6 +61,10 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.verify;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION_VALUES;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_ID;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_TYPE;
 
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
@@ -187,9 +196,11 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getItemGroupOrdered()).value();
 
         // then
-        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        // TODO DCAC-254 Come up with some sensible assertions
-        assertNotNull(itemGroupOrdered.getOrderId());
+        assertThat(orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount(), is(0L));
+
+        assertItemGroupOrderedMessageIsAsExpected(itemGroupOrdered, "ORD-123123-123123", "CRT-123123-123123");
+
+        assertThat(itemGroupOrdered.getItems().get(0).getItemOptions(), is(nullValue()));
     }
 
     @Test
@@ -284,10 +295,25 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getItemGroupOrdered()).value();
 
         // then
-        assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        // TODO DCAC-254 Come up with some sensible assertions
-        assertNotNull(itemGroupOrdered.getOrderId());
+        assertThat(orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount(), is(0L));
 
+        assertItemGroupOrderedMessageIsAsExpected(itemGroupOrdered, "ORD-123123-123123", "CCD-123123-123123");
+
+        final Map<String, String> options = itemGroupOrdered.getItems().get(0).getItemOptions();
+        assertThat(options, is(notNullValue()));
+        assertThat(options.get(FILING_HISTORY_ID), is(notNullValue()));
+        assertThat(options.get(FILING_HISTORY_ID), is("F00DFACE"));
+        assertThat(options.get(FILING_HISTORY_TYPE), is(notNullValue()));
+        assertThat(options.get(FILING_HISTORY_TYPE), is("SH01"));
+        assertThat(options.get(FILING_HISTORY_DESCRIPTION), is(notNullValue()));
+        assertThat(options.get(FILING_HISTORY_DESCRIPTION), is("capital-allotment-shares"));
+
+        final JsonNode values = new ObjectMapper().readTree(options.get(FILING_HISTORY_DESCRIPTION_VALUES));
+        assertThat(getStringValue(values, "date"), is("2021-01-01"));
+        final JsonNode capital = values.get("capital");
+        assertThat(capital, is(notNullValue()));
+        assertThat(getNestedStringValue(capital, "figure"), is("1"));
+        assertThat(getNestedStringValue(capital, "currency"), is("GBP"));
     }
 
     @Test
@@ -432,5 +458,26 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 Arguments.of("/fixtures/certified-copy.json", "Order containing one certified copy"),
                 Arguments.of("/fixtures/multi-certified-copy.json", "Order containing multiple certified copies")
         );
+    }
+
+    private static String getNestedStringValue(final JsonNode node, final String key) {
+        return node.findValuesAsText(key) != null &&
+                node.findValuesAsText(key).size() == 1 ?
+                node.findValuesAsText(key).get(0) : "";
+    }
+
+    private static String getStringValue(final JsonNode node, final String key) {
+        return node.get(key) != null ? node.get(key).textValue() : "";
+    }
+
+    private static void assertItemGroupOrderedMessageIsAsExpected(final ItemGroupOrdered message,
+                                                                  final String orderId,
+                                                                  final String itemId) {
+        assertThat(message.getOrderId(), is(notNullValue()));
+        assertThat(message.getOrderId(), is(orderId));
+        assertThat(message.getItems(), is(notNullValue()));
+        assertThat(message.getItems().size(), is(1));
+        assertThat(message.getItems().get(0).getId(), is(itemId));
+        assertThat(message.getDeliveryDetails(), is(nullValue()));
     }
 }
