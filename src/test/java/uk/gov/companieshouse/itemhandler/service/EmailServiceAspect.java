@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
 @Component
 public class EmailServiceAspect implements SenderServiceAspect {
 
-    private final CountDownLatch latch = new CountDownLatch(1);
+    private CountDownLatch latch = new CountDownLatch(1);
     private ItemGroup itemGroupSent;
 
     @After(value = "execution(* uk.gov.companieshouse.itemhandler.service.EmailService.sendOrderConfirmation(..)) && args(itemGroup)")
@@ -22,6 +22,11 @@ public class EmailServiceAspect implements SenderServiceAspect {
 
     public CountDownLatch getLatch() {
         return latch;
+    }
+
+    @Override
+    public void resetLatch() {
+        latch = new CountDownLatch(1);
     }
 
     public ItemGroup getItemGroupSent() {

@@ -6,5 +6,6 @@ import java.util.concurrent.CountDownLatch;
 
 public interface SenderServiceAspect {
     CountDownLatch getLatch();
+    void resetLatch();
     ItemGroup getItemGroupSent();
 }

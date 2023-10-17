@@ -97,6 +97,9 @@ class OrderRoutingIntegrationTest {
     @BeforeEach
     void setup() {
         client = new MockServerClient(container.getHost(), container.getServerPort());
+        chdItemSenderService.resetLatch();
+        emailService.resetLatch();
+        digitalItemGroupSenderService.resetLatch();
     }
 
     @AfterEach
