@@ -12,6 +12,8 @@ import uk.gov.companieshouse.logging.Logger;
 
 import org.springframework.kafka.support.SendResult;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
+
 @Component
 public class ItemGroupOrderedMessageProducer {
 
@@ -34,9 +36,9 @@ public class ItemGroupOrderedMessageProducer {
     }
 
     public void sendMessage(final ItemGroup digitalItemGroup) {
-        // TODO DCAC-254 Structured logging
         logger.info("Sending a message for item group " + digitalItemGroup + " from order "
-                + digitalItemGroup.getOrder().getReference() + ".");
+                + digitalItemGroup.getOrder().getReference() + ".",
+                getLogMap(digitalItemGroup.getOrder().getReference()));
         final ItemGroupOrdered message = itemGroupOrderedFactory.createMessage(digitalItemGroup);
         final ListenableFuture<SendResult<String, ItemGroupOrdered>> future =
                 kafkaTemplate.send(itemGroupOrderedTopic, message);
@@ -47,7 +49,8 @@ public class ItemGroupOrderedMessageProducer {
                 final int partition = metadata.partition();
                 final long offset = metadata.offset();
                 logger.info("Message " + message + " delivered to topic " + itemGroupOrderedTopic
-                                + " on partition " + partition + " with offset " + offset + ".");
+                                + " on partition " + partition + " with offset " + offset + ".",
+                            getLogMap(digitalItemGroup.getOrder().getReference()));
             }
 
             @Override

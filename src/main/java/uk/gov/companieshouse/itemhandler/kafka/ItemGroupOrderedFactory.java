@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
 
 @Component
 public class ItemGroupOrderedFactory {
@@ -43,8 +44,8 @@ public class ItemGroupOrderedFactory {
     public ItemGroupOrdered createMessage(final ItemGroup digitalItemGroup) {
         final OrderData order = digitalItemGroup.getOrder();
         final Item item = digitalItemGroup.getItems().get(0);
-        // TODO DCAC-254 Structured logging
-        logger.info("Creating ItemGroupOrdered message for order " + order.getReference() + ".");
+        logger.info("Creating ItemGroupOrdered message for order " + order.getReference() + ".",
+                getLogMap(order.getReference(), item.getId()));
         try {
             return ItemGroupOrdered.newBuilder()
                     .setOrderId(order.getReference())
@@ -57,12 +58,11 @@ public class ItemGroupOrderedFactory {
                     .setLinks(createOrderLinks(order))
                     .build();
         } catch (Exception ex) {
-            // TODO DCAC-254 Structured logging
             final String errorMessage =
                     format("Unable to create ItemGroupOrdered message for order %s item ID %s!",
                             order.getReference(),
                             item.getId());
-            logger.error(errorMessage, ex);
+            logger.error(errorMessage, ex, getLogMap(order.getReference(), item.getId()));
             throw new KafkaMessagingException(errorMessage, ex);
         }
     }

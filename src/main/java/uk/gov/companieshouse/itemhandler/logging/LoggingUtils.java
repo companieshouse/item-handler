@@ -114,4 +114,12 @@ public class LoggingUtils {
                 .build()
                 .getLogMap();
     }
+
+    public static Map<String, Object> getLogMap(final String orderNumber, final String itemId) {
+        return new DataMap.Builder()
+                .orderId(orderNumber)
+                .itemId(itemId)
+                .build()
+                .getLogMap();
+    }
 }
