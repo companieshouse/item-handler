@@ -31,8 +31,7 @@
         <private-api-sdk-java.version>2.0.188</private-api-sdk-java.version>
         <api-sdk-manager-java-library.version>1.0.4</api-sdk-manager-java-library.version>
         <api-sdk-java.version>4.1.48</api-sdk-java.version>
-        <!-- TODO DCAC-254 Upgrade kafka-models dependency to > 1.0.30 -->
-        <kafka-models.version>unversioned</kafka-models.version>
+        <kafka-models.version>2.0.5</kafka-models.version>
         <ch-kafka.version>1.4.2</ch-kafka.version>
         <snakeyaml.version>1.26</snakeyaml.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
