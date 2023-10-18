@@ -24,7 +24,7 @@ class ItemGroupOrderedAvroSerializerTest {
 
     @Test
     @DisplayName("serialize() propagates error as expected SerializationException")
-    void testSerializePropagatesError() {
+    void testSerializePropagatesException() {
 
         // Given
         when(message.getSchema()).thenReturn(ItemGroupOrdered.SCHEMA$);

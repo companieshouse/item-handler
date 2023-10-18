@@ -55,8 +55,15 @@ public class ItemGroupOrderedMessageProducer {
 
             @Override
             public void onFailure(Throwable ex) {
-                logger.error("Unable to deliver message " + message + ". Error: " + ex.getMessage() + ".");
+                final String error = "Unable to deliver message " + message + " for order " +
+                        digitalItemGroup.getOrder().getReference() + ". Error: " + ex.getMessage() + ".";
+                if (ex instanceof Exception) {
+                    logger.error(error, (Exception) ex, getLogMap(digitalItemGroup.getOrder().getReference()));
+                } else {
+                    logger.error(error, getLogMap(digitalItemGroup.getOrder().getReference()));
+                }
             }
+
         });
     }
 

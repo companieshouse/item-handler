@@ -59,9 +59,10 @@ public class ItemGroupOrderedFactory {
                     .build();
         } catch (Exception ex) {
             final String errorMessage =
-                    format("Unable to create ItemGroupOrdered message for order %s item ID %s!",
+                    format("Unable to create ItemGroupOrdered message for order %s item ID %s! Error: %s",
                             order.getReference(),
-                            item.getId());
+                            item.getId(),
+                            ex.getMessage());
             logger.error(errorMessage, ex, getLogMap(order.getReference(), item.getId()));
             throw new KafkaMessagingException(errorMessage, ex);
         }
