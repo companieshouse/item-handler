@@ -133,7 +133,8 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, ItemGroupOrdered> itemGroupOrderedKafkaTemplate(
             @Value("${spring.kafka.bootstrap-servers}" ) final String bootstrapServers) {
-        return new KafkaTemplate<>(itemGroupOrderedProducerFactory(bootstrapServers));
+        return new KafkaTemplate<>(itemGroupOrderedProducerFactory(
+                /* TODO DCAC-44 restore this bootstrapServers */ "kafka-broker1-cidev.development.aws.internal:9092"));
     }
 
     @Bean
