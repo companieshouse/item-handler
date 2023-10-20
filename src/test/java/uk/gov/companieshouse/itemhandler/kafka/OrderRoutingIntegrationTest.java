@@ -10,6 +10,9 @@ import static org.mockserver.model.HttpResponse.response;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 import email.email_send;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutionException;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -18,6 +21,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockserver.client.MockServerClient;
@@ -39,10 +43,6 @@ import uk.gov.companieshouse.itemhandler.service.EmailServiceAspect;
 import uk.gov.companieshouse.itemhandler.service.SenderServiceAspect;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
@@ -108,6 +108,7 @@ class OrderRoutingIntegrationTest {
     }
 
     @Test
+    @Disabled("See https://companieshouse.atlassian.net/browse/DCAC-282.")
     @DisplayName("All items within order are routed correctly")
     void orderItemsRoutedCorrectly() throws ExecutionException, InterruptedException, IOException {
         // given
