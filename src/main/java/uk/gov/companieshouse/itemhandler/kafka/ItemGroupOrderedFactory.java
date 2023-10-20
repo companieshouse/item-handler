@@ -121,13 +121,14 @@ public class ItemGroupOrderedFactory {
     }
 
     /**
-     * Creates a suitable map of values representing copy filing history item options ready for use as part of a
-     * Kafka message.
+     * Creates a suitable map of values representing copy filing history item options ready for use as
+     * part of a Kafka message.
      *
-     * @param options {@link uk.gov.companieshouse.itemhandler.model.ItemOptions} the current copy item being processed
-     *                                                                           in the order
+     * @param options {@link uk.gov.companieshouse.itemhandler.model.CertifiedCopyItemOptions} the
+     *                current copy item being processed in the order
      * @return map of values representing copy item filing history options
-     * @throws JsonProcessingException should there be an error serialising filing history description values
+     * @throws JsonProcessingException should there be an error serialising filing history description
+     *                                 values
      */
     private Map<String, String> createCertifiedCopyFirstFilingHistoryDocOptions(final CertifiedCopyItemOptions options)
             throws JsonProcessingException {
