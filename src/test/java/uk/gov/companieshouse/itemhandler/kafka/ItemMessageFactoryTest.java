@@ -123,7 +123,8 @@ class ItemMessageFactoryTest {
         // When and then
         assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
                 factoryUnderTest.createMessage(orderItemPair))
-                .withMessage("Unable to create message for order ORD-432118-793830 item ID MID-242116-007650!")
+                .withMessage(
+                      "Unable to create ChdItemOrdered message for order ORD-432118-793830 item ID MID-242116-007650!")
                 .withCause(new NullPointerException());
 
     }
