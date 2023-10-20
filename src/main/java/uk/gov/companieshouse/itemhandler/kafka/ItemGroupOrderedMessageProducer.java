@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
+
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,8 +13,6 @@ import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.logging.Logger;
 
 import org.springframework.kafka.support.SendResult;
-
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
 
 @Component
 public class ItemGroupOrderedMessageProducer {

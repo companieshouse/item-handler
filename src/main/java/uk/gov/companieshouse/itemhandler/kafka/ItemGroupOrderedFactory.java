@@ -1,5 +1,9 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static java.lang.String.format;
+import static java.util.Collections.singletonList;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
@@ -20,10 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.Collections.singletonList;
-import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.getLogMap;
 
 @Component
 public class ItemGroupOrderedFactory {

@@ -1,5 +1,14 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
+
 import email.email_send;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -34,15 +43,6 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)

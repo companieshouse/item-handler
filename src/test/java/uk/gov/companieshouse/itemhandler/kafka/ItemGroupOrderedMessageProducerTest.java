@@ -1,5 +1,8 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,9 +19,6 @@ import uk.gov.companieshouse.itemhandler.itemsummary.ItemGroup;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit tests {@link ItemGroupOrderedMessageProducer}.

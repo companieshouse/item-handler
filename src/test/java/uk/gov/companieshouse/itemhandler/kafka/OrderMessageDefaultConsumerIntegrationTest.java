@@ -1,5 +1,21 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.verify;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION_VALUES;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_ID;
+import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_TYPE;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import email.email_send;
@@ -49,22 +65,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.Mockito.verify;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
-import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION;
-import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_DESCRIPTION_VALUES;
-import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_ID;
-import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FILING_HISTORY_TYPE;
 
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
@@ -167,7 +167,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
         final JsonNode data = new ObjectMapper().readTree(actual.getData());
         final String companyName = (data.get("delivery_details") != null &&
-                                    data.get("delivery_details").findValue("company_name") != null) ?
+                data.get("delivery_details").findValue("company_name") != null) ?
                 data.get("delivery_details").findValue("company_name").textValue() : "";
         assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
     }
@@ -228,7 +228,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(2, actual.count());
-        for(ConsumerRecord<String, email_send> record : actual) {
+        for (ConsumerRecord<String, email_send> record : actual) {
             assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
             assertNotNull(record.value().getMessageId());
             assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -244,8 +244,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testConsumesCertifiedCopyOrderReceivedFromEmailSendTopic(String fixture, String description) throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                .withPath(getOrderReference())
-                .withMethod(HttpMethod.GET.toString()))
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -321,8 +321,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
     void testConsumesCertCopiesOrderWithDifferentDeliveryTimescalesReceivedFromEmailSendTopic() throws ExecutionException, InterruptedException, IOException {
         //given
         client.when(request()
-                .withPath(getOrderReference())
-                .withMethod(HttpMethod.GET.toString()))
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -341,7 +341,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(2, actual.count());
-        for(ConsumerRecord<String, email_send> record : actual) {
+        for (ConsumerRecord<String, email_send> record : actual) {
             assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
             assertNotNull(record.value().getMessageId());
             assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
@@ -384,8 +384,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
         // given
         int midId = 123123;
         client.when(request()
-                .withPath(getOrderReference())
-                .withMethod(HttpMethod.GET.toString()))
+                        .withPath(getOrderReference())
+                        .withMethod(HttpMethod.GET.toString()))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(org.apache.http.HttpHeaders.CONTENT_TYPE, "application/json")
@@ -404,7 +404,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
         assertEquals(2, actual.count());
-        for(ConsumerRecord<String, ChdItemOrdered> record : actual) {
+        for (ConsumerRecord<String, ChdItemOrdered> record : actual) {
             assertEquals("ORD-123123-123123", record.value().getReference());
             assertNotNull(record.value().getItem());
             assertEquals("MID-123123-" + midId++, record.value().getItem().getId());
