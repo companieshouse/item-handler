@@ -213,4 +213,46 @@ public class CertificateConfirmationMapperTest {
         NonRetryableException exception = assertThrows(NonRetryableException.class, executable);
         assertThat(exception.getMessage(), is(equalTo("Unhandled certificate type: [INCORPORATION]")));
     }
+
+    @Test
+    @DisplayName("Ensures the correct email subject is set when total order is 0 (admin free order)")
+    void testMapFreeCertificateToCertificateEmailData() {
+        // given
+        when(deliverableItemGroup.getOrder()).thenReturn(order);
+        when(config.getCertificate()).thenReturn(certificateEmailConfig);
+        when(config.getOrdersAdminHost()).thenReturn("host");
+        when(certificateEmailConfig.getRecipient()).thenReturn("example@companieshouse.gov.uk");
+        when(certificateEmailConfig.getStandardSubjectLine()).thenReturn("subject");
+        when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
+        when(order.getReference()).thenReturn("ORD-123123-123123");
+        when(order.getOrderedAt()).thenReturn(LocalDateTime.of(2022, 8,25, 15, 18));
+        when(deliverableItemGroup.getItems()).thenReturn(Collections.singletonList(item));
+        when(item.getId()).thenReturn("CRT-123123-123123");
+        when(item.getItemOptions()).thenReturn(itemOptions);
+        when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
+        when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getTotalItemCost()).thenReturn("0");
+        when(order.getPaymentReference()).thenReturn("payment reference");
+        when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
+        when(order.getTotalOrderCost()).thenReturn("0");
+
+        // when
+        EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
+
+        // then
+        assertThat(emailMetadata.getEmailData(), is(equalTo(CertificateEmailData.builder()
+                .withTo("example@companieshouse.gov.uk")
+                .withSubject("subject - [FREE CERTIFICATE ADMIN ORDER]")
+                .withOrderReference("ORD-123123-123123")
+                .withDeliveryDetails(deliveryDetails)
+                .withPaymentDetails(new PaymentDetails("payment reference", "25 August 2022 - 15:18:00"))
+                .addCertificate(new CertificateSummary("CRT-123123-123123",
+                        "Incorporation with all company name changes",
+                        "12345678",
+                        "£0",
+                        "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
+                .build())));
+        assertThat(emailMetadata.getAppId(), is("item-handler.certificate-summary-order-confirmation"));
+        assertThat(emailMetadata.getMessageType(), is("certificate_summary_order_confirmation"));
+    }
 }
