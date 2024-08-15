@@ -117,6 +117,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.SAME_DAY);
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
