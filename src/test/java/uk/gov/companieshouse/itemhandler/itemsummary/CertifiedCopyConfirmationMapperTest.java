@@ -66,6 +66,7 @@ class CertifiedCopyConfirmationMapperTest {
         when(emailConfig.getOrdersAdminHost()).thenReturn("https://cidev.aws.chdev.org");
         when(deliverableItemGroup.getItems()).thenReturn(Collections.singletonList(getItem("CCD-123456-123456",DeliveryTimescale.STANDARD)));
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(any(), any())).thenReturn("ad01-description");
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertifiedCopyEmailData> emailMetadata = mapper.map(deliverableItemGroup);
@@ -111,6 +112,7 @@ class CertifiedCopyConfirmationMapperTest {
         when(emailConfig.getOrdersAdminHost()).thenReturn("https://cidev.aws.chdev.org");
         when(deliverableItemGroup.getItems()).thenReturn(Collections.singletonList(getItem("CCD-123456-123456", DeliveryTimescale.SAME_DAY)));
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(any(), any())).thenReturn("ad01-description");
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertifiedCopyEmailData> emailMetadata = mapper.map(deliverableItemGroup);
@@ -159,6 +161,7 @@ class CertifiedCopyConfirmationMapperTest {
                 getItem("CCD-456789-456789", DeliveryTimescale.SAME_DAY)));
         when(filingHistoryDescriptionProviderService.mapFilingHistoryDescription(any(), any()))
                 .thenReturn("ad01-description", "ad01-description");
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertifiedCopyEmailData> emailMetadata = mapper.map(deliverableItemGroup);

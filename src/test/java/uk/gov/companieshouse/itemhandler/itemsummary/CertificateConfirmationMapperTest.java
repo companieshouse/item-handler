@@ -76,6 +76,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
@@ -159,6 +160,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getTotalItemCost()).thenReturn("15", "50");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         EmailMetadata<CertificateEmailData> emailMetadata = mapper.map(deliverableItemGroup);
@@ -202,6 +204,7 @@ public class CertificateConfirmationMapperTest {
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION);
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.SAME_DAY);
+        when(order.getTotalOrderCost()).thenReturn("10");
 
         // when
         Executable executable = () -> mapper.map(deliverableItemGroup);
