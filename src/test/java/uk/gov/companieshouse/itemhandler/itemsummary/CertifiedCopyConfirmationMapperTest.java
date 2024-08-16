@@ -202,7 +202,7 @@ class CertifiedCopyConfirmationMapperTest {
     }
 
     @Test
-    public void testMapCertifiedCopiesFreeOrder() {
+    void testMapCertifiedCopiesFreeOrder() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
         when(order.getDeliveryDetails()).thenReturn(deliveryDetails);
