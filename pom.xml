@@ -63,6 +63,7 @@
             **/itemsummary/PaymentDetails.java,
             **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
+        <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -294,6 +295,11 @@
                         <expandClasspathDependencies>true</expandClasspathDependencies>
                     </container>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonarsource.scanner.maven</groupId>
+                <artifactId>sonar-maven-plugin</artifactId>
+                <version>${sonar-maven-plugin.version}</version>
             </plugin>
         </plugins>
     </build>
