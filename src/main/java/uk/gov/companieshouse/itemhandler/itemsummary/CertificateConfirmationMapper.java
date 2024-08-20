@@ -28,10 +28,11 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
     @Override
     protected void mapItems(DeliverableItemGroup itemGroup, CertificateEmailData certificateEmailData) {
         certificateEmailData.setTo(config.getCertificate().getRecipient());
+        String adminSubject = freeAdminCertificateOrderSubject(itemGroup.getOrder().getTotalOrderCost());
         if (itemGroup.getTimescale() == DeliveryTimescale.SAME_DAY) {
-            certificateEmailData.setSubject(config.getCertificate().getExpressSubjectLine());
+            certificateEmailData.setSubject(config.getCertificate().getExpressSubjectLine() + adminSubject);
         } else {
-            certificateEmailData.setSubject(config.getCertificate().getStandardSubjectLine());
+            certificateEmailData.setSubject(config.getCertificate().getStandardSubjectLine() + adminSubject);
         }
         itemGroup.getItems().stream()
                 .map(item -> new CertificateSummary(item.getId(),
@@ -59,5 +60,12 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
         } else {
             throw new NonRetryableException(String.format("Unhandled certificate type: [%s]", certificateType.toString()));
         }
+    }
+
+    private String freeAdminCertificateOrderSubject(String totalOrderCost){
+        if(totalOrderCost.equals("0")){
+            return " - [FREE CERTIFICATE ADMIN ORDER]";
+        }
+        return "";
     }
 }

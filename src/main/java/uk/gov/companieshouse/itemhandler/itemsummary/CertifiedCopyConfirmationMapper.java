@@ -43,10 +43,11 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
     @Override
     protected void mapItems(DeliverableItemGroup itemGroup, CertifiedCopyEmailData certifiedCopyEmailData) {
         certifiedCopyEmailData.setTo(emailConfig.getCertifiedCopy().getRecipient());
+        String adminSubject = freeAdminCertifiedCopyOrderSubject(itemGroup.getOrder().getTotalOrderCost());
         if (itemGroup.getTimescale() == DeliveryTimescale.SAME_DAY) {
-            certifiedCopyEmailData.setSubject(emailConfig.getCertifiedCopy().getExpressSubjectLine());
+            certifiedCopyEmailData.setSubject(emailConfig.getCertifiedCopy().getExpressSubjectLine() + adminSubject);
         } else {
-            certifiedCopyEmailData.setSubject(emailConfig.getCertifiedCopy().getStandardSubjectLine());
+            certifiedCopyEmailData.setSubject(emailConfig.getCertifiedCopy().getStandardSubjectLine() + adminSubject);
         }
 
         itemGroup.getItems().stream()
@@ -75,5 +76,13 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
     private String mapDateFiledFormat(FilingHistoryDocument filingHistoryDocument) {
         final LocalDate parsedDate = LocalDate.parse(filingHistoryDocument.getFilingHistoryDate());
         return parsedDate.format(DateConstants.DATE_FILED_FORMATTER);
+    }
+
+    private String freeAdminCertifiedCopyOrderSubject(String totalOrderCost){
+        // if the total order cost is 0, then it is a free admin order
+        if(totalOrderCost.equals("0")){
+            return " - [FREE CERTIFIED COPY ADMIN ORDER]";
+        }
+        return "";
     }
 }
