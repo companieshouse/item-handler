@@ -33,7 +33,7 @@
         <api-sdk-java.version>4.1.48</api-sdk-java.version>
         <kafka-models.version>1.0.36</kafka-models.version>
         <ch-kafka.version>1.4.2</ch-kafka.version>
-        <snakeyaml.version>1.26</snakeyaml.version>
+        <snakeyaml.version>1.32</snakeyaml.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <spring-boot-dependencies.version>2.5.7</spring-boot-dependencies.version>
         <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
