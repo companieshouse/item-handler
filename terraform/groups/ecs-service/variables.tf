@@ -43,16 +43,6 @@ variable "required_memory" {
   default = 512 # defaulted low for node service in dev environments, override for production
 }
 
-variable "eric_cpus" {
-  type = number
-  description = "The required cpu resource for eric. 1024 here is 1 vCPU"
-  default = 256
-}
-variable "eric_memory" {
-  type = number
-  description = "The required memory for eric"
-  default = 512
-}
 variable "max_task_count" {
   type        = number
   description = "The maximum number of tasks for this service."
@@ -102,14 +92,9 @@ variable "service_scaleup_schedule" {
 variable "cloudwatch_alarms_enabled" {
   description = "Whether to create a standard set of cloudwatch alarms for the service.  Requires an SNS topic to have already been created for the stack."
   type        = bool
-  default     = false
-}
-
-variable "multilb_cloudwatch_alarms_enabled" {
-  description = "Whether to create a standard set of cloudwatch alarms for the service in multilb setup.  Requires an SNS topic to have already been created for the stack."
-  type        = bool
   default     = true
 }
+
 
 # ------------------------------------------------------------------------------
 # Service environment variable configs
@@ -132,7 +117,3 @@ variable "item_handler_version" {
   description = "The version of the item-handler container to run."
 }
 
-variable "eric_version" {
-  type        = string
-  description = "The version of the eric container to run."
-}
