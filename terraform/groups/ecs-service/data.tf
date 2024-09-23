@@ -6,6 +6,15 @@ data "aws_kms_key" "kms_key" {
   key_id = local.kms_alias
 }
 
+data "aws_lb" "service_lb" {
+  name = "${var.environment}-chs-apichgovuk"
+}
+
+data "aws_lb_listener" "service_lb_listener" {
+  load_balancer_arn = data.aws_lb.service_lb.arn
+  port = 443
+}
+
 data "vault_generic_secret" "service_secrets" {
   path = "applications/${var.aws_profile}/${var.environment}/${local.stack_name}-stack/${local.service_name}"
 }

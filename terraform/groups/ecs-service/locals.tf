@@ -7,6 +7,8 @@ locals {
   container_port             = "8080"
   docker_repo                = "item-handler"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
+  lb_listener_rule_priority  = 59
+  lb_listener_paths          = ["/item-handler"]
   healthcheck_path           = "/item-handler/healthcheck" # healthcheck path for item-handler
   healthcheck_matcher        = "200"
   vpc_name                   = local.stack_secrets["vpc_name"]
