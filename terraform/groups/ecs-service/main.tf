@@ -37,6 +37,7 @@ module "ecs-service" {
   vpc_id                  = data.aws_vpc.vpc.id
   ecs_cluster_id          = data.aws_ecs_cluster.ecs_cluster.id
   task_execution_role_arn = data.aws_iam_role.ecs_cluster_iam_role.arn
+  batch_service           = true
 
   # ECS Task container health check
   use_task_container_healthcheck = true
@@ -63,9 +64,6 @@ module "ecs-service" {
   use_capacity_provider              = var.use_capacity_provider
   use_fargate                        = var.use_fargate
   fargate_subnets                    = local.application_subnet_ids
-
-  # Cloudwatch
-  cloudwatch_alarms_enabled = var.cloudwatch_alarms_enabled
 
   # Service environment variable and secret configs
   task_environment          = local.task_environment
