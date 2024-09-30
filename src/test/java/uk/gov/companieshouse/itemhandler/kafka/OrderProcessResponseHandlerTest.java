@@ -109,10 +109,10 @@ class OrderProcessResponseHandlerTest {
 
     private MessageHeaders stubMessageHeaders() {
         Map<String, Object> headers = new HashMap<>();
-        headers.put(KafkaHeaders.RECEIVED_MESSAGE_KEY, "key");
+        headers.put(KafkaHeaders.RECEIVED_KEY, "key");
         headers.put(KafkaHeaders.RECEIVED_TOPIC, "topic");
         headers.put(KafkaHeaders.OFFSET, 1);
-        headers.put(KafkaHeaders.RECEIVED_PARTITION_ID, 0);
+        headers.put(KafkaHeaders.RECEIVED_PARTITION, 0);
         return new MessageHeaders(headers);
     }
 

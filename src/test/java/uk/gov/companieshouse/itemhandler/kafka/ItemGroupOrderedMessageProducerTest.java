@@ -20,6 +20,8 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Unit tests {@link ItemGroupOrderedMessageProducer}.
  */
@@ -68,7 +70,7 @@ class ItemGroupOrderedMessageProducerTest {
         when(digitalItemGroup.getOrder()).thenReturn(order);
         when(order.getReference()).thenReturn("ORD-123123-123123");
         when(factory.createMessage(digitalItemGroup)).thenReturn(message);
-        when(kafkaTemplate.send("item-group-ordered", message)).thenReturn(future);
+        when(kafkaTemplate.send("item-group-ordered", message)).thenReturn((CompletableFuture<SendResult<String, ItemGroupOrdered>>) future);
 
         // When
         producer.sendMessage(digitalItemGroup);

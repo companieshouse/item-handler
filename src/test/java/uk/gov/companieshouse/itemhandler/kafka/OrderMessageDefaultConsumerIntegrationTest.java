@@ -60,6 +60,7 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -223,7 +224,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
@@ -336,7 +337,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
@@ -399,7 +400,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, 30000L, 2);
+        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
