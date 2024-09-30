@@ -77,7 +77,7 @@ class OrderMessageErrorConsumerIntegrationTest {
     @BeforeAll
     static void before() {
         container = new MockServerContainer(DockerImageName.parse(
-                "jamesdbloom/mockserver:mockserver-5.5.4"));
+                "mockserver/mockserver:mockserver-5.15.0"));
         container.start();
         TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
