@@ -87,6 +87,8 @@ class OrderMessageRetryConsumerIntegrationTest {
         TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
         TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("DOCUMENT_API_LOCAL_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
     }
 
     @AfterAll

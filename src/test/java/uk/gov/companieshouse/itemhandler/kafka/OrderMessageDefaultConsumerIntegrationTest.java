@@ -118,6 +118,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
         TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
         TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("DOCUMENT_API_LOCAL_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
     }
 
     @AfterAll
@@ -194,7 +196,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         //given
         client.when(request()
                         .withPath(getOrderReference())
-                        .withMethod(HttpMethod.GET.toString()))
+                        .withMethod("GET"))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
