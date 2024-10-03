@@ -34,8 +34,8 @@
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <powermock.version>2.0.9</powermock.version>
         <snakeyaml.version>2.3</snakeyaml.version>
-        <spring-boot-dependencies.version>3.3.0</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.3.0</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.3.4</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.3.4</spring-boot-maven-plugin.version>
         <system-rules.version>1.17.2</system-rules.version>
         <testcontainers.version>1.20.1</testcontainers.version>
 
@@ -49,7 +49,7 @@
         <structured-logging.version>3.0.9</structured-logging.version>
 
         <!-- Docker property -->
-        <jib-maven-plugin.version>3.4.3</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
 
         <sonar.exclusions>
             **/config/FeatureOptions.java,
