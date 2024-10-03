@@ -81,7 +81,7 @@ class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                     CertifiedCopySummary.builder()
                         .withItemNumber("CCD-123456-123456")
-                        .withDateFiled("02 Sep 2022")
+                        .withDateFiled("02 Sept 2022")
                         .withType("AD01")
                         .withDescription("ad01-description")
                         .withCompanyNumber("12345678")
@@ -127,7 +127,7 @@ class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withItemNumber("CCD-123456-123456")
-                                .withDateFiled("02 Sep 2022")
+                                .withDateFiled("02 Sept 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withCompanyNumber("12345678")
@@ -176,7 +176,7 @@ class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withItemNumber("CCD-123456-123456")
-                                .withDateFiled("02 Sep 2022")
+                                .withDateFiled("02 Sept 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withCompanyNumber("12345678")
@@ -186,7 +186,7 @@ class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withItemNumber("CCD-456789-456789")
-                                .withDateFiled("02 Sep 2022")
+                                .withDateFiled("02 Sept 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withCompanyNumber("12345678")
@@ -231,7 +231,7 @@ class CertifiedCopyConfirmationMapperTest {
                 .addCertifiedCopy(
                         CertifiedCopySummary.builder()
                                 .withItemNumber("CCD-123456-123456")
-                                .withDateFiled("02 Sep 2022")
+                                .withDateFiled("02 Sept 2022")
                                 .withType("AD01")
                                 .withDescription("ad01-description")
                                 .withCompanyNumber("12345678")

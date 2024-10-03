@@ -8,6 +8,8 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 import uk.gov.companieshouse.orders.items.DeliveryDetails;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static uk.gov.companieshouse.itemhandler.util.TestUtils.createAvroOrder;
 import static uk.gov.companieshouse.itemhandler.util.TestUtils.createDeliveryDetails;
@@ -30,11 +32,11 @@ class ChdItemOrderedAvroSerializerTest {
         order.setReference(null);
 
         // When and then
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() ->
-                serializerUnderTest.toBinary(order))
-                .withMessage("null of string in field reference of uk.gov.companieshouse.orders.items.ChdItemOrdered")
-                .withCause(new NullPointerException());
-
+        Exception exception = assertThrows(NullPointerException.class, () -> {
+            serializerUnderTest.toBinary(order);
+        });
+        assertEquals("Cannot invoke \"java.lang.CharSequence.toString()\" because \"charSequence\" is null",
+                exception.getCause().getMessage());
     }
 
     @Test
