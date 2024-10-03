@@ -32,7 +32,6 @@
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
         <mockito-junit-jupiter.version>5.13.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
-        <powermock.version>2.0.9</powermock.version>
         <snakeyaml.version>2.3</snakeyaml.version>
         <spring-boot-dependencies.version>3.3.4</spring-boot-dependencies.version>
         <spring-boot-maven-plugin.version>3.3.4</spring-boot-maven-plugin.version>
@@ -228,18 +227,6 @@
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
             <version>${system-rules.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito2</artifactId>
-            <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
