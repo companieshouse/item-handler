@@ -8,8 +8,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
@@ -38,9 +36,7 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFEREN
 @Import({LoggingUtils.class, Logger.class})
 class EmailSendMessageProducerTest {
 
-    private static final long OFFSET_VALUE = 1L;
     private static final String TOPIC_NAME = "topic";
-    private static final int PARTITION_VALUE = 0;
     private static final String EMAIL_SEND_TOPIC = "email-send";
 
     @InjectMocks
@@ -94,9 +90,7 @@ class EmailSendMessageProducerTest {
 
     }
 
-    /**
-     * This is a JUnit 4 test to take advantage of PowerMock.
-     */
+
     @Test
     @DisplayName("sendMessage delegates message sending")
     public void sendMessageMeetsLoggingRequirements() throws Exception {
@@ -120,13 +114,9 @@ class EmailSendMessageProducerTest {
      */
     @Test
     @DisplayName("log Off set Following SendIng Of Message Meets Logging Requirements")
-    @MockitoSettings(strictness = Strictness.LENIENT)
     void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
         //given
         try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
-            when(recordMetadata.topic()).thenReturn(TOPIC_NAME);
-            when(recordMetadata.partition()).thenReturn(PARTITION_VALUE);
-            when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
 
             Map<String, Object> mockLogMap = new HashMap<>();
             loggingUtilsMock.when(() -> LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(recordMetadata))
