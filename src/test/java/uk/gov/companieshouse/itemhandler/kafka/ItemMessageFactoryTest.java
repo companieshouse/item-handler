@@ -24,7 +24,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
