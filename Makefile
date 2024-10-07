@@ -60,6 +60,10 @@ dev: clean
 	mvn package -DskipTests=true
 	cp target/$(artifact_name)-unversioned.jar $(artifact_name).jar
 
+.PHONY: coverage
+coverage: clean
+	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false jacoco:prepare-agent test jacoco:report
+
 .PHONY: package
 package:
 ifndef version
