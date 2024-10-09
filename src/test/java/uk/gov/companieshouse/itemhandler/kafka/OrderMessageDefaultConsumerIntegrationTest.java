@@ -25,6 +25,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,9 +61,11 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -108,12 +111,14 @@ class OrderMessageDefaultConsumerIntegrationTest {
     @BeforeAll
     static void before() {
         container = new MockServerContainer(DockerImageName.parse(
-                "jamesdbloom/mockserver:mockserver-5.5.4"));
+                "mockserver/mockserver:mockserver-5.15.0"));
         container.start();
         TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
         TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
         TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("DOCUMENT_API_LOCAL_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
     }
 
@@ -149,12 +154,25 @@ class OrderMessageDefaultConsumerIntegrationTest {
         orderMessageDefaultConsumerAspect.setAfterProcessOrderReceivedEventLatch(new CountDownLatch(1));
 
         // when
-        orderReceivedProducer.send(new ProducerRecord<>(
+        ProducerRecord<String, OrderReceived> record = new ProducerRecord<>(
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
-                getOrderReceived())).get();
-        orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
+                getOrderReceived());
+
+        Future<RecordMetadata> future = orderReceivedProducer.send(record);
+
+        // Log the result once the message has been sent
+        RecordMetadata metadata = future.get(); // This will block until the message is sent
+        logger.info("Message produced to topic " + metadata.topic() + " partition " + metadata.partition() +" at offset " + metadata.offset());
+
+        boolean completed = orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
+
+        if (!completed) {
+            // Handle the case where the latch didn't reach zero in time (timeout occurred)
+            throw new AssertionError("Timed out waiting for message processing");
+        }
+
+        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend(), Duration.ofMillis(30000)).value();
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
@@ -178,7 +196,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
         //given
         client.when(request()
                         .withPath(getOrderReference())
-                        .withMethod(HttpMethod.GET.toString()))
+                        .withMethod("GET"))
                 .respond(response()
                         .withStatusCode(HttpStatus.OK.value())
                         .withHeader(HttpHeaders.CONTENT_TYPE, "application/json")
@@ -223,7 +241,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
@@ -336,7 +354,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, 30000L, 2);
+        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
@@ -399,7 +417,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, 30000L, 2);
+        ConsumerRecords<String, ChdItemOrdered> actual = KafkaTestUtils.getRecords(chsItemOrderedConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());

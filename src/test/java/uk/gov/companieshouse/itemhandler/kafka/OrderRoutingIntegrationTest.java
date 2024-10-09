@@ -80,12 +80,14 @@ class OrderRoutingIntegrationTest {
     @BeforeAll
     static void before() {
         container = new MockServerContainer(DockerImageName.parse(
-                "jamesdbloom/mockserver:mockserver-5.5.4"));
+                "mockserver/mockserver:mockserver-5.15.0"));
         container.start();
         TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
         TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_API_KEY", "123");
         TestEnvironmentSetupHelper.setEnvironmentVariable("PAYMENTS_API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("DOCUMENT_API_LOCAL_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
     }
 

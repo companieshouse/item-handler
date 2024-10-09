@@ -13,7 +13,7 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
@@ -144,7 +144,7 @@ public class KafkaConfig {
     private ConcurrentKafkaListenerContainerFactory<String, OrderReceived> getContainerFactory(Map<String, Object> props) {
         ConcurrentKafkaListenerContainerFactory<String, OrderReceived> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new OrderReceivedDeserialiser()));
-        factory.setErrorHandler(new SeekToCurrentErrorHandler(new FixedBackOff(0, 0)));
+        factory.setCommonErrorHandler(new DefaultErrorHandler(new FixedBackOff(0, 0)));
         return factory;
     }
 

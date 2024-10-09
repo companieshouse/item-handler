@@ -2,7 +2,7 @@
 Handler service dealing with placed orders and producing individual items to be processed internally
 
 ### Requirements
-* [Java 8][1]
+* [Java 21][1]
 * [Maven][2]
 * [Git][3]
 
@@ -24,7 +24,13 @@ Path | Method | Description
 --- | --- | ---
 *`/healthcheck`* | GET | Returns HTTP OK (`200`) to indicate a healthy application instance.
 
-[1]: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+### Jib Command
+
+```
+mvn compile jib:dockerBuild -Dimage=416670754337.dkr.ecr.eu-west-2.amazonaws.com/item-handler:latest
+```
+
+[1]: https://www.oracle.com/java/technologies/downloads/#java21
 [2]: https://maven.apache.org/download.cgi
 [3]: https://git-scm.com/downloads
 

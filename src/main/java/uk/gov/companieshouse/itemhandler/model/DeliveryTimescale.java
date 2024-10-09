@@ -6,7 +6,8 @@ import static uk.gov.companieshouse.itemhandler.converter.EnumValueNameConverter
 
 public enum DeliveryTimescale {
     STANDARD,
-    SAME_DAY;
+    SAME_DAY,
+    DIGITAL;
 
     @JsonValue
     public String getJsonName() {
