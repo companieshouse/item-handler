@@ -153,10 +153,10 @@ class LoggingUtilsTest {
     @DisplayName("getMessageHeadersAsMap returns a populated map")
     void getMessageHeadersAsMapReturnsPopulatedMap() {
         when(orderReceivedMessage.getHeaders()).thenReturn(messageHeaders);
-        doReturn(KEY_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_MESSAGE_KEY);
+        doReturn(KEY_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_KEY);
         doReturn(TOPIC_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_TOPIC);
         doReturn(OFFSET_VALUE).when(messageHeaders).get(KafkaHeaders.OFFSET);
-        doReturn(PARTITION_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_PARTITION_ID);
+        doReturn(PARTITION_VALUE).when(messageHeaders).get(KafkaHeaders.RECEIVED_PARTITION);
         when(orderReceivedMessage.getPayload()).thenReturn(orderReceived);
         when(orderReceived.getAttempt()).thenReturn(0);
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(orderReceivedMessage);

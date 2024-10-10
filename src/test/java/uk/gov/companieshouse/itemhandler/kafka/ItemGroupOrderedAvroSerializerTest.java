@@ -34,7 +34,7 @@ class ItemGroupOrderedAvroSerializerTest {
         final SerializationException exception = assertThrows(SerializationException.class,
                 () -> serializerUnderTest.serialize("item-group-ordered", message));
         assertThat(exception.getMessage(), is("Error when serializing ItemGroupOrdered to byte[], error: " +
-                "null of string of uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered"));
+                "null value for (non-nullable) string at ItemGroupOrdered.order_id"));
     }
 
 }

@@ -3,27 +3,41 @@ package uk.gov.companieshouse.itemhandler.kafka;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.ITEM_ID;
+import static uk.gov.companieshouse.itemhandler.logging.LoggingUtils.PAYMENT_REFERENCE;
 import static uk.gov.companieshouse.itemhandler.util.TestConstants.MISSING_IMAGE_DELIVERY_ITEM_ID;
 import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFERENCE;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
+
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.itemhandler.itemsummary.OrderItemPair;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 import uk.gov.companieshouse.kafka.message.Message;
+import uk.gov.companieshouse.logging.Logger;
 
 /**
  * Unit tests the {@link ItemMessageProducer} class.
  */
 @ExtendWith(MockitoExtension.class)
+@Import({LoggingUtils.class, Logger.class})
 class ItemMessageProducerTest {
 
     private static final String COMPANY_NUMBER = "00006444";
@@ -55,6 +69,9 @@ class ItemMessageProducerTest {
     @Mock
     private MessageProducer messageProducer;
 
+    @Mock
+    private Logger logger;
+
     @Test
     @DisplayName("sendMessage delegates message creation to ItemMessageFactory")
     void sendMessageDelegatesMessageCreation() {
@@ -77,76 +94,65 @@ class ItemMessageProducerTest {
         verify(messageProducer).sendMessage(eq(message), any(Consumer.class));
     }
 
-// TODO: refactor logging utils as Spring bean
-//    /**
-//     * This is a JUnit 4 test to take advantage of PowerMock.
-//     */
-//    @org.junit.Test
-//    public void sendMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
-//
-//        // Given
-//        setFinalStaticField(ItemMessageProducer.class, "LOGGER", logger);
-//        mockStatic(LoggingUtils.class);
-//
-//        // When
-//        messageProducerUnderTest.sendMessage(ORDER,
-//                ORDER_REFERENCE,
-//                MISSING_IMAGE_DELIVERY_ITEM_ID);
-//
-//        // Then
-//        verifyLoggingBeforeMessageSendingIsAdequate();
-//
-//    }
-//
-//    /**
-//     * This is a JUnit 4 test to take advantage of PowerMock.
-//     */
-//    @org.junit.Test
-//    public void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
-//
-//        // Given
-//        setFinalStaticField(ItemMessageProducer.class, "LOGGER", logger);
-//        mockStatic(LoggingUtils.class);
-//
-//        when(recordMetadata.topic()).thenReturn(TOPIC_NAME);
-//        when(recordMetadata.partition()).thenReturn(PARTITION_VALUE);
-//        when(recordMetadata.offset()).thenReturn(OFFSET_VALUE);
-//
-//        // When
-//        messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(ORDER, recordMetadata);
-//
-//        // Then
-//        verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate();
-//
-//    }
-//
-//    private void verifyLoggingBeforeMessageSendingIsAdequate() {
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.createLogMap();
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
-//
-//        verify(logger).info(eq("Sending message to kafka"), any(Map.class));
-//
-//    }
-//
-//    private void verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate() {
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(recordMetadata);
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.logIfNotNull(any(Map.class), eq(ORDER_REFERENCE_NUMBER), eq(ORDER_REFERENCE));
-//
-//        PowerMockito.verifyStatic(LoggingUtils.class);
-//        LoggingUtils.logIfNotNull(any(Map.class), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID));
-//
-//        verify(logger).info(eq("Message sent to Kafka topic"), any(Map.class));
-//
-//    }
+    @Test
+    public void sendMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
+
+        try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
+            Map<String, Object> mockLogMap = new HashMap<>();
+
+            loggingUtilsMock.when(LoggingUtils::createLogMap).thenReturn(mockLogMap);
+            loggingUtilsMock.when(() -> LoggingUtils.logIfNotNull(eq(mockLogMap), eq(PAYMENT_REFERENCE), eq(PAYMENT_REF)))
+                    .then(invocation -> {
+                        logger.info("Sending message to kafka", mockLogMap);
+                        return null;
+                    });
+
+            messageProducerUnderTest.sendMessage(ORDER_ITEM_PAIR);
+
+            verifyLoggingBeforeMessageSendingIsAdequate(loggingUtilsMock);
+
+        }
+    }
+
+    @Test
+    public void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
+
+        RecordMetadata recordMetadata = mock(RecordMetadata.class);
+        try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
+            Map<String, Object> mockLogMap = new HashMap<>();
+
+            loggingUtilsMock.when(() -> LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(recordMetadata))
+                    .thenReturn(mockLogMap);
+
+            loggingUtilsMock.when(() -> LoggingUtils.logIfNotNull(eq(mockLogMap), eq(PAYMENT_REFERENCE), eq(PAYMENT_REF)))
+                    .then(invocation -> {
+                        logger.info("Sending message to kafka", mockLogMap);
+                        return null;
+                    });
+
+            messageProducerUnderTest.logOffsetFollowingSendIngOfMessage(ORDER_ITEM_PAIR, recordMetadata);
+
+            verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate(loggingUtilsMock, recordMetadata);
+
+        }
+    }
+
+    private void verifyLoggingBeforeMessageSendingIsAdequate(MockedStatic<LoggingUtils> loggingUtilsMock) {
+
+        loggingUtilsMock.verify(LoggingUtils::createLogMap);
+        loggingUtilsMock.verify(() -> LoggingUtils.logIfNotNull(any(), eq(PAYMENT_REFERENCE), eq(PAYMENT_REF)));
+        loggingUtilsMock.verify(() -> LoggingUtils.logIfNotNull(any(), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID)), times(2));
+        verify(logger).info(eq("Sending message to kafka"), any());
+
+    }
+
+    private void verifyLoggingAfterMessageAcknowledgedByKafkaServerIsAdequate(MockedStatic<LoggingUtils> loggingUtilsMock, RecordMetadata recordMetadata) {
+
+        loggingUtilsMock.verify(() -> LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(recordMetadata));
+        loggingUtilsMock.verify(() -> LoggingUtils.logIfNotNull(any(), eq(PAYMENT_REFERENCE), eq(PAYMENT_REF)));
+        loggingUtilsMock.verify(() -> LoggingUtils.logIfNotNull(any(), eq(ITEM_ID), eq(MISSING_IMAGE_DELIVERY_ITEM_ID)), times(1));
+
+        verify(logger).info(eq("Sending message to kafka"), any(Map.class));
+
+    }
 }
