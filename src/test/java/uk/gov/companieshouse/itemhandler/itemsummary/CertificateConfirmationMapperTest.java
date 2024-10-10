@@ -91,6 +91,7 @@ public class CertificateConfirmationMapperTest {
                                                         .addCertificate(new CertificateSummary("CRT-123123-123123",
                                                                 "Incorporation with all company name changes",
                                                                 "12345678",
+                                                                1,
                                                                 "£15",
                                                                 "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                                                         .build())));
@@ -133,6 +134,7 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Dissolution with all company name changes",
                         "12345678",
+                        1,
                         "£15",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));
@@ -175,11 +177,13 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Incorporation with all company name changes",
                         "12345678",
+                        1,
                         "£15",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .addCertificate(new CertificateSummary("CRT-123123-123124",
                         "Dissolution with all company name changes",
                         "87654321",
+                        1,
                         "£50",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123124"))
                 .build())));
@@ -249,6 +253,7 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Incorporation with all company name changes",
                         "12345678",
+                        1,
                         "£0",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));
