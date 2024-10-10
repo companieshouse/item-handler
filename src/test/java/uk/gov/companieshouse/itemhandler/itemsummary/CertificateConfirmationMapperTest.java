@@ -73,6 +73,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
@@ -116,6 +117,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.DISSOLUTION);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.SAME_DAY);
@@ -159,6 +161,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES, CertificateType.DISSOLUTION);
         when(item.getCompanyNumber()).thenReturn("12345678", "87654321");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15", "50");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
@@ -235,6 +238,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("0");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
