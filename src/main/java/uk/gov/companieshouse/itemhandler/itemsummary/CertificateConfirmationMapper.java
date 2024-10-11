@@ -38,6 +38,7 @@ public class CertificateConfirmationMapper extends OrderConfirmationMapper<Certi
                 .map(item -> new CertificateSummary(item.getId(),
                         mapCertificateType(((CertificateItemOptions) item.getItemOptions()).getCertificateType()),
                         item.getCompanyNumber(),
+                        item.getQuantity(),
                         "£" + item.getTotalItemCost(),
                         String.format("%s/orders-admin/order-summaries/%s/items/%s",
                                 config.getOrdersAdminHost(),
