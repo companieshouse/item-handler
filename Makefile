@@ -62,7 +62,9 @@ dev: clean
 
 .PHONY: coverage
 coverage: clean
-	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false jacoco:prepare-agent test jacoco:report
+	mvn versions:set -DnewVersion=$(version) -DgenerateBackupPoms=false jacoco:prepare-agent test \
+	jacoco:prepare-agent-integration verify \
+	jacoco:report jacoco:report-integration
 
 .PHONY: package
 package:
