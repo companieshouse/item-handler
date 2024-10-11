@@ -73,6 +73,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
@@ -91,6 +92,7 @@ public class CertificateConfirmationMapperTest {
                                                         .addCertificate(new CertificateSummary("CRT-123123-123123",
                                                                 "Incorporation with all company name changes",
                                                                 "12345678",
+                                                                1,
                                                                 "£15",
                                                                 "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                                                         .build())));
@@ -115,6 +117,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.DISSOLUTION);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.SAME_DAY);
@@ -133,6 +136,7 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Dissolution with all company name changes",
                         "12345678",
+                        1,
                         "£15",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));
@@ -157,6 +161,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES, CertificateType.DISSOLUTION);
         when(item.getCompanyNumber()).thenReturn("12345678", "87654321");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("15", "50");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
@@ -175,11 +180,13 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Incorporation with all company name changes",
                         "12345678",
+                        1,
                         "£15",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .addCertificate(new CertificateSummary("CRT-123123-123124",
                         "Dissolution with all company name changes",
                         "87654321",
+                        1,
                         "£50",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123124"))
                 .build())));
@@ -231,6 +238,7 @@ public class CertificateConfirmationMapperTest {
         when(item.getItemOptions()).thenReturn(itemOptions);
         when(itemOptions.getCertificateType()).thenReturn(CertificateType.INCORPORATION_WITH_ALL_NAME_CHANGES);
         when(item.getCompanyNumber()).thenReturn("12345678");
+        when(item.getQuantity()).thenReturn(1);
         when(item.getTotalItemCost()).thenReturn("0");
         when(order.getPaymentReference()).thenReturn("payment reference");
         when(deliverableItemGroup.getTimescale()).thenReturn(DeliveryTimescale.STANDARD);
@@ -249,6 +257,7 @@ public class CertificateConfirmationMapperTest {
                 .addCertificate(new CertificateSummary("CRT-123123-123123",
                         "Incorporation with all company name changes",
                         "12345678",
+                        1,
                         "£0",
                         "host/orders-admin/order-summaries/ORD-123123-123123/items/CRT-123123-123123"))
                 .build())));

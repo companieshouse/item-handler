@@ -6,16 +6,18 @@ public class CertificateSummary {
     private String itemNumber;
     private String certificateType;
     private String companyNumber;
+    private Integer quantity;
     private String fee;
     private String viewCertificateLink;
 
     public CertificateSummary() {
     }
 
-    public CertificateSummary(String itemNumber, String certificateType, String companyNumber, String fee, String viewCertificateLink) {
+    public CertificateSummary(String itemNumber, String certificateType, String companyNumber, Integer quantity, String fee, String viewCertificateLink) {
         this.itemNumber = itemNumber;
         this.certificateType = certificateType;
         this.companyNumber = companyNumber;
+        this.quantity = quantity;
         this.fee = fee;
         this.viewCertificateLink = viewCertificateLink;
     }
@@ -42,6 +44,13 @@ public class CertificateSummary {
 
     public void setCompanyNumber(String companyNumber) {
         this.companyNumber = companyNumber;
+    }
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public String getFee() {
@@ -72,12 +81,13 @@ public class CertificateSummary {
         return Objects.equals(getItemNumber(), that.getItemNumber())
                 && Objects.equals(getCertificateType(), that.getCertificateType())
                 && Objects.equals(getCompanyNumber(), that.getCompanyNumber())
+                && Objects.equals(getQuantity(), that.getQuantity())
                 && Objects.equals(getFee(), that.getFee())
                 && Objects.equals(getViewCertificateLink(), that.getViewCertificateLink());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getItemNumber(), getCertificateType(), getCompanyNumber(), getFee(), getViewCertificateLink());
+        return Objects.hash(getItemNumber(), getCertificateType(), getCompanyNumber(), getQuantity(), getFee(), getViewCertificateLink());
     }
 }
