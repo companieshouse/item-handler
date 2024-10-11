@@ -6,6 +6,7 @@ Handler service dealing with placed orders and producing individual items to be 
 * [Maven][2]
 * [Git][3]
 
+
 ### Getting Started
 1. Run `make` to build
 2. Run `./start.sh` to run
