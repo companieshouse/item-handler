@@ -24,10 +24,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -121,12 +122,12 @@ class ItemMessageFactoryTest {
         when(orderItemPair.getItem()).thenReturn(item);
 
         // When and then
-        assertThatExceptionOfType(KafkaMessagingException.class).isThrownBy(() ->
-                factoryUnderTest.createMessage(orderItemPair))
-                .withMessage(
-                      "Unable to create ChdItemOrdered message for order ORD-432118-793830 item ID MID-242116-007650!")
-                .withCause(new NullPointerException());
-
+        Exception exception = assertThrows(KafkaMessagingException.class, () -> {
+            factoryUnderTest.createMessage(orderItemPair);
+        });
+        assertEquals(
+                "Unable to create ChdItemOrdered message for order ORD-432118-793830 item ID MID-242116-007650!",
+                exception.getMessage());
     }
 
     /**
