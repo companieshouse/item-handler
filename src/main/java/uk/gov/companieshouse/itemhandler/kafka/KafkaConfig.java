@@ -58,6 +58,7 @@ public class KafkaConfig {
     @Scope("prototype")
     ProducerConfig defaultProducerConfig() {
         ProducerConfig config = new ProducerConfig();
+        config.setEnableIdempotence(false);
         config.setBrokerAddresses(bootstrapServers.split(","));
         config.setRoundRobinPartitioner(true);
         config.setAcks(Acks.WAIT_FOR_ALL);
@@ -68,6 +69,7 @@ public class KafkaConfig {
     @Bean
     ProducerConfig chdProducerConfig() {
         ProducerConfig config = defaultProducerConfig();
+        config.setEnableIdempotence(false);
         config.setMaxBlockMilliseconds(10000);
         return config;
     }
