@@ -129,6 +129,7 @@ public class KafkaConfig {
                 StringSerializer.class);
         config.put(org.apache.kafka.clients.producer.ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ItemGroupOrderedAvroSerializer.class);
         config.put(org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        config.put(org.apache.kafka.clients.producer.ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, false);
         return new DefaultKafkaProducerFactory<>(config);
     }
 
