@@ -12,7 +12,7 @@ public class ItemGroup {
 
     private OrderData order;
     private String kind;
-    private List<Item> items;
+    private final List<Item> items;
 
     public ItemGroup(OrderData order, String kind) {
         this(order, kind, new ArrayList<>());
@@ -61,10 +61,9 @@ public class ItemGroup {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof ItemGroup)) {
+        if (!(o instanceof ItemGroup itemGroup)) {
             return false;
         }
-        ItemGroup itemGroup = (ItemGroup) o;
         return Objects.equals(getOrder(), itemGroup.getOrder())
                 && Objects.equals(getKind(), itemGroup.getKind())
                 && Objects.equals(getItems(), itemGroup.getItems());
@@ -77,7 +76,7 @@ public class ItemGroup {
 
     @Override
     public String toString() {
-        final String numberOfItems = getItems().size() + "" + (getItems().size() > 1 ? " items | " : " item | ");
+        final String numberOfItems = getItems().size() + (getItems().size() > 1 ? " items | " : " item | ");
         return getKind() + " | " + numberOfItems + getItems().stream()
                 .map(Item::getId)
                 .collect(Collectors.joining(" | "));

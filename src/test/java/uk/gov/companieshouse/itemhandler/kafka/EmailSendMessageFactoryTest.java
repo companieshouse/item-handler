@@ -26,9 +26,7 @@ class EmailSendMessageFactoryTest {
     private static final String EMAIL_ADDR = "someone@example.com";
     private static final String MSG_ID = "Message Id";
     private static final String MSG_TYPE = "Message type";
-    private static final String ORDER_REF = "ORD-ABC-123";
     private static final String CREATED_AT = "2020-08-25T09:27:09.519+01:00";
-
     private static final String TOPIC = "email-send";
 
     @Test

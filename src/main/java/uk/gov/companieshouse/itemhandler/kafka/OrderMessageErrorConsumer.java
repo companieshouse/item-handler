@@ -79,7 +79,7 @@ public class OrderMessageErrorConsumer {
     @EventListener
     public void consumerStopped(ConsumerStoppedEvent event) {
         Optional.ofNullable(event.getSource(KafkaMessageListenerContainer.class))
-                .flatMap(s -> Optional.ofNullable(s.getBeanName()))
+                .flatMap(s -> Optional.of(s.getBeanName()))
                 .ifPresent(name -> {
                     if (name.startsWith(errorGroup)) {
                         errorRecoveryOffset.clear();

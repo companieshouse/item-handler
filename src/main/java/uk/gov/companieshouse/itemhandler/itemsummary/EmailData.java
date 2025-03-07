@@ -67,10 +67,9 @@ public class EmailData {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof EmailData)) {
+        if (!(o instanceof EmailData emailData)) {
             return false;
         }
-        EmailData emailData = (EmailData) o;
         return Objects.equals(getTo(), emailData.getTo())
                 && Objects.equals(getSubject(), emailData.getSubject())
                 && Objects.equals(getOrderReference(), emailData.getOrderReference())

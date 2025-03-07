@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.logging;
 
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +15,6 @@ import uk.gov.companieshouse.orders.OrderReceived;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +41,7 @@ class LoggingUtilsTest {
     @DisplayName("createLogMap returns a new log map")
     void createLogMapReturnsLogMap() {
         Map<String, Object> logMap = LoggingUtils.createLogMap();
-        assertNotNull(logMap);
+        Assertions.assertNotNull(logMap);
     }
 
     @Test
@@ -54,42 +53,42 @@ class LoggingUtilsTest {
 
         LoggingUtils.logIfNotNull(logMap, key, testObject);
 
-        assertNotNull(logMap);
-        assertEquals(logMap.get(key), testObject);
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(logMap.get(key), testObject);
     }
     
     @Test
     @DisplayName("logWithOrderReference returns a populated map")
     void logWithOrderReferenceReturnsPopulatedMap() {
         Map<String, Object> logMap = LoggingUtils.logWithOrderReference(LOG_MESSAGE, ORDER_REFERENCE);
-        assertNotNull(logMap);
-        assertEquals(2, logMap.size());
-        assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
-        assertEquals(LOG_MESSAGE, logMap.get(LoggingUtils.MESSAGE));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(2, logMap.size());
+        Assertions.assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
+        Assertions.assertEquals(LOG_MESSAGE, logMap.get(LoggingUtils.MESSAGE));
     }
     
     @Test
     @DisplayName("createLogMapWithOrderReference returns a populated map")
     void createLogMapWithOrderReferenceReturnsPopulatedMap() {
         Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(ORDER_REFERENCE);
-        assertNotNull(logMap);
-        assertEquals(1, logMap.size());
-        assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(1, logMap.size());
+        Assertions.assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
     }
     
     @Test
     @DisplayName("createLogMapWithOrderReference returns an empty map")
     void createLogMapWithOrderReferenceReturnsEmptyMap() {
         Map<String, Object> logMap = LoggingUtils.createLogMapWithOrderReference(null);
-        assertNotNull(logMap);
-        assertEquals(0, logMap.size());
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(0, logMap.size());
     }
     
     @Test
     @DisplayName("getLogger returns a logger object")
     void getLoggerReturnsLoggerObject() {
         Logger logger = LoggingUtils.getLogger();
-        assertNotNull(logger);
+        Assertions.assertNotNull(logger);
     }
     
     @Test
@@ -98,11 +97,11 @@ class LoggingUtilsTest {
         Message message = createMessageWithTopicAndOffset();
         message.setPartition(PARTITION_VALUE);
         Map<String, Object> logMap = LoggingUtils.createLogMapWithKafkaMessage(message);
-        assertNotNull(logMap);
-        assertEquals(3, logMap.size());
-        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
-        assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
-        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(3, logMap.size());
+        Assertions.assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        Assertions.assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
+        Assertions.assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
     }
     
     @Test
@@ -110,10 +109,10 @@ class LoggingUtilsTest {
     void createLogMapWithKafkaMessageTopicAndOffset() {
         Message message = createMessageWithTopicAndOffset();
         Map<String, Object> logMap = LoggingUtils.createLogMapWithKafkaMessage(message);
-        assertNotNull(logMap);
-        assertEquals(2, logMap.size());
-        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
-        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(2, logMap.size());
+        Assertions.assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        Assertions.assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
     }
 
     @Test
@@ -129,11 +128,11 @@ class LoggingUtilsTest {
         final Map<String, Object> logMap = LoggingUtils.createLogMapWithAcknowledgedKafkaMessage(acknowledgedMessage);
 
         // Then
-        assertNotNull(logMap);
-        assertEquals(3, logMap.size());
-        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
-        assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
-        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(3, logMap.size());
+        Assertions.assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        Assertions.assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
+        Assertions.assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
     }
     
     @Test
@@ -141,12 +140,12 @@ class LoggingUtilsTest {
     void logMessageWithOrderReferenceReturnsPopulatedMap() {
         Message message = createMessageWithTopicAndOffset();
         Map<String, Object> logMap = LoggingUtils.logMessageWithOrderReference(message, LOG_MESSAGE, ORDER_REFERENCE);
-        assertNotNull(logMap);
-        assertEquals(4, logMap.size());
-        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
-        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
-        assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
-        assertEquals(LOG_MESSAGE, logMap.get(LoggingUtils.MESSAGE));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(4, logMap.size());
+        Assertions.assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        Assertions.assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+        Assertions.assertEquals(ORDER_REFERENCE, logMap.get(LoggingUtils.ORDER_REFERENCE_NUMBER));
+        Assertions.assertEquals(LOG_MESSAGE, logMap.get(LoggingUtils.MESSAGE));
     }
 
     @Test
@@ -160,13 +159,13 @@ class LoggingUtilsTest {
         when(orderReceivedMessage.getPayload()).thenReturn(orderReceived);
         when(orderReceived.getAttempt()).thenReturn(0);
         Map<String, Object> logMap = LoggingUtils.getMessageHeadersAsMap(orderReceivedMessage);
-        assertNotNull(logMap);
-        assertEquals(5, logMap.size());
-        assertEquals(KEY_VALUE, logMap.get(LoggingUtils.KEY));
-        assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
-        assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
-        assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
-        assertEquals(0, logMap.get(LoggingUtils.RETRY_ATTEMPT));
+        Assertions.assertNotNull(logMap);
+        Assertions.assertEquals(5, logMap.size());
+        Assertions.assertEquals(KEY_VALUE, logMap.get(LoggingUtils.KEY));
+        Assertions.assertEquals(TOPIC_VALUE, logMap.get(LoggingUtils.TOPIC));
+        Assertions.assertEquals(OFFSET_VALUE, logMap.get(LoggingUtils.OFFSET));
+        Assertions.assertEquals(PARTITION_VALUE, logMap.get(LoggingUtils.PARTITION));
+        Assertions.assertEquals(0, logMap.get(LoggingUtils.RETRY_ATTEMPT));
     }
 
     private Message createMessageWithTopicAndOffset() {

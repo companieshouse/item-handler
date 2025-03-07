@@ -8,7 +8,7 @@ public enum RequiredEnvironmentVariables {
     CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT("CERTIFIED_COPY_ORDER_CONFIRMATION_RECIPIENT"),
     MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT("MISSING_IMAGE_DELIVERY_ORDER_CONFIRMATION_RECIPIENT");
 
-    private String name;
+    private final String name;
     
     RequiredEnvironmentVariables(String name){
         this.name = name;

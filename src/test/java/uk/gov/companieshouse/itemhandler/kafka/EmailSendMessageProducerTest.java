@@ -29,7 +29,6 @@ import static uk.gov.companieshouse.itemhandler.util.TestConstants.ORDER_REFEREN
 
 /**
  * Unit tests the {@link EmailSendMessageProducer} class.
- *
  * TODO: rework LoggingUtils and implement using JUnit5
  */
 @ExtendWith(MockitoExtension.class)
@@ -62,7 +61,7 @@ class EmailSendMessageProducerTest {
 
     @Test
     @DisplayName("sendMessage delegates message creation to EmailSendMessageFactory")
-    void sendMessageDelegatesMessageCreation() throws Exception {
+    void sendMessageDelegatesMessageCreation() {
 
         // Given
         when(emailSendMessageFactory.createMessage(emailSend, EMAIL_SEND_TOPIC)).thenReturn(message);
@@ -77,7 +76,7 @@ class EmailSendMessageProducerTest {
 
     @Test
     @DisplayName("sendMessage delegates message sending to EmailSendKafkaProducer")
-    void sendMessageDelegatesMessageSending() throws Exception {
+    void sendMessageDelegatesMessageSending() {
 
         // Given
         when(emailSendMessageFactory.createMessage(emailSend, EMAIL_SEND_TOPIC)).thenReturn(message);
@@ -93,7 +92,7 @@ class EmailSendMessageProducerTest {
 
     @Test
     @DisplayName("sendMessage delegates message sending")
-    public void sendMessageMeetsLoggingRequirements() throws Exception {
+    public void sendMessageMeetsLoggingRequirements() {
         try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
 
             // Given
@@ -114,7 +113,7 @@ class EmailSendMessageProducerTest {
      */
     @Test
     @DisplayName("log Off set Following SendIng Of Message Meets Logging Requirements")
-    void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
+    void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() {
         //given
         try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
 

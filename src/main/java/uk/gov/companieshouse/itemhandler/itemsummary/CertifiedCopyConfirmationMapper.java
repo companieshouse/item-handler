@@ -53,7 +53,7 @@ public class CertifiedCopyConfirmationMapper extends OrderConfirmationMapper<Cer
         itemGroup.getItems().stream()
                 .map(item -> {
                     FilingHistoryDocument filingHistoryDocument =
-                            ((CertifiedCopyItemOptions)item.getItemOptions()).getFilingHistoryDocuments().get(0);
+                            ((CertifiedCopyItemOptions)item.getItemOptions()).getFilingHistoryDocuments().getFirst();
                     return CertifiedCopySummary.builder()
                         .withItemNumber(item.getId())
                         .withDateFiled(mapDateFiledFormat(filingHistoryDocument))

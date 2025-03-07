@@ -41,13 +41,13 @@ import org.mockserver.client.MockServerClient;
 import org.mockserver.model.JsonBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
@@ -96,10 +96,10 @@ class OrderMessageDefaultConsumerIntegrationTest {
     @Autowired
     private KafkaTopics kafkaTopics;
 
-    @SpyBean
+    @MockitoSpyBean
     private OrderProcessResponseHandler orderProcessResponseHandler;
 
-    @SpyBean
+    @MockitoSpyBean
     private Logger logger;
 
     @Captor
