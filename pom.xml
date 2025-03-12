@@ -40,16 +40,16 @@
         <testcontainers.version>1.20.6</testcontainers.version>
 
         <!-- Internal Dependencies -->
-        <api-sdk-java.version>6.0.23</api-sdk-java.version>
+        <api-sdk-java.version>6.0.39</api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <ch-kafka.version>3.0.3</ch-kafka.version>
         <environment-reader-library.version>3.0.1</environment-reader-library.version>
-        <kafka-models.version>3.0.8</kafka-models.version>
-        <private-api-sdk-java.version>4.0.255</private-api-sdk-java.version>
-        <structured-logging.version>3.0.20</structured-logging.version>
+        <kafka-models.version>3.0.11</kafka-models.version>
+        <private-api-sdk-java.version>4.0.280</private-api-sdk-java.version>
+        <structured-logging.version>3.0.26</structured-logging.version>
 
         <!-- Docker property -->
-        <jib-maven-plugin.version>3.4.2</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
         <sonar.exclusions>
             **/config/FeatureOptions.java,
@@ -69,7 +69,7 @@
             **/itemsummary/PaymentDetails.java,
             **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
-        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.0.0.4389</sonar-maven-plugin.version>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 
@@ -99,6 +99,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>jul-to-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -175,6 +179,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
             <version>${structured-logging.version}</version>
@@ -182,7 +191,7 @@
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-simple</artifactId>
+                    <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
