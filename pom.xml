@@ -69,7 +69,7 @@
             **/itemsummary/PaymentDetails.java,
             **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
-        <sonar-maven-plugin.version>5.0.0.4389</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 
