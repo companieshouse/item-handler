@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 # Start script for item-handler
 
 PORT=8080
