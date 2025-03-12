@@ -31,7 +31,7 @@
         <mapstruct.version>1.6.3</mapstruct.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
-        <mockito-junit-jupiter.version>5.13.0</mockito-junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.16.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <snakeyaml.version>2.4</snakeyaml.version>
         <spring-boot-dependencies.version>3.4.3</spring-boot-dependencies.version>
