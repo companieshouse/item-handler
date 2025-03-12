@@ -80,13 +80,12 @@ public class CertificateEmailData extends EmailData {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CertificateEmailData)) {
+        if (!(o instanceof CertificateEmailData that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        CertificateEmailData that = (CertificateEmailData) o;
         return Objects.equals(certificates, that.certificates);
     }
 

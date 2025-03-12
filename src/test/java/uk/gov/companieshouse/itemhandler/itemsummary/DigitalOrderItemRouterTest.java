@@ -49,8 +49,8 @@ class DigitalOrderItemRouterTest {
 
         final List<ItemGroup> groups = routerUnderTest.createItemGroups(order);
         assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).getItems().size(), is(1));
-        assertThat(groups.get(0).getItems().get(0).getKind(), is(KIND_CERTIFICATE));
+        assertThat(groups.getFirst().getItems().size(), is(1));
+        assertThat(groups.getFirst().getItems().getFirst().getKind(), is(KIND_CERTIFICATE));
     }
 
     @Test
@@ -75,8 +75,8 @@ class DigitalOrderItemRouterTest {
 
         final List<ItemGroup> groups = routerUnderTest.createItemGroups(order);
         assertThat(groups.size(), is(1));
-        assertThat(groups.get(0).getItems().size(), is(1));
-        assertThat(groups.get(0).getItems().get(0).getKind(), is(KIND_CERTIFIED_COPY));
+        assertThat(groups.getFirst().getItems().size(), is(1));
+        assertThat(groups.getFirst().getItems().getFirst().getKind(), is(KIND_CERTIFIED_COPY));
     }
 
     @Test
@@ -122,20 +122,20 @@ class DigitalOrderItemRouterTest {
         assertThat(groups.isEmpty(), is(false));
         assertThat(groups.size(), is(3));
 
-        final ItemGroup IG1 = groups.get(0);
+        final ItemGroup IG1 = groups.getFirst();
         assertThat(IG1.getKind(), is(KIND_CERTIFICATE));
         assertThat(IG1.getItems().size(), is(1));
-        assertThat(IG1.getItems().get(0).getId(), is("CRT-1"));
+        assertThat(IG1.getItems().getFirst().getId(), is("CRT-1"));
 
         final ItemGroup IG2 = groups.get(1);
         assertThat(IG2.getKind(), is(KIND_CERTIFICATE));
         assertThat(IG2.getItems().size(), is(1));
-        assertThat(IG2.getItems().get(0).getId(), is("CRT-2"));
+        assertThat(IG2.getItems().getFirst().getId(), is("CRT-2"));
 
         final ItemGroup IG3 = groups.get(2);
         assertThat(IG3.getKind(), is(KIND_CERTIFIED_COPY));
         assertThat(IG3.getItems().size(), is(1));
-        assertThat(IG3.getItems().get(0).getId(), is("CC-1"));
+        assertThat(IG3.getItems().getFirst().getId(), is("CC-1"));
     }
 
     private Item createItem(final String id, final String kind, final boolean isDigital) {

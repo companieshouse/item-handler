@@ -35,10 +35,9 @@ public class PaymentDetails {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof PaymentDetails)) {
+        if (!(o instanceof PaymentDetails that)) {
             return false;
         }
-        PaymentDetails that = (PaymentDetails) o;
         return Objects.equals(getReference(), that.getReference()) && Objects.equals(getDate(), that.getDate());
     }
 

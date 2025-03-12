@@ -74,10 +74,9 @@ public class CertificateSummary {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CertificateSummary)) {
+        if (!(o instanceof CertificateSummary that)) {
             return false;
         }
-        CertificateSummary that = (CertificateSummary) o;
         return Objects.equals(getItemNumber(), that.getItemNumber())
                 && Objects.equals(getCertificateType(), that.getCertificateType())
                 && Objects.equals(getCompanyNumber(), that.getCompanyNumber())

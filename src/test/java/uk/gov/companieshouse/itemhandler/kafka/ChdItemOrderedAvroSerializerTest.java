@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import uk.gov.companieshouse.kafka.serialization.AvroSerializer;
@@ -7,7 +8,6 @@ import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 import uk.gov.companieshouse.orders.items.DeliveryDetails;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static uk.gov.companieshouse.itemhandler.util.TestUtils.createAvroOrder;
@@ -34,7 +34,8 @@ class ChdItemOrderedAvroSerializerTest {
         Exception exception = assertThrows(NullPointerException.class, () -> {
             serializerUnderTest.toBinary(order);
         });
-        assertEquals("Cannot invoke \"java.lang.CharSequence.toString()\" because \"charSequence\" is null",
+        Assertions.assertEquals(
+                "Cannot invoke \"java.lang.CharSequence.toString()\" because \"charSequence\" is null",
                 exception.getCause().getMessage());
     }
 
@@ -109,7 +110,7 @@ class ChdItemOrderedAvroSerializerTest {
     void toBinaryNullDiscountAppliedThrowsNoException() {
         // Given
         final ChdItemOrdered order = createAvroOrder();
-        order.getItem().getItemCosts().get(0).setDiscountApplied(null);
+        order.getItem().getItemCosts().getFirst().setDiscountApplied(null);
 
         // When and then
         assertAll(() -> serializerUnderTest.toBinary(order));

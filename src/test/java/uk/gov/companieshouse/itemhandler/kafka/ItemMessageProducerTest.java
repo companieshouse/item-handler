@@ -95,7 +95,7 @@ class ItemMessageProducerTest {
     }
 
     @Test
-    public void sendMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
+    public void sendMessageMeetsLoggingRequirements() {
 
         try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {
             Map<String, Object> mockLogMap = new HashMap<>();
@@ -115,7 +115,7 @@ class ItemMessageProducerTest {
     }
 
     @Test
-    public void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() throws ReflectiveOperationException {
+    public void logOffsetFollowingSendIngOfMessageMeetsLoggingRequirements() {
 
         RecordMetadata recordMetadata = mock(RecordMetadata.class);
         try (MockedStatic<LoggingUtils> loggingUtilsMock = mockStatic(LoggingUtils.class)) {

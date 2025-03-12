@@ -2,7 +2,8 @@ package uk.gov.companieshouse.itemhandler.mapper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +57,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
 import static uk.gov.companieshouse.api.model.order.item.IncludeAddressRecordsTypeApi.CURRENT;
 import static uk.gov.companieshouse.api.model.order.item.IncludeDobTypeApi.PARTIAL;
 import static uk.gov.companieshouse.api.model.order.item.ProductTypeApi.CERTIFICATE;
@@ -72,7 +72,7 @@ class OrdersApiToOrderDataMapperTest {
     static class Config {
         @Bean
         public ObjectMapper objectMapper() {
-            return new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            return new ObjectMapper().setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
         }
 
         @Bean
@@ -252,7 +252,7 @@ class OrdersApiToOrderDataMapperTest {
 
         final Item certificate = apiToOrderDataMapper.apiToItem(certificateApi);
 
-        assertEquals(certificateApi.getId(), certificate.getId());
+        Assertions.assertEquals(certificateApi.getId(), certificate.getId());
         assertThat(certificate.getId(), is(certificateApi.getId()));
         assertThat(certificate.getCompanyName(), is(certificateApi.getCompanyName()));
         assertThat(certificate.getCompanyNumber(), is(certificateApi.getCompanyNumber()));
@@ -267,7 +267,7 @@ class OrdersApiToOrderDataMapperTest {
         assertThat(certificate.getItemUri(), is(certificateApi.getLinks().getSelf()));
         assertThat(certificate.getLinks().getSelf(), is(certificateApi.getLinks().getSelf()));
 
-        assertItemCosts(certificateApi.getItemCosts().get(0), certificate.getItemCosts().get(0));
+        assertItemCosts(certificateApi.getItemCosts().getFirst(), certificate.getItemCosts().getFirst());
         assertItemOptionsSame((CertificateItemOptionsApi) certificateApi.getItemOptions(),
                 (CertificateItemOptions) certificate.getItemOptions());
         assertThat(certificate.getPostageCost(), is(certificateApi.getPostageCost()));
@@ -295,7 +295,7 @@ class OrdersApiToOrderDataMapperTest {
 
         final Item certifiedCopy = apiToOrderDataMapper.apiToItem(certifiedCopyApi);
 
-        assertEquals(certifiedCopyApi.getId(), certifiedCopy.getId());
+        Assertions.assertEquals(certifiedCopyApi.getId(), certifiedCopy.getId());
         assertThat(certifiedCopy.getId(), is(certifiedCopyApi.getId()));
         assertThat(certifiedCopy.getCompanyName(), is(certifiedCopyApi.getCompanyName()));
         assertThat(certifiedCopy.getCompanyNumber(), is(certifiedCopyApi.getCompanyNumber()));
@@ -310,7 +310,7 @@ class OrdersApiToOrderDataMapperTest {
         assertThat(certifiedCopy.getItemUri(), is(certifiedCopyApi.getLinks().getSelf()));
         assertThat(certifiedCopy.getLinks().getSelf(), is(certifiedCopyApi.getLinks().getSelf()));
 
-        assertItemCosts(certifiedCopyApi.getItemCosts().get(0), certifiedCopy.getItemCosts().get(0));
+        assertItemCosts(certifiedCopyApi.getItemCosts().getFirst(), certifiedCopy.getItemCosts().getFirst());
         assertItemOptionsSame((CertifiedCopyItemOptionsApi) certifiedCopyApi.getItemOptions(),
                 (CertifiedCopyItemOptions) certifiedCopy.getItemOptions());
         assertThat(certifiedCopy.getPostageCost(), is(certifiedCopyApi.getPostageCost()));
@@ -318,7 +318,7 @@ class OrdersApiToOrderDataMapperTest {
     }
 
     @Test
-    void testMissingImageDeliveryApiToMissingImageDelivery() throws JsonProcessingException {
+    void testMissingImageDeliveryApiToMissingImageDelivery() {
         MissingImageDeliveryApi missingImageDeliveryApi = new MissingImageDeliveryApi();
         missingImageDeliveryApi.setId(ID);
         missingImageDeliveryApi.setCompanyName(COMPANY_NAME);
@@ -338,7 +338,7 @@ class OrdersApiToOrderDataMapperTest {
         final Item missingImageDeliveryItem = apiToOrderDataMapper.apiToItem(missingImageDeliveryApi);
 
 
-        assertEquals(missingImageDeliveryApi.getId(), missingImageDeliveryItem.getId());
+        Assertions.assertEquals(missingImageDeliveryApi.getId(), missingImageDeliveryItem.getId());
         assertThat(missingImageDeliveryItem.getId(), is(missingImageDeliveryApi.getId()));
         assertThat(missingImageDeliveryItem.getCompanyName(), is(missingImageDeliveryApi.getCompanyName()));
         assertThat(missingImageDeliveryItem.getCompanyNumber(), is(missingImageDeliveryApi.getCompanyNumber()));
@@ -352,7 +352,7 @@ class OrdersApiToOrderDataMapperTest {
         assertThat(missingImageDeliveryItem.getItemUri(), is(missingImageDeliveryApi.getLinks().getSelf()));
         assertThat(missingImageDeliveryItem.getLinks().getSelf(), is(missingImageDeliveryApi.getLinks().getSelf()));
 
-        assertItemCosts(missingImageDeliveryApi.getItemCosts().get(0), missingImageDeliveryItem.getItemCosts().get(0));
+        assertItemCosts(missingImageDeliveryApi.getItemCosts().getFirst(), missingImageDeliveryItem.getItemCosts().getFirst());
         assertItemOptionsSame((MissingImageDeliveryItemOptionsApi) missingImageDeliveryApi.getItemOptions(),
             (MissingImageDeliveryItemOptions) missingImageDeliveryItem.getItemOptions());
         assertThat(missingImageDeliveryItem.getPostageCost(), is(missingImageDeliveryApi.getPostageCost()));
@@ -451,9 +451,9 @@ class OrdersApiToOrderDataMapperTest {
         assertThat(actualOrderData.getTotalOrderCost(), is(ordersApi.getTotalOrderCost()));
         assertThat(actualOrderData.getOrderedAt(), is(ordersApi.getOrderedAt()));
 
-        Item item = actualOrderData.getItems().get(0);
-        BaseItemApi itemApi = ordersApi.getItems().get(0);
-        assertItemCosts(item.getItemCosts().get(0), itemApi.getItemCosts().get(0));
+        Item item = actualOrderData.getItems().getFirst();
+        BaseItemApi itemApi = ordersApi.getItems().getFirst();
+        assertItemCosts(item.getItemCosts().getFirst(), itemApi.getItemCosts().getFirst());
         assertOrderedBy(actualOrderData.getOrderedBy(), ordersApi.getOrderedBy());
         assertLinks(actualOrderData.getLinks(), ordersApi.getLinks());
         assertDeliveryDetails(actualOrderData.getDeliveryDetails(), ordersApi.getDeliveryDetails());

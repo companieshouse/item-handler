@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.itemhandler.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +11,6 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertNull;
 
 class FilingHistoryDescriptionProviderServiceTest {
     private static final String DESCRIPTION_KEY = "appoint-person-director-company-with-name-date";
@@ -83,7 +83,7 @@ class FilingHistoryDescriptionProviderServiceTest {
     @DisplayName("Return null if descriptionKey is null")
     void mapFilingHistoryDescriptionReturnsNullIfDescriptionKeyIsNull() {
         final FilingHistoryDescriptionProviderService provider = new FilingHistoryDescriptionProviderService();
-        assertNull(provider.mapFilingHistoryDescription(null, null));
+        Assertions.assertNull(provider.mapFilingHistoryDescription(null, null));
     }
 
     @Test

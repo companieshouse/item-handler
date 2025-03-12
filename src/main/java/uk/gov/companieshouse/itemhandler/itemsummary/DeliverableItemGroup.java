@@ -33,13 +33,12 @@ public class DeliverableItemGroup extends ItemGroup {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof DeliverableItemGroup)) {
+        if (!(o instanceof DeliverableItemGroup that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        DeliverableItemGroup that = (DeliverableItemGroup) o;
         return getTimescale() == that.getTimescale();
     }
 

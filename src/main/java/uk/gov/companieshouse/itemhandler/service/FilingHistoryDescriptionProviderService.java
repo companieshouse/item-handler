@@ -22,7 +22,7 @@ public class FilingHistoryDescriptionProviderService {
     private static final String FILING_HISTORY_DESCRIPTION_KEY = "description";
     private static final String LOG_MESSAGE_FILE_KEY = "file";
 
-    private Map<String, String> filingHistoryDescriptions;
+    private final Map<String, String> filingHistoryDescriptions;
 
     public FilingHistoryDescriptionProviderService() {
         final File filingHistoryDescriptionsFile = new File(FILING_HISTORY_DESCRIPTIONS_FILEPATH);
@@ -61,11 +61,7 @@ public class FilingHistoryDescriptionProviderService {
     }
 
     private String getFilingHistoryDescriptionWithKey(String descriptionKey) {
-        if(filingHistoryDescriptions.containsKey(descriptionKey)) {
-            return filingHistoryDescriptions.get(descriptionKey);
-        } else {
-            return descriptionKey;
-        }
+        return filingHistoryDescriptions.getOrDefault(descriptionKey, descriptionKey);
     }
 
     /**
@@ -115,7 +111,6 @@ public class FilingHistoryDescriptionProviderService {
      * @param builder the StringBuilder
      * @param from the String you want to replace
      * @param to the String you want it to be replaced by
-     * @return the same StringBuilder with the values replaces
      */
     public static void replaceAll(StringBuilder builder, String from, String to) {
         int index = builder.indexOf(from);

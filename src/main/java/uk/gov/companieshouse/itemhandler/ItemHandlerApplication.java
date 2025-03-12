@@ -12,7 +12,7 @@ import uk.gov.companieshouse.logging.Logger;
 @SpringBootApplication
 public class ItemHandlerApplication {
 
-    private static Logger LOGGER = LoggingUtils.getLogger();
+    private static final Logger LOGGER = LoggingUtils.getLogger();
 
 	public static void main(String[] args) {
 	    if(checkEnvironmentVariables()) {

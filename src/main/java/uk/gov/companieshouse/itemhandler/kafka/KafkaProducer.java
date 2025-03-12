@@ -25,6 +25,7 @@ public abstract class KafkaProducer implements InitializingBean {
         config.setRoundRobinPartitioner(true);
         config.setAcks(Acks.WAIT_FOR_ALL);
         config.setRetries(10);
+        config.setEnableIdempotence(false);
         modifyProducerConfig(config);
         chKafkaProducer = createChKafkaProducer(config);
     }

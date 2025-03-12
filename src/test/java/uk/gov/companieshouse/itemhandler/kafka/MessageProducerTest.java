@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
@@ -15,9 +16,11 @@ import uk.gov.companieshouse.logging.Logger;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MessageProducerTest {
@@ -52,7 +55,7 @@ class MessageProducerTest {
 
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
-        assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
+        Assertions.assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
         verify(logger).error("Unexpected Kafka error: an error occurred", expectedException);
     }
 
@@ -68,7 +71,7 @@ class MessageProducerTest {
 
         //then
         NonRetryableException actual = assertThrows(NonRetryableException.class, executable);
-        assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
+        Assertions.assertEquals("Unexpected Kafka error: an error occurred", actual.getMessage());
         verify(logger).error("Unexpected Kafka error: an error occurred", expectedException);
     }
 
@@ -79,7 +82,8 @@ class MessageProducerTest {
         when(result.get()).thenReturn(recordMetadata);
 
         //when
-        Executable executable = () -> messageProducer.sendMessage(message, a -> assertSame(recordMetadata, a));
+        Executable executable = () -> messageProducer.sendMessage(message, a -> Assertions.assertSame(
+                recordMetadata, a));
 
         //then
         assertDoesNotThrow(executable);

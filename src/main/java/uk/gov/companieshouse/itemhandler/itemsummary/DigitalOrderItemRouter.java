@@ -54,10 +54,11 @@ public class DigitalOrderItemRouter implements Routable {
             return;
         }
         final StringBuilder sb = new StringBuilder();
-        sb.append("For order " + orderNumber + " created " + digitalItemGroups.size() + " digital item groups:\n \n");
+        sb.append("For order ").append(orderNumber).append(" created ")
+                .append(digitalItemGroups.size()).append(" digital item groups:\n \n");
         for (int i = 0; i < digitalItemGroups.size(); i++) {
             final ItemGroup ig = digitalItemGroups.get(i);
-            sb.append("\n + IG " + (i + 1) + " | " + ig + "\n");
+            sb.append("\n + IG ").append(i + 1).append(" | ").append(ig).append("\n");
         }
         logger.info(sb.toString(), getLogMap(orderNumber));
     }

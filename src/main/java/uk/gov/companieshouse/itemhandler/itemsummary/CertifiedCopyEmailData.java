@@ -81,13 +81,12 @@ public class CertifiedCopyEmailData extends EmailData {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CertifiedCopyEmailData)) {
+        if (!(o instanceof CertifiedCopyEmailData that)) {
             return false;
         }
         if (!super.equals(o)) {
             return false;
         }
-        CertifiedCopyEmailData that = (CertifiedCopyEmailData) o;
         return Objects.equals(certifiedCopies, that.certifiedCopies);
     }
 

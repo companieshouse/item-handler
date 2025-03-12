@@ -18,7 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.model.ActionedBy;
 import uk.gov.companieshouse.itemhandler.model.CertificateItemOptions;
 import uk.gov.companieshouse.itemhandler.model.CertificateType;
 import uk.gov.companieshouse.itemhandler.model.DeliveryDetails;
@@ -43,9 +42,6 @@ public class CertificateConfirmationMapperTest {
 
     @Mock
     private OrderData order;
-
-    @Mock
-    private ActionedBy actionedBy;
 
     @Mock
     private DeliveryDetails deliveryDetails;
@@ -196,7 +192,7 @@ public class CertificateConfirmationMapperTest {
 
     @Test
     @DisplayName("Throw NonRetryableException if certificate type unhandled")
-    void testThrowNonRetryableExceptionIfCertificateTyoeUnhandled() {
+    void testThrowNonRetryableExceptionIfCertificateTypeUnhandled() {
         // given
         when(deliverableItemGroup.getOrder()).thenReturn(order);
         when(config.getCertificate()).thenReturn(certificateEmailConfig);

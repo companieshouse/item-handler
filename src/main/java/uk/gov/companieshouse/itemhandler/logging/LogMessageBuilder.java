@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class LogMessageBuilder {
 
-    private Map<String, Object> logData;
-    private Logger logger;
+    private final Map<String, Object> logData;
+    private final Logger logger;
 
     public LogMessageBuilder(Logger logger) {
         this.logger = logger;
