@@ -51,24 +51,6 @@
         <!-- Docker property -->
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
-        <sonar.exclusions>
-            **/config/FeatureOptions.java,
-            **/config/FeatureOptionsConfig.java,
-            **/email/CertificateOrderConfirmation.java,
-            **/itemsummary/CertificateEmailConfig.java,
-            **/itemsummary/CertifiedCopyEmailConfig.java,
-            **/itemsummary/CertificateEmailData.java,
-            **/itemsummary/CertificateSummary.java,
-            **/itemsummary/CertifiedCopyEmailData.java,
-            **/itemsummary/CertifiedCopySummary.java,
-            **/itemsummary/DeliverableItemGroup.java,
-            **/itemsummary/EmailConfig.java,
-            **/itemsummary/EmailData.java,
-            **/itemsummary/EmailMetadata.java,
-            **/itemsummary/ItemGroup.java,
-            **/itemsummary/PaymentDetails.java,
-            **/itemsummary/OrderItemPair.java
-        </sonar.exclusions>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
@@ -97,10 +79,6 @@
             <artifactId>spring-boot-starter-web</artifactId>
             <exclusions>
                 <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jul-to-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
@@ -111,21 +89,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
         <dependency>
