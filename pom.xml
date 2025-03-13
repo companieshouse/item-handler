@@ -51,6 +51,24 @@
         <!-- Docker property -->
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
+        <sonar.exclusions>
+            **/config/FeatureOptions.java,
+            **/config/FeatureOptionsConfig.java,
+            **/email/CertificateOrderConfirmation.java,
+            **/itemsummary/CertificateEmailConfig.java,
+            **/itemsummary/CertifiedCopyEmailConfig.java,
+            **/itemsummary/CertificateEmailData.java,
+            **/itemsummary/CertificateSummary.java,
+            **/itemsummary/CertifiedCopyEmailData.java,
+            **/itemsummary/CertifiedCopySummary.java,
+            **/itemsummary/DeliverableItemGroup.java,
+            **/itemsummary/EmailConfig.java,
+            **/itemsummary/EmailData.java,
+            **/itemsummary/EmailMetadata.java,
+            **/itemsummary/ItemGroup.java,
+            **/itemsummary/PaymentDetails.java,
+            **/itemsummary/OrderItemPair.java
+        </sonar.exclusions>
         <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
