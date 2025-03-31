@@ -16,7 +16,7 @@ locals {
                   "CMD-SHELL",
                   "[[ $(curl http://localhost:${local.container_port}${local.healthcheck_path} -o /dev/null -w '%%{http_code}\n' -s) == '${local.healthcheck_matcher}' ]] || exit 1"
               ],
-              "interval": 30,
+              "interval": 60,
               "timeout": 5,
               "startPeriod": 120,
               "retries": 3
