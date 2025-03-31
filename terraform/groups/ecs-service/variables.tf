@@ -116,9 +116,3 @@ variable "item_handler_version" {
   type        = string
   description = "The version of the item-handler container to run."
 }
-
-variable "use_task_container_healthcheck" {
-  type        = bool
-  description = "If true, sets the ECS Tasks' container health check"
-  default     = true
-}
