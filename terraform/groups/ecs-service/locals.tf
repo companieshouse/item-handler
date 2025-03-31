@@ -75,4 +75,10 @@ locals {
     { "name" : "PORT", "value" : local.container_port }
   ])
 
+  health_check_config = {
+    interval    = 30
+    timeout     = 30
+    retries     = 3
+    startPeriod = 120 # Optional; set to null or a default value like 60 if needed
+  }
 }
