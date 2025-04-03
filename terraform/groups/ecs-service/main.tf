@@ -45,12 +45,10 @@ module "ecs-service" {
   healthcheck_matcher               = local.healthcheck_matcher
 
   # Pass health check configuration, including optional startPeriod
-  healthcheck_config = {
-    interval    = local.health_check_config.interval
-    timeout     = local.health_check_config.timeout
-    retries     = local.health_check_config.retries
-    startPeriod = local.health_check_config.startPeriod # Optional; null if not set
-  }
+  task_healthcheck_interval     = var.task_healthcheck_interval
+  task_healthcheck_timeout      = var.task_healthcheck_timeout
+  task_healthcheck_retries      = var.task_healthcheck_retries
+  task_healthcheck_startPeriod  = var.task_healthcheck_startPeriod
 
   # Docker container details
   docker_registry   = var.docker_registry
