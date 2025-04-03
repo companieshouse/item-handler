@@ -116,3 +116,27 @@ variable "item_handler_version" {
   type        = string
   description = "The version of the item-handler container to run."
 }
+
+variable "task_healthcheck_interval" {
+  type        = number
+  description = "Health check interval configuration for ECS task definitions."
+  default     = 30
+}
+
+variable "task_healthcheck_timeout" {
+  type        = number
+  description = "Health check timeout configuration for ECS task definitions."
+  default     = 5
+}
+
+variable "task_healthcheck_retries" {
+  type        = number
+  description = "Health check retries configuration for ECS task definitions."
+  default     = 3
+}
+
+variable "task_healthcheck_startPeriod" {
+  type        = number
+  description = "Health check startPeriod configuration for ECS task definitions."
+  default     = 0
+}
