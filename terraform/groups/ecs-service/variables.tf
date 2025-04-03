@@ -118,25 +118,25 @@ variable "item_handler_version" {
 }
 
 variable "task_healthcheck_interval" {
-  type        = number
+  type        = string
   description = "Health check interval configuration for ECS task definitions."
-  default     = 30
+  default     = "30"
 }
 
 variable "task_healthcheck_timeout" {
-  type        = number
+  type        = string
   description = "Health check timeout configuration for ECS task definitions."
-  default     = 5
+  default     = "5"
 }
 
 variable "task_healthcheck_retries" {
-  type        = number
+  type        = string
   description = "Health check retries configuration for ECS task definitions."
-  default     = 3
+  default     = "3"
 }
 
 variable "task_healthcheck_startPeriod" {
-  type        = number
+  type        = string
   description = "Health check startPeriod configuration for ECS task definitions."
-  default     = 0
+  default     = "0"
 }
