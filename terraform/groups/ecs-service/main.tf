@@ -48,6 +48,7 @@ module "ecs-service" {
   task_healthcheck_interval     = var.task_healthcheck_interval
   task_healthcheck_timeout      = var.task_healthcheck_timeout
   task_healthcheck_retries      = var.task_healthcheck_retries
+  task_healthcheck_startPeriod  = var.task_healthcheck_startPeriod
 
   # Docker container details
   docker_registry   = var.docker_registry
