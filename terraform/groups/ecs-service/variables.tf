@@ -131,3 +131,8 @@ variable "task_healthcheck_retries" {
   type        = string
   description = "Health check retries configuration for ECS task definitions."
 }
+
+variable "task_healthcheck_startPeriod" {
+  type        = string
+  description = "Health check start period configuration for ECS task definitions."
+}
