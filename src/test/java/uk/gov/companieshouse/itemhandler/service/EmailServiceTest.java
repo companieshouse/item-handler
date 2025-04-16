@@ -1,17 +1,5 @@
 package uk.gov.companieshouse.itemhandler.service;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.STANDARD;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -24,15 +12,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.companieshouse.email.EmailSend;
+import uk.gov.companieshouse.itemhandler.client.EmailClient;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
-import uk.gov.companieshouse.itemhandler.itemsummary.CertificateEmailData;
-import uk.gov.companieshouse.itemhandler.itemsummary.CertifiedCopyEmailData;
-import uk.gov.companieshouse.itemhandler.itemsummary.ConfirmationMapperFactory;
-import uk.gov.companieshouse.itemhandler.itemsummary.DeliverableItemGroup;
-import uk.gov.companieshouse.itemhandler.itemsummary.EmailMetadata;
-import uk.gov.companieshouse.itemhandler.itemsummary.OrderConfirmationMapper;
-import uk.gov.companieshouse.itemhandler.kafka.EmailSendMessageProducer;
+import uk.gov.companieshouse.itemhandler.itemsummary.*;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static uk.gov.companieshouse.itemhandler.model.DeliveryTimescale.STANDARD;
 
 /** Unit tests the {@link EmailService} class. */
 @ExtendWith(MockitoExtension.class)
@@ -47,7 +40,7 @@ class EmailServiceTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private EmailSendMessageProducer producer;
+    private EmailClient emailClient;
 
     @Mock
     private OrderData order;
@@ -100,7 +93,8 @@ class EmailServiceTest {
         emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certificate", STANDARD));
 
         // then
-        verify(producer).sendMessage(emailCaptor.capture(), eq("ORD-123123-123123"));
+        verify(emailClient, times(1)).sendEmail(emailCaptor.capture());
+
         assertThat(emailCaptor.getValue().getAppId(), is(equalTo("appId")));
         assertThat(emailCaptor.getValue().getMessageType(), is(equalTo("messageType")));
         assertThat(emailCaptor.getValue().getData(), is(equalTo("data")));
@@ -124,7 +118,8 @@ class EmailServiceTest {
         emailServiceUnderTest.sendOrderConfirmation(new DeliverableItemGroup(order, "item#certified-copy", STANDARD));
 
         // then
-        verify(producer).sendMessage(emailCaptor.capture(), eq("ORD-123123-123123"));
+        verify(emailClient, times(1)).sendEmail(emailCaptor.capture());
+
         assertThat(emailCaptor.getValue().getAppId(), is(equalTo("appId")));
         assertThat(emailCaptor.getValue().getMessageType(), is(equalTo("messageType")));
         assertThat(emailCaptor.getValue().getData(), is(equalTo("data")));
