@@ -9,20 +9,7 @@ locals {
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
   healthcheck_path           = "/item-handler/healthcheck" # healthcheck path for item-handler
   healthcheck_matcher        = "200"
-  healthcheck_definition     = var.use_task_container_healthcheck ? local.task_container_healthcheck_definition : ""
-  task_container_healthcheck_definition = <<DEFINITION
-            "healthCheck": {
-              "command": [
-                  "CMD-SHELL",
-                  "[[ $(curl http://localhost:${local.container_port}${local.healthcheck_path} -o /dev/null -w '%%{http_code}\n' -s) == '${local.healthcheck_matcher}' ]] || exit 1"
-              ],
-              "interval": 60,
-              "timeout": 5,
-              "startPeriod": 120,
-              "retries": 3
-            },
-        DEFINITION
-
+  
   vpc_name                   = local.stack_secrets["vpc_name"]
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
   app_environment_filename   = "item-handler.env"
@@ -75,10 +62,4 @@ locals {
     { "name" : "PORT", "value" : local.container_port }
   ])
 
-  health_check_config = {
-    interval    = 30
-    timeout     = 30
-    retries     = 3
-    startPeriod = 120 # Optional; set to null or a default value like 60 if needed
-  }
 }
