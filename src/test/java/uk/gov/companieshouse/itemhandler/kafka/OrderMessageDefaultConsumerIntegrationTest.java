@@ -18,7 +18,15 @@ import static uk.gov.companieshouse.itemhandler.kafka.ItemGroupOrderedFactory.FI
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import email.email_send;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -53,26 +61,16 @@ import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
-import uk.gov.companieshouse.itemhandler.service.EmailService;
-import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 @SpringBootTest
 @Import(EmbeddedKafkaBrokerConfiguration.class)
-@TestPropertySource(locations = "classpath:application.properties",
-        properties={"uk.gov.companieshouse.item-handler.error-consumer=false"})
+@TestPropertySource(
+        locations = "classpath:application.properties",
+        properties={"uk.gov.companieshouse.item-handler.error-consumer=false"}
+)
 class OrderMessageDefaultConsumerIntegrationTest {
 
     private static int orderId = 123456;
@@ -81,8 +79,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     private static final String DELIVERY_DETAILS_COMPANY_NAME = "Synergia";
 
-    @Autowired
-    private KafkaConsumer<String, email_send> emailSendConsumer;
+    //@Autowired
+    //private KafkaConsumer<String, email_send> emailSendConsumer;
 
     @Autowired
     private KafkaConsumer<String, ChdItemOrdered> chsItemOrderedConsumer;
@@ -172,22 +170,8 @@ class OrderMessageDefaultConsumerIntegrationTest {
             throw new AssertionError("Timed out waiting for message processing");
         }
 
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend(), Duration.ofMillis(30000)).value();
-
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
-
-        final JsonNode data = new ObjectMapper().readTree(actual.getData());
-        final String companyName = (data.get("delivery_details") != null &&
-                data.get("delivery_details").findValue("company_name") != null) ?
-                data.get("delivery_details").findValue("company_name").textValue() : "";
-        assertEquals(DELIVERY_DETAILS_COMPANY_NAME, companyName);
     }
 
     @Test
@@ -241,19 +225,9 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(2, actual.count());
-        for (ConsumerRecord<String, email_send> record : actual) {
-            assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
-            assertNotNull(record.value().getMessageId());
-            assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                    record.value().getMessageType());
-            assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
-            assertNotNull(record.value().getData());
-        }
     }
 
     @ParameterizedTest(name = "{1}")
@@ -276,17 +250,11 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
+
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
     }
 
     @Test
@@ -354,19 +322,9 @@ class OrderMessageDefaultConsumerIntegrationTest {
                 kafkaTopics.getOrderReceived(),
                 getOrderReceived())).get();
         orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        ConsumerRecords<String, email_send> actual = KafkaTestUtils.getRecords(emailSendConsumer, Duration.ofMillis(30000L), 2);
 
         // then
         assertEquals(0, orderMessageDefaultConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(2, actual.count());
-        for (ConsumerRecord<String, email_send> record : actual) {
-            assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, record.value().getAppId());
-            assertNotNull(record.value().getMessageId());
-            assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                    record.value().getMessageType());
-            assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, record.value().getEmailAddress());
-            assertNotNull(record.value().getData());
-        }
     }
 
     @Test

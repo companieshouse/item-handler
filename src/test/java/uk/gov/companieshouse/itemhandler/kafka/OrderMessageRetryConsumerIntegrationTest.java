@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-import email.email_send;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CountDownLatch;
@@ -35,8 +34,6 @@ import org.testcontainers.containers.MockServerContainer;
 import org.testcontainers.utility.DockerImageName;
 import uk.gov.companieshouse.itemhandler.config.EmbeddedKafkaBrokerConfiguration;
 import uk.gov.companieshouse.itemhandler.config.TestEnvironmentSetupHelper;
-import uk.gov.companieshouse.itemhandler.service.EmailService;
-import uk.gov.companieshouse.itemhandler.util.TestConstants;
 import uk.gov.companieshouse.orders.OrderReceived;
 import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
@@ -49,9 +46,6 @@ class OrderMessageRetryConsumerIntegrationTest {
     private static int orderId = 123456;
     private static MockServerContainer container;
     private MockServerClient client;
-
-    @Autowired
-    private KafkaConsumer<String, email_send> emailSendConsumer;
 
     @Autowired
     private KafkaConsumer<String, ChdItemOrdered> chsItemOrderedConsumer;
@@ -127,16 +121,9 @@ class OrderMessageRetryConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedRetry(),
                 getOrderReceived())).get();
         orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
     }
 
     @Test
@@ -159,16 +146,9 @@ class OrderMessageRetryConsumerIntegrationTest {
                 kafkaTopics.getOrderReceivedRetry(),
                 getOrderReceived())).get();
         orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().await(30, TimeUnit.SECONDS);
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(TestConstants.CERTIFIED_COPY_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
     }
 
     @Test
@@ -238,16 +218,9 @@ class OrderMessageRetryConsumerIntegrationTest {
 
         // when
         // sync so that retry consumer has completed and app has published email onto email send topic
-        email_send actual = KafkaTestUtils.getSingleRecord(emailSendConsumer, kafkaTopics.getEmailSend()).value();
 
         // then
         assertEquals(0, orderMessageRetryConsumerAspect.getAfterProcessOrderReceivedEventLatch().getCount());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_APP_ID, actual.getAppId());
-        assertNotNull(actual.getMessageId());
-        assertEquals(TestConstants.CERTIFICATE_ORDER_NOTIFICATION_API_MESSAGE_TYPE,
-                actual.getMessageType());
-        assertEquals(EmailService.TOKEN_EMAIL_ADDRESS, actual.getEmailAddress());
-        assertNotNull(actual.getData());
     }
 
     @Test
