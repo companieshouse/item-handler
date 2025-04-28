@@ -1,11 +1,26 @@
 package uk.gov.companieshouse.itemhandler.client;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,21 +37,8 @@ import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
-public class EmailClientTest {
+class EmailClientTest {
 
     @Mock
     private ApiClient apiClient;
@@ -44,18 +46,11 @@ public class EmailClientTest {
     @InjectMocks
     private EmailClient emailClient;
 
-    @BeforeEach
-    void setUp() {
-
-    }
-
-    @AfterEach
-    void tearDown() {}
-
-    @Test
-    void givenValidPayload_whenEmailRequested_thenReturnSuccess() throws JsonProcessingException, ApiErrorResponseException, EmailClientException {
+    @ParameterizedTest
+    @ValueSource(ints = {200, 400})
+    void testApiResponseStatusCode(final int expectedHttpStatus) throws JsonProcessingException, ApiErrorResponseException, EmailClientException {
         // Arrange:
-        ApiResponse<Void> apiResponse = new ApiResponse<>(200, Map.of());
+        ApiResponse<Void> apiResponse = new ApiResponse<>(expectedHttpStatus, Map.of());
 
         PrivateSendEmailPost privateSendEmailPost = mock(PrivateSendEmailPost.class);
         when(privateSendEmailPost.execute()).thenReturn(apiResponse);
@@ -78,36 +73,7 @@ public class EmailClientTest {
         verify(privateSendEmailHandler, times(1)).postSendEmail(eq("/send-email"), any(SendEmail.class));
         verify(privateSendEmailPost, times(1)).execute();
 
-        assertThat(response.getStatusCode(), is(200));
-    }
-
-    @Test
-    void givenInvalidPayload_whenEmailRequested_thenReturnBadRequest() throws JsonProcessingException, ApiErrorResponseException, EmailClientException {
-        // Arrange:
-        ApiResponse<Void> apiResponse = new ApiResponse<>(400, Map.of());
-
-        PrivateSendEmailPost privateSendEmailPost = mock(PrivateSendEmailPost.class);
-        when(privateSendEmailPost.execute()).thenReturn(apiResponse);
-
-        PrivateSendEmailHandler privateSendEmailHandler = mock(PrivateSendEmailHandler.class);
-        when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
-
-        InternalApiClient internalApiClient = mock(InternalApiClient.class);
-        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
-
-        when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
-
-        EmailSend emailData = createDeliverableItemGroupWithItems();
-
-        // Act:
-        ApiResponse<Void> response = emailClient.sendEmail(emailData);
-
-        // Assert:
-        verify(internalApiClient, times(1)).sendEmailHandler();
-        verify(privateSendEmailHandler, times(1)).postSendEmail(eq("/send-email"), any(SendEmail.class));
-        verify(privateSendEmailPost, times(1)).execute();
-
-        assertThat(response.getStatusCode(), is(400));
+        assertThat(response.getStatusCode(), is(expectedHttpStatus));
     }
 
     @Test
@@ -137,64 +103,6 @@ public class EmailClientTest {
         verify(privateSendEmailPost, times(1)).execute();
 
         assertThat(expectedException.getMessage(), is("Error sending payload to CHS Kafka API: "));
-    }
-
-    @Test
-    void givenValidPayload_whenPaymentReportEmail_thenReturnSuccess() throws JsonProcessingException, ApiErrorResponseException, EmailClientException {
-        // Arrange:
-        ApiResponse<Void> apiResponse = new ApiResponse<>(200, Map.of());
-
-        PrivateSendEmailPost privateSendEmailPost = mock(PrivateSendEmailPost.class);
-        when(privateSendEmailPost.execute()).thenReturn(apiResponse);
-
-        PrivateSendEmailHandler privateSendEmailHandler = mock(PrivateSendEmailHandler.class);
-        when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
-
-        InternalApiClient internalApiClient = mock(InternalApiClient.class);
-        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
-
-        when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
-
-        EmailSend emailData = createDeliverableItemGroupWithItems();
-
-        // Act:
-        ApiResponse<Void> response = emailClient.sendEmail(emailData);
-
-        // Assert:
-        verify(internalApiClient, times(1)).sendEmailHandler();
-        verify(privateSendEmailHandler, times(1)).postSendEmail(eq("/send-email"), any(SendEmail.class));
-        verify(privateSendEmailPost, times(1)).execute();
-
-        assertThat(response.getStatusCode(), is(200));
-    }
-
-    @Test
-    void givenInvalidPayload_whenPaymentEmailRequested_thenReturnBadRequest() throws JsonProcessingException, ApiErrorResponseException, EmailClientException {
-        // Arrange:
-        ApiResponse<Void> apiResponse = new ApiResponse<>(400, Map.of());
-
-        PrivateSendEmailPost privateSendEmailPost = mock(PrivateSendEmailPost.class);
-        when(privateSendEmailPost.execute()).thenReturn(apiResponse);
-
-        PrivateSendEmailHandler privateSendEmailHandler = mock(PrivateSendEmailHandler.class);
-        when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
-
-        InternalApiClient internalApiClient = mock(InternalApiClient.class);
-        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
-
-        when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
-
-        EmailSend emailData = createDeliverableItemGroupWithItems();
-
-        // Act:
-        ApiResponse<Void> response = emailClient.sendEmail(emailData);
-
-        // Assert:
-        verify(internalApiClient, times(1)).sendEmailHandler();
-        verify(privateSendEmailHandler, times(1)).postSendEmail(eq("/send-email"), any(SendEmail.class));
-        verify(privateSendEmailPost, times(1)).execute();
-
-        assertThat(response.getStatusCode(), is(400));
     }
 
     private EmailSend createDeliverableItemGroupWithItems() throws JsonProcessingException {

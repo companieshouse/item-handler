@@ -77,11 +77,6 @@ class OrderMessageDefaultConsumerIntegrationTest {
     private static MockServerContainer container;
     private MockServerClient client;
 
-    private static final String DELIVERY_DETAILS_COMPANY_NAME = "Synergia";
-
-    //@Autowired
-    //private KafkaConsumer<String, email_send> emailSendConsumer;
-
     @Autowired
     private KafkaConsumer<String, ChdItemOrdered> chsItemOrderedConsumer;
 
