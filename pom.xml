@@ -51,6 +51,11 @@
         <!-- Docker property -->
         <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
 
+        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
+        <sonar.login></sonar.login>
+        <sonar.password></sonar.password>
+        <sonar.projectKey>uk.gov.companieshouse:${project.name}</sonar.projectKey>
+        <sonar.projectName>${project.name}</sonar.projectName>
         <sonar.exclusions>
             **/config/FeatureOptions.java,
             **/config/FeatureOptionsConfig.java,
