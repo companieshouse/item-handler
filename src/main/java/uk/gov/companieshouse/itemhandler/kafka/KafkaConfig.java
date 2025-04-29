@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.kafka;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -23,9 +25,6 @@ import uk.gov.companieshouse.kafka.producer.ProducerConfig;
 import uk.gov.companieshouse.kafka.serialization.SerializerFactory;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.orders.OrderReceived;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
@@ -92,11 +91,6 @@ public class KafkaConfig {
     @Bean
     ItemMessageProducer itemMessageProducer(ItemMessageFactory itemMessageFactory, MessageProducer chdMessageProducer) {
         return new ItemMessageProducer(itemMessageFactory, chdMessageProducer);
-    }
-
-    @Bean
-    EmailSendMessageProducer emailSendMessageProducer(MessageSerialiserFactory<EmailSend> emailSendMessageSerialiserFactory, MessageProducer defaultMessageProducer) {
-        return new EmailSendMessageProducer(emailSendMessageSerialiserFactory, defaultMessageProducer);
     }
 
     @Bean
