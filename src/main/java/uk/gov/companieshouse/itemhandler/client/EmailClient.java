@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.itemhandler.client;
 
+import java.util.function.Supplier;
 import org.springframework.stereotype.Component;
+import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.chskafka.SendEmail;
 import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.chskafka.PrivateSendEmailHandler;
@@ -16,10 +18,10 @@ public class EmailClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("item-handler");
 
-    private final ApiClient apiClient;
+    private final Supplier<InternalApiClient> apiClientSupplier;
 
-    public EmailClient(final ApiClient apiClient) {
-        this.apiClient = apiClient;
+    public EmailClient(final Supplier<InternalApiClient> apiClientSupplier) {
+        this.apiClientSupplier = apiClientSupplier;
     }
 
     public ApiResponse<Void> sendEmail(final EmailSend document) throws EmailClientException {
@@ -31,7 +33,9 @@ public class EmailClient {
             sendEmail.setJsonData(document.getData());
             sendEmail.setEmailAddress(document.getEmailAddress());
 
-            PrivateSendEmailHandler emailHandler = apiClient.getInternalApiClient().sendEmailHandler();
+            InternalApiClient internalApiClient = apiClientSupplier.get();
+
+            PrivateSendEmailHandler emailHandler = internalApiClient.sendEmailHandler();
             PrivateSendEmailPost emailPost = emailHandler.postSendEmail("/send-email", sendEmail);
 
             ApiResponse<Void> response = emailPost.execute();

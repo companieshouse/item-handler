@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +42,7 @@ import uk.gov.companieshouse.itemhandler.model.OrderData;
 class EmailClientTest {
 
     @Mock
-    private ApiClient apiClient;
+    private Supplier<InternalApiClient> apiClientSupplier;
 
     @InjectMocks
     private EmailClient emailClient;
@@ -59,9 +60,11 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         InternalApiClient internalApiClient = mock(InternalApiClient.class);
-        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
+        when(apiClientSupplier.get()).thenReturn(internalApiClient);
 
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
+
+        when(apiClientSupplier.get()).thenReturn(internalApiClient);
 
         EmailSend emailData = createDeliverableItemGroupWithItems();
 
@@ -86,7 +89,7 @@ class EmailClientTest {
         when(privateSendEmailHandler.postSendEmail(eq("/send-email"), any(SendEmail.class))).thenReturn(privateSendEmailPost);
 
         InternalApiClient internalApiClient = mock(InternalApiClient.class);
-        when(apiClient.getInternalApiClient()).thenReturn(internalApiClient);
+        when(apiClientSupplier.get()).thenReturn(internalApiClient);
 
         when(internalApiClient.sendEmailHandler()).thenReturn(privateSendEmailHandler);
 
