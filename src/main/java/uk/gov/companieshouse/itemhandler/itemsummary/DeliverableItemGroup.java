@@ -1,13 +1,15 @@
 package uk.gov.companieshouse.itemhandler.itemsummary;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import java.util.Objects;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
 import uk.gov.companieshouse.itemhandler.model.OrderData;
 
-import java.util.List;
-import java.util.Objects;
-
 public class DeliverableItemGroup extends ItemGroup {
+
     private DeliveryTimescale timescale;
 
     public DeliverableItemGroup(OrderData order, String kind, DeliveryTimescale timescale) {
@@ -45,5 +47,15 @@ public class DeliverableItemGroup extends ItemGroup {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), getTimescale());
+    }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
