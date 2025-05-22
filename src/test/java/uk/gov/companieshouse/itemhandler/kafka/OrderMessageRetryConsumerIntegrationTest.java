@@ -83,6 +83,8 @@ class OrderMessageRetryConsumerIntegrationTest {
                 "http://" + container.getHost() + ":" + container.getServerPort());
         TestEnvironmentSetupHelper.setEnvironmentVariable("DOCUMENT_API_LOCAL_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
+        TestEnvironmentSetupHelper.setEnvironmentVariable("CHS_KAFKA_API_URL",
+                "http://" + container.getHost() + ":" + container.getServerPort());
     }
 
     @AfterAll

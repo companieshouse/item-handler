@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.itemhandler.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 
 public class OrderData extends AbstractOrderData {
@@ -33,4 +35,15 @@ public class OrderData extends AbstractOrderData {
     public void setLinks(OrderLinks links) {
         this.links = links;
     }
+
+    @Override
+    public String toString() {
+        try {
+            return new ObjectMapper().writeValueAsString(this);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
