@@ -7,9 +7,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.email.EmailSend;
 import uk.gov.companieshouse.itemhandler.client.EmailClient;
@@ -28,9 +26,9 @@ import uk.gov.companieshouse.logging.Logger;
 @Service
 public class EmailService {
 
-    private static final String DEFAULT_APPLICATION_ID = "item-handler";
-
     private static final Logger LOGGER = LoggingUtils.getLogger();
+
+    private static final String DEFAULT_APPLICATION_ID = "item-handler";
     private static final String ITEM_KIND_CERTIFIED_COPY = "item#certified-copy";
     private static final String ITEM_KIND_CERTIFICATE = "item#certificate";
 
@@ -83,7 +81,8 @@ public class EmailService {
     }
 
     private EmailSend mapEmailSend(DeliverableItemGroup itemGroup, OrderConfirmationMapper<?> mapper) throws JsonProcessingException {
-        LOGGER.trace(format("mapEmailSend(itemGroup=%s, mapper=%s) method called.", itemGroup, mapper.getClass().getSimpleName()));
+        LOGGER.trace(format("mapEmailSend(itemGroup=%s, mapperClass=%s) method called.",
+                itemGroup, mapper.getClass().getSimpleName()));
 
         EmailMetadata<?> emailMetadata = mapper.map(itemGroup);
 
@@ -92,9 +91,9 @@ public class EmailService {
         EmailSend emailSend = new EmailSend();
         emailSend.setAppId(isNotBlank(applicationId) ? applicationId : DEFAULT_APPLICATION_ID);
         emailSend.setMessageType(emailMetadata.getMessageType());
+        emailSend.setMessageId(UUID.randomUUID().toString());
         emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
         emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
-        emailSend.setMessageId(UUID.randomUUID().toString());
         emailSend.setCreatedAt(LocalDateTime.now().toString());
 
         LOGGER.info(format("EmailSend: %s", objectMapper.writeValueAsString(emailSend)));
