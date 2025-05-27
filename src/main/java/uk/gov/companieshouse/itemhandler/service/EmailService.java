@@ -87,12 +87,13 @@ public class EmailService {
         EmailMetadata<?> emailMetadata = mapper.map(itemGroup);
 
         String applicationId = ofNullable(emailMetadata.getAppId()).orElse("");
+        String jsonData = objectMapper.writeValueAsString(emailMetadata.getEmailData());
 
         EmailSend emailSend = new EmailSend();
         emailSend.setAppId(isNotBlank(applicationId) ? applicationId : DEFAULT_APPLICATION_ID);
         emailSend.setMessageType(emailMetadata.getMessageType());
         emailSend.setMessageId(UUID.randomUUID().toString());
-        emailSend.setData(objectMapper.writeValueAsString(emailMetadata.getEmailData()));
+        emailSend.setData(jsonData);
         emailSend.setEmailAddress(TOKEN_EMAIL_ADDRESS);
         emailSend.setCreatedAt(LocalDateTime.now().toString());
 
