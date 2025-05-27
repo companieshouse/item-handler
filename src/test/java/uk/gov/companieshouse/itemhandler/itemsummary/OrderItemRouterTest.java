@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.companieshouse.itemhandler.exception.NonRetryableException;
+import uk.gov.companieshouse.itemhandler.logging.LoggingUtils;
 import uk.gov.companieshouse.itemhandler.model.DeliveryItemOptions;
 import uk.gov.companieshouse.itemhandler.model.DeliveryTimescale;
 import uk.gov.companieshouse.itemhandler.model.Item;
@@ -51,6 +54,11 @@ class OrderItemRouterTest {
 
     @Captor
     private ArgumentCaptor<ItemGroup> itemGroupCaptor;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(orderItemRouter, "logger", LoggingUtils.getLogger());
+    }
 
     @Test
     @DisplayName("Router should route deliverable items to email service and missing image deliveries to chd item sender service")
