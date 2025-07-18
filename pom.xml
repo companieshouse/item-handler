@@ -39,6 +39,7 @@
         <system-rules.version>1.17.2</system-rules.version>
         <testcontainers.version>1.21.2</testcontainers.version>
         <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
 
         <!-- Internal Dependencies -->
         <api-sdk-java.version>6.3.1</api-sdk-java.version>
@@ -118,6 +119,11 @@
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -260,6 +266,12 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>ch-kafka</artifactId>
             <version>${ch-kafka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -295,6 +307,12 @@
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>environment-reader-library</artifactId>
             <version>${environment-reader-library.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
