@@ -22,34 +22,36 @@
         <java.version>21</java.version>
 
         <avro.version>1.12.0</avro.version>
-        <gson.version>2.12.0</gson.version>
+        <gson.version>2.13.1</gson.version>
         <hamcrest.version>3.0</hamcrest.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-        <junit-jupiter.version>5.12.0</junit-jupiter.version>
-        <junit-jupiter-engine.version>5.12.0</junit-jupiter-engine.version>
-        <junit-vintage-engine.version>5.12.0</junit-vintage-engine.version>
+        <junit-jupiter.version>5.13.3</junit-jupiter.version>
+        <junit-jupiter-engine.version>5.13.3</junit-jupiter-engine.version>
+        <junit-vintage-engine.version>5.13.4</junit-vintage-engine.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
-        <mockito-junit-jupiter.version>5.16.0</mockito-junit-jupiter.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <snakeyaml.version>2.4</snakeyaml.version>
-        <spring-boot-dependencies.version>3.4.5</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.4.5</spring-boot-maven-plugin.version>
+        <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
+        <spring-boot-maven-plugin.version>3.5.3</spring-boot-maven-plugin.version>
         <system-rules.version>1.17.2</system-rules.version>
-        <testcontainers.version>1.20.6</testcontainers.version>
+        <testcontainers.version>1.21.2</testcontainers.version>
+        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
 
         <!-- Internal Dependencies -->
-        <api-sdk-java.version>6.0.39</api-sdk-java.version>
+        <api-sdk-java.version>6.3.1</api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
-        <ch-kafka.version>3.0.3</ch-kafka.version>
-        <environment-reader-library.version>3.0.1</environment-reader-library.version>
-        <kafka-models.version>3.0.11</kafka-models.version>
-        <private-api-sdk-java.version>4.0.288</private-api-sdk-java.version>
-        <structured-logging.version>3.0.26</structured-logging.version>
+        <ch-kafka.version>3.0.4</ch-kafka.version>
+        <environment-reader-library.version>3.0.2</environment-reader-library.version>
+        <kafka-models.version>3.0.18</kafka-models.version>
+        <private-api-sdk-java.version>4.0.327</private-api-sdk-java.version>
+        <structured-logging.version>3.0.36</structured-logging.version>
 
         <!-- Docker property -->
-        <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+        <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
 
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
@@ -74,17 +76,17 @@
             **/itemsummary/PaymentDetails.java,
             **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
-        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
         <sonar.java.binaries>${project.basedir}/target</sonar.java.binaries>
-		<sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-		<sonar.login></sonar.login>
-		<sonar.password></sonar.password>
-		<sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
-		<sonar.projectName>item-handler</sonar.projectName>
-		<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
-			${project.basedir}/target/site/jacoco-it/jacoco.xml
-		</sonar.coverage.jacoco.xmlReportPaths>
-		<sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
+        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
+        <sonar.login></sonar.login>
+        <sonar.password></sonar.password>
+        <sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
+        <sonar.projectName>item-handler</sonar.projectName>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/target/site/jacoco-it/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 
@@ -97,6 +99,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry-instrumentation-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot-dependencies.version}</version>
@@ -107,6 +116,15 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -141,6 +159,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
 
         <dependency>
@@ -321,7 +344,7 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
-                </exclusions>
+            </exclusions>
         </dependency>
     </dependencies>
 
