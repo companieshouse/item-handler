@@ -34,7 +34,7 @@
         <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <snakeyaml.version>2.4</snakeyaml.version>
-        <spring-boot-dependencies.version>3.5.3</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>3.5.5</spring-boot-dependencies.version>
         <spring-boot-maven-plugin.version>3.5.3</spring-boot-maven-plugin.version>
         <system-rules.version>1.17.2</system-rules.version>
         <testcontainers.version>1.21.2</testcontainers.version>
@@ -42,7 +42,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>
 
         <!-- Internal Dependencies -->
-        <api-sdk-java.version>6.3.1</api-sdk-java.version>
+        <api-sdk-java.version>6.4.4</api-sdk-java.version>
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <ch-kafka.version>3.0.4</ch-kafka.version>
         <environment-reader-library.version>3.0.2</environment-reader-library.version>
