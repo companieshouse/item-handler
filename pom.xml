@@ -34,7 +34,7 @@
         <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <snakeyaml.version>2.4</snakeyaml.version>
-        <spring-boot-dependencies.version>3.5.5</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>3.5.6</spring-boot-dependencies.version>
         <spring-boot-maven-plugin.version>3.5.3</spring-boot-maven-plugin.version>
         <system-rules.version>1.17.2</system-rules.version>
         <testcontainers.version>1.21.2</testcontainers.version>
@@ -345,6 +345,11 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-placeholders</artifactId>
+            <version>2.10.3</version>
         </dependency>
     </dependencies>
 
