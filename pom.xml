@@ -42,6 +42,7 @@
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <nimbus-jose-jwt.version>10.4.1</nimbus-jose-jwt.version>
         <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>
+        <log4j.version>2.25.3</log4j.version>
 
         <!-- Internal Dependencies -->
         <api-sdk-java.version>6.4.4</api-sdk-java.version>
@@ -153,6 +154,12 @@
             <artifactId>bcprov-ext-jdk18on</artifactId>
             <version>${bcprov-ext-jdk18on.version}</version>
         </dependency>
+
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-api</artifactId>
+          <version>2.25.3</version>
+      </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
