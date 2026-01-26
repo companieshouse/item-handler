@@ -40,6 +40,7 @@
         <testcontainers.version>1.21.2</testcontainers.version>
         <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
+        <nimbus-jose-jwt.version>10.4.1</nimbus-jose-jwt.version>
 
         <!-- Internal Dependencies -->
         <api-sdk-java.version>6.4.4</api-sdk-java.version>
@@ -138,6 +139,12 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.nimbusds</groupId>
+            <artifactId>nimbus-jose-jwt</artifactId>
+            <version>${nimbus-jose-jwt.version}</version>
         </dependency>
 
         <dependency>
@@ -343,6 +350,10 @@
                 <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>bcprov-jdk18on</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
