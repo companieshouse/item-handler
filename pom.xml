@@ -40,7 +40,7 @@
         <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
         <system-rules.version>1.17.2</system-rules.version>
         <testcontainers.version>1.21.2</testcontainers.version>
-        <opentelemetry-instrumentation-bom.version>2.16.0</opentelemetry-instrumentation-bom.version>
+        <opentelemetry-instrumentation-bom.version>2.25.0</opentelemetry-instrumentation-bom.version>
         <commons-lang3.version>3.18.0</commons-lang3.version>
         <nimbus-jose-jwt.version>10.4.1</nimbus-jose-jwt.version>
         <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>
