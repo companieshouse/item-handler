@@ -19,50 +19,69 @@
     </description>
 
     <properties>
+        <!-- Encoding -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- JDK Version -->
         <java.version>21</java.version>
 
-        <avro.version>1.12.1</avro.version>
-        <gson.version>2.13.1</gson.version>
-        <hamcrest.version>3.0</hamcrest.version>
+        <!-- Skips Tests -->
+        <skip.unit.tests>false</skip.unit.tests>
+        <skip.integration.tests>false</skip.integration.tests>
+
+        <!-- Maven Compiler -->
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+
+        <!-- Plugins -->
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
+
+        <!-- Spring Boot -->
+        <spring-boot-dependencies.version>3.5.11</spring-boot-dependencies.version>
+
+        <!-- External Dependencies -->
+        <avro.version>1.12.1</avro.version>
+        <gson.version>2.13.2</gson.version>
+        <jose4j.version>0.9.6</jose4j.version>
+        <mapstruct.version>1.7.0.Beta1</mapstruct.version>
+        <opentelemetry-instrumentation-bom.version>2.26.0</opentelemetry-instrumentation-bom.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
+        <nimbus-jose-jwt.version>10.8</nimbus-jose-jwt.version>
+        <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>
+        <log4j.version>2.25.3</log4j.version>
+        <snakeyaml.version>2.6</snakeyaml.version>
+
+        <!-- Internal Dependencies -->
+        <api-sdk-java.version>6.6.8</api-sdk-java.version>
+        <api-sdk-manager-java-library.version>3.0.16</api-sdk-manager-java-library.version>
+        <ch-kafka.version>3.0.8</ch-kafka.version>
+        <environment-reader-library.version>3.0.5</environment-reader-library.version>
+        <kafka-models.version>3.0.29</kafka-models.version>
+        <private-api-sdk-java.version>4.0.475</private-api-sdk-java.version>
+        <structured-logging.version>3.0.51</structured-logging.version>
+
+        <!-- Testing -->
+        <hamcrest.version>3.0</hamcrest.version>
         <junit-jupiter.version>5.13.3</junit-jupiter.version>
         <junit-jupiter-engine.version>5.13.3</junit-jupiter-engine.version>
         <junit-vintage-engine.version>5.13.4</junit-vintage-engine.version>
-        <jose4j.version>0.9.6</jose4j.version>
-        <mapstruct.version>1.6.3</mapstruct.version>
-        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-        <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.22.0</mockito-junit-jupiter.version>
         <mockserver-client-java.version>5.15.0</mockserver-client-java.version>
         <spring-kafka-test.version>3.3.13</spring-kafka-test.version>
-        <snakeyaml.version>2.4</snakeyaml.version>
-        <spring-boot-dependencies.version>3.5.11</spring-boot-dependencies.version>
-        <spring-boot-maven-plugin.version>3.5.11</spring-boot-maven-plugin.version>
-        <system-rules.version>1.17.2</system-rules.version>
-        <testcontainers.version>1.21.2</testcontainers.version>
-        <opentelemetry-instrumentation-bom.version>2.25.0</opentelemetry-instrumentation-bom.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
-        <nimbus-jose-jwt.version>10.4.1</nimbus-jose-jwt.version>
-        <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>
-        <log4j.version>2.25.3</log4j.version>
+        <system-rules.version>1.19.0</system-rules.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
 
-        <!-- Internal Dependencies -->
-        <api-sdk-java.version>6.4.4</api-sdk-java.version>
-        <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
-        <ch-kafka.version>3.0.4</ch-kafka.version>
-        <environment-reader-library.version>3.0.2</environment-reader-library.version>
-        <kafka-models.version>3.0.18</kafka-models.version>
-        <private-api-sdk-java.version>4.0.327</private-api-sdk-java.version>
-        <structured-logging.version>3.0.36</structured-logging.version>
-
-        <!-- Docker property -->
-        <jib-maven-plugin.version>3.4.6</jib-maven-plugin.version>
-
-        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login></sonar.login>
-        <sonar.password></sonar.password>
-        <sonar.projectKey>uk.gov.companieshouse:${project.name}</sonar.projectKey>
-        <sonar.projectName>${project.name}</sonar.projectName>
+        <sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
+        <sonar.projectName>item-handler</sonar.projectName>
+        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
+            ${project.basedir}/target/site/jacoco-it/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
+        <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
+        <sonar.java.binaries>${project.basedir}/target</sonar.java.binaries>
         <sonar.exclusions>
             **/config/FeatureOptions.java,
             **/config/FeatureOptionsConfig.java,
@@ -82,16 +101,9 @@
             **/itemsummary/OrderItemPair.java
         </sonar.exclusions>
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
-        <sonar.java.binaries>${project.basedir}/target</sonar.java.binaries>
         <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
         <sonar.login></sonar.login>
         <sonar.password></sonar.password>
-        <sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
-        <sonar.projectName>item-handler</sonar.projectName>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
-            ${project.basedir}/target/site/jacoco-it/jacoco.xml
-        </sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 
@@ -141,15 +153,13 @@
     </dependencyManagement>
 
     <dependencies>
+
+        <!-- Spring Boot -->
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -163,6 +173,71 @@
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka-test</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.pcollections</groupId>
+                    <artifactId>pcollections</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.dynatrace.hash4j</groupId>
+                    <artifactId>hash4j</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- External Dependencies -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <dependency>
@@ -184,46 +259,6 @@
       </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>junit</groupId>
-                    <artifactId>junit</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito-junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest</artifactId>
             <version>${hamcrest.version}</version>
@@ -236,6 +271,25 @@
             <version>${mapstruct.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${avro.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${gson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
+
+        <!-- CH Dependencies -->
         <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>private-api-sdk-java</artifactId>
@@ -255,16 +309,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-logging</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>uk.gov.companieshouse</groupId>
             <artifactId>structured-logging</artifactId>
             <version>${structured-logging.version}</version>
@@ -275,12 +319,6 @@
                     <artifactId>*</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>${gson.version}</version>
         </dependency>
 
         <dependency>
@@ -300,9 +338,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
+            <groupId>uk.gov.companieshouse</groupId>
+            <artifactId>environment-reader-library</artifactId>
+            <version>${environment-reader-library.version}</version>
         </dependency>
 
         <dependency>
@@ -312,47 +350,13 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>${snakeyaml.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.pcollections</groupId>
-                    <artifactId>pcollections</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>uk.gov.companieshouse</groupId>
-            <artifactId>environment-reader-library</artifactId>
-            <version>${environment-reader-library.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.stefanbirkner</groupId>
             <artifactId>system-rules</artifactId>
             <version>${system-rules.version}</version>
             <scope>test</scope>
         </dependency>
 
+        <!-- Testing -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
@@ -389,14 +393,30 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito-junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
+    <!-- Plugins -->
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot-maven-plugin.version}</version>
+                <version>${spring-boot-dependencies.version}</version>
                 <configuration>
                     <mainClass>${start-class}</mainClass>
                     <layout>ZIP</layout>

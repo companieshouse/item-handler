@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
+import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import uk.gov.companieshouse.itemgroupordered.ItemGroupOrdered;
 import uk.gov.companieshouse.itemhandler.kafka.KafkaTopics;
@@ -26,9 +26,10 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @TestConfiguration
 public class EmbeddedKafkaBrokerConfiguration {
+
     @Bean
     EmbeddedKafkaBroker embeddedKafkaBroker() {
-        return new EmbeddedKafkaZKBroker(1);
+        return new EmbeddedKafkaKraftBroker(1, 1, "test-topic");
     }
 
     @Bean
