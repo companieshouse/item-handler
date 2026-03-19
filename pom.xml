@@ -41,7 +41,7 @@
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 
         <!-- Spring Boot -->
-        <spring-boot-dependencies.version>3.5.11</spring-boot-dependencies.version>
+        <spring-boot-dependencies.version>3.5.10</spring-boot-dependencies.version>
 
         <!-- External Dependencies -->
         <avro.version>1.12.1</avro.version>
