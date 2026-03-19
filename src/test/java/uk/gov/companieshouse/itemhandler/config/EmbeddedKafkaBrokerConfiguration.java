@@ -26,10 +26,10 @@ import uk.gov.companieshouse.orders.items.ChdItemOrdered;
 
 @TestConfiguration
 public class EmbeddedKafkaBrokerConfiguration {
-
     @Bean
     EmbeddedKafkaBroker embeddedKafkaBroker() {
-        return new EmbeddedKafkaZKBroker(1);    }
+        return new EmbeddedKafkaZKBroker(1);
+    }
 
     @Bean
     KafkaConsumer<String, email_send> emailSendConsumer(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers, EmbeddedKafkaBroker embeddedKafkaBroker, KafkaTopics kafkaTopics) {
