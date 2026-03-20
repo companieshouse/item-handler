@@ -30,22 +30,9 @@
 
         <spring-boot-dependencies.version>3.5.11</spring-boot-dependencies.version>
         <opentelemetry-instrumentation-bom.version>2.26.0</opentelemetry-instrumentation-bom.version>
-        <!--        <junit-jupiter.version>5.13.3</junit-jupiter.version>-->
-        <!--        <jose4j.version>0.9.6</jose4j.version>-->
-        <!--        <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>-->
-        <!--        <commons-lang3.version>3.18.0</commons-lang3.version>-->
-        <!--        <nimbus-jose-jwt.version>10.4.1</nimbus-jose-jwt.version>-->
-        <!--        <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>-->
 
         <!-- Internal Dependencies -->
         <api-sdk-java.version>6.6.9</api-sdk-java.version>
-<!--        <api-sdk-manager-java-library.version>3.0.16</api-sdk-manager-java-library.version>-->
-<!--        <ch-kafka.version>3.0.8</ch-kafka.version>-->
-<!--        <environment-reader-library.version>3.0.5</environment-reader-library.version>-->
-<!--        <kafka-models.version>3.0.29</kafka-models.version>-->
-<!--        <private-api-sdk-java.version>4.0.483</private-api-sdk-java.version>-->
-<!--        <structured-logging.version>3.0.51</structured-logging.version>-->
-<!--        <api-sdk-java.version>6.4.4</api-sdk-java.version>-->
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <ch-kafka.version>3.0.4</ch-kafka.version>
         <environment-reader-library.version>3.0.2</environment-reader-library.version>
@@ -72,11 +59,8 @@
         <!-- Docker property -->
         <jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
 
-        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login></sonar.login>
-        <sonar.password></sonar.password>
-        <sonar.projectKey>uk.gov.companieshouse:${project.name}</sonar.projectKey>
-        <sonar.projectName>${project.name}</sonar.projectName>
+        <sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
+        <sonar.projectName>item-handler</sonar.projectName>
         <sonar.exclusions>
             **/config/FeatureOptions.java,
             **/config/FeatureOptionsConfig.java,
@@ -97,15 +81,13 @@
         </sonar.exclusions>
         <sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
         <sonar.java.binaries>${project.basedir}/target</sonar.java.binaries>
-        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
-        <sonar.login></sonar.login>
-        <sonar.password></sonar.password>
-        <sonar.projectKey>uk.gov.companieshouse:item-handler</sonar.projectKey>
-        <sonar.projectName>item-handler</sonar.projectName>
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml,
             ${project.basedir}/target/site/jacoco-it/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <sonar.jacoco.reports>${project.basedir}/target/site</sonar.jacoco.reports>
+        <sonar.token>${CODE_ANALYSIS_TOKEN}</sonar.token>
+        <sonar.login></sonar.login>
+        <sonar.password></sonar.password>
 
         <start-class>uk.gov.companieshouse.itemhandler.ItemHandlerApplication</start-class>
 
@@ -132,13 +114,6 @@
                 <scope>import</scope>
             </dependency>
             <!-- Transitive dependencies -->
-            <!-- CVE-2024-29371 -->
-<!--            <dependency>-->
-<!--                <groupId>org.bitbucket.b_c</groupId>-->
-<!--                <artifactId>jose4j</artifactId>-->
-<!--                <version>${jose4j.version}</version>-->
-<!--                <scope>compile</scope>-->
-<!--            </dependency>-->
             <!-- CVE-2025-66566 -->
             <dependency>
                 <groupId>org.lz4</groupId>
@@ -155,15 +130,12 @@
     </dependencyManagement>
 
     <dependencies>
+
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
             <artifactId>opentelemetry-spring-boot-starter</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-lang3</artifactId>-->
-<!--            <version>${commons-lang3.version}</version>-->
-<!--        </dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -178,18 +150,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.nimbusds</groupId>-->
-<!--            <artifactId>nimbus-jose-jwt</artifactId>-->
-<!--            <version>${nimbus-jose-jwt.version}</version>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.bouncycastle</groupId>-->
-<!--            <artifactId>bcprov-ext-jdk18on</artifactId>-->
-<!--            <version>${bcprov-ext-jdk18on.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
@@ -222,20 +182,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-logging</artifactId>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.junit.jupiter</groupId>-->
-<!--            <artifactId>junit-jupiter</artifactId>-->
-<!--            <version>${junit-jupiter.version}</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
-<!--        <dependency>-->
-<!--            <groupId>org.mockito</groupId>-->
-<!--            <artifactId>mockito-junit-jupiter</artifactId>-->
-<!--            <version>${mockito-junit-jupiter.version}</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>org.hamcrest</groupId>
