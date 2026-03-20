@@ -38,7 +38,14 @@
         <!--        <bcprov-ext-jdk18on.version>1.78.1</bcprov-ext-jdk18on.version>-->
 
         <!-- Internal Dependencies -->
-        <api-sdk-java.version>6.4.4</api-sdk-java.version>
+        <api-sdk-java.version>6.6.9</api-sdk-java.version>
+<!--        <api-sdk-manager-java-library.version>3.0.16</api-sdk-manager-java-library.version>-->
+<!--        <ch-kafka.version>3.0.8</ch-kafka.version>-->
+<!--        <environment-reader-library.version>3.0.5</environment-reader-library.version>-->
+<!--        <kafka-models.version>3.0.29</kafka-models.version>-->
+<!--        <private-api-sdk-java.version>4.0.483</private-api-sdk-java.version>-->
+<!--        <structured-logging.version>3.0.51</structured-logging.version>-->
+<!--        <api-sdk-java.version>6.4.4</api-sdk-java.version>-->
         <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
         <ch-kafka.version>3.0.4</ch-kafka.version>
         <environment-reader-library.version>3.0.2</environment-reader-library.version>
@@ -48,10 +55,10 @@
 
         <!-- External Dependencies -->
         <avro.version>1.12.1</avro.version>
-        <gson.version>2.13.1</gson.version>
+        <gson.version>2.13.2</gson.version>
         <log4j.version>2.25.3</log4j.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <snakeyaml.version>2.4</snakeyaml.version>
+        <snakeyaml.version>2.6</snakeyaml.version>
 
         <!-- Testing Dependencies -->
         <junit-jupiter-engine.version>5.13.3</junit-jupiter-engine.version>
