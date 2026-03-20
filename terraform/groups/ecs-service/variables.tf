@@ -49,6 +49,12 @@ variable "max_task_count" {
   default     = 3
 }
 
+variable "min_task_count" {
+  type        = number
+  description = "The minimum number of tasks for this service."
+  default     = 1
+}
+
 variable "use_fargate" {
   type        = bool
   description = "If true, sets the required capabilities for all containers in the task definition to use FARGATE, false uses EC2"
@@ -72,18 +78,23 @@ variable "service_autoscale_target_value_cpu" {
 variable "service_scaledown_schedule" {
   type        = string
   description = "The schedule to use when scaling down the number of tasks to zero."
-  # Typically used to stop all tasks in a service to save resource costs overnight.
-  # E.g. a value of '55 19 * * ? *' would be Mon-Sun 7:55pm.  An empty string indicates that no schedule should be created.
-
   default     = ""
 }
 variable "service_scaleup_schedule" {
   type        = string
   description = "The schedule to use when scaling up the number of tasks to their normal desired level."
-  # Typically used to start all tasks in a service after it has been shutdown overnight.
-  # E.g. a value of '5 6 * * ? *' would be Mon-Sun 6:05am.  An empty string indicates that no schedule should be created.
-
   default     = ""
+}
+
+variable "service_autoscale_scale_in_cooldown" {
+  type        = number
+  description = "Cooldown in seconds for ECS Service scale in (run fewer tasks)"
+  default     = 300
+}
+variable "service_autoscale_scale_out_cooldown" {
+  type        = number
+  description = "Cooldown in seconds for ECS Service scale out (add more tasks)"
+  default     = 300
 }
 
 # ----------------------------------------------------------------------
@@ -94,7 +105,6 @@ variable "cloudwatch_alarms_enabled" {
   type        = bool
   default     = true
 }
-
 
 # ------------------------------------------------------------------------------
 # Service environment variable configs
@@ -135,4 +145,19 @@ variable "task_healthcheck_retries" {
 variable "task_healthcheck_start_period" {
   type        = number
   description = "Health check start period configuration for ECS task definitions."
+}
+
+# ------------------------------------------------------------------------------
+# Dual Deployment / Strangler Fig configs
+# ------------------------------------------------------------------------------
+
+variable "create_old_kafka_service" {
+  type        = bool
+  description = "Whether to create the old Kafka 0.10 ECS service alongside the upgraded one."
+  default     = false
+}
+
+variable "item_handler_old_kafka_version" {
+  type        = string
+  description = "The specific release tag for the old Kafka 0.10 version of the container."
 }
