@@ -52,3 +52,5 @@ Application specific attributes | Value                                | Descrip
 ### Useful Links
 - [ECS service config dev repository](https://github.com/companieshouse/ecs-service-configs-dev)
 - [ECS service config production repository](https://github.com/companieshouse/ecs-service-configs-production◊
+
+### Creating Dual Deployment for Kafka
