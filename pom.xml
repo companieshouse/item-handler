@@ -46,6 +46,7 @@
         <log4j.version>2.25.3</log4j.version>
         <mapstruct.version>1.6.3</mapstruct.version>
         <snakeyaml.version>2.6</snakeyaml.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
 
         <!-- Testing Dependencies -->
         <junit-jupiter-engine.version>5.13.3</junit-jupiter-engine.version>
@@ -194,6 +195,13 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
