@@ -160,4 +160,5 @@ variable "create_old_kafka_service" {
 variable "item_handler_old_kafka_version" {
   type        = string
   description = "The specific release tag for the old Kafka 0.10 version of the container."
+  default     = "latest"
 }
