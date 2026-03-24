@@ -4,6 +4,8 @@ locals {
   name_prefix                = "${local.stack_name}-${var.environment}"
   global_prefix              = "global-${var.environment}"
   service_name               = "item-handler"
+  service_name_old_kafka     = "item-handler-old-kafka"
+
   container_port             = "8080"
   docker_repo                = "item-handler"
   kms_alias                  = "alias/${var.aws_profile}/environment-services-kms"
@@ -13,6 +15,7 @@ locals {
   vpc_name                   = local.stack_secrets["vpc_name"]
   s3_config_bucket           = data.vault_generic_secret.shared_s3.data["config_bucket_name"]
   app_environment_filename   = "item-handler.env"
+  app_environment_filename_old_kafka = "item-handler-old-kafka.env"
   use_set_environment_files  = var.use_set_environment_files
   application_subnet_ids     = data.aws_subnets.application.ids
   application_subnet_pattern = local.stack_secrets["application_subnet_pattern"]

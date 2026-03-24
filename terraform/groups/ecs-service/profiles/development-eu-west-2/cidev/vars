@@ -14,3 +14,7 @@ task_healthcheck_start_period = 120
 service_autoscale_enabled  = true
 service_scaledown_schedule = "55 19 * * ? *"
 service_scaleup_schedule   = "5 6 * * ? *"
+
+# Enable Parallel Old Kafka Service
+create_old_kafka_service = true
+item_handler_old_kafka_version = "0.1.106" 
