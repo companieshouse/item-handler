@@ -16,5 +16,5 @@ service_scaledown_schedule = "55 19 * * ? *"
 service_scaleup_schedule   = "5 6 * * ? *"
 
 # Enable Parallel Old Kafka Service
-create_old_kafka_service = true
+create_old_kafka_service = false
 item_handler_old_kafka_version = "0.1.106" 
