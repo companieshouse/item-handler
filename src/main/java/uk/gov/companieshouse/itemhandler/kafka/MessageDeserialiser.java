@@ -45,18 +45,23 @@ public class MessageDeserialiser<T extends IndexedRecord> implements Deserialize
 
     private static void addNamedTypes(Schema schema, ClassSecurityValidator.Builder builder, Set<String> visited) {
         switch (schema.getType()) {
-            case RECORD -> {
-                if (visited.add(schema.getFullName())) {
-                    builder.add(schema.getFullName());
-                    schema.getFields().forEach(field -> addNamedTypes(field.schema(), builder, visited));
-                }
-            }
+            case RECORD -> addRecordTypes(schema, builder, visited);
             case ENUM -> builder.add(schema.getFullName());
             case ARRAY -> addNamedTypes(schema.getElementType(), builder, visited);
             case MAP -> addNamedTypes(schema.getValueType(), builder, visited);
             case UNION -> schema.getTypes().forEach(t -> addNamedTypes(t, builder, visited));
-            default -> { }
+            default -> {
+                // primitive types have no classes that require trusting
+            }
         }
+    }
+
+    private static void addRecordTypes(Schema schema, ClassSecurityValidator.Builder builder, Set<String> visited) {
+        if (!visited.add(schema.getFullName())) {
+            return;
+        }
+        builder.add(schema.getFullName());
+        schema.getFields().forEach(field -> addNamedTypes(field.schema(), builder, visited));
     }
 
     @Override
