@@ -2,6 +2,7 @@ package uk.gov.companieshouse.itemhandler.kafka;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.avro.util.ClassSecurityValidator;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -32,6 +33,10 @@ import uk.gov.companieshouse.orders.OrderReceived;
 public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    public KafkaConfig() {
+        ClassSecurityValidator.setGlobal(clazz -> true);
+    }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, OrderReceived> kafkaListenerContainerFactory() {
