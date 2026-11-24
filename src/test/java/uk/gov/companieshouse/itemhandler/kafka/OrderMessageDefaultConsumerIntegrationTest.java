@@ -101,7 +101,7 @@ class OrderMessageDefaultConsumerIntegrationTest {
 
     @BeforeAll
     static void before() {
-        container = new MockServerContainer(DockerImageName.parse("mockserver/mockserver:mockserver-7.5.0"));
+        container = new MockServerContainer(DockerImageName.parse("mockserver/mockserver:mockserver-9.3.0"));
         container.start();
         TestEnvironmentSetupHelper.setEnvironmentVariable("API_URL",
                 "http://" + container.getHost() + ":" + container.getServerPort());
